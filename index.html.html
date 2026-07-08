@@ -1,0 +1,1744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Job Sheet — Booking Record</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --navy:#1B2A44;
+  --navy-ink:#20344F;
+  --navy-tint:#E7EBF1;
+  --orange:#D9691F;
+  --orange-tint:#FBEAE0;
+  --green:#2F7A46;
+  --green-tint:#E4F1E8;
+  --teal:#1F6B66;
+  --teal-ink:#195652;
+  --umber:#4A3B26;
+  --umber-ink:#3A2E1D;
+  --booking-header:#CFE6F7;
+  --booking-header-text:#1B2A44;
+  --inquiry-header:#E2EFDA;
+  --inquiry-header-text:#1F4A2E;
+  --dash-header:#3A5A82;
+  --sky:#4FA6D6;
+  --gray-tint:#EEECE5;
+  --paper:#FFFFFF;
+  --steel:#6B6F76;
+  --ink:#241F19;
+  --line:#D6D6D6;
+  --white:#FFFFFF;
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:'Inter',sans-serif; font-size:14px; line-height:1.5;
+}
+.mono{font-family:'IBM Plex Mono',monospace;}
+
+.wrap{max-width:960px; margin:0 auto; padding:24px 20px 60px;}
+
+.toolbar{
+  display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+  margin-bottom:18px; justify-content:flex-start;
+}
+.toolbar-left{display:flex; gap:8px; flex-wrap:wrap;}
+select, input[type=text], input[type=date], input[type=number], textarea{
+  font-family:'Inter',sans-serif; font-size:13px; padding:7px 9px;
+  border:1px solid var(--line); border-radius:3px; background:var(--white); color:var(--ink);
+}
+textarea{resize:vertical; width:100%;}
+button{
+  font-family:'Inter',sans-serif; font-size:13px; font-weight:500; padding:8px 14px;
+  border-radius:3px; border:1px solid #D6D6D6; background:#EDEDED; color:var(--ink);
+  cursor:pointer;
+}
+button:hover{background:#DCDCDC; color:var(--ink);}
+button.primary{background:var(--navy); color:var(--white); border-color:var(--navy);}
+button.primary:hover{background:var(--navy-ink);}
+button.accent{border-color:var(--orange); color:var(--orange); background:#EDEDED;}
+button.accent:hover{background:var(--orange); color:var(--white);}
+button.ghost{border-color:var(--line); color:var(--steel); background:#EDEDED;}
+button.green{border-color:var(--green); color:var(--green); background:#EDEDED;}
+button.green:hover{background:var(--green); color:var(--white);}
+button.btn-dash{background:var(--dash-header); color:var(--white); border-color:var(--dash-header);}
+button.btn-dash:hover{background:#2E4A6B;}
+button.btn-inquiry{background:var(--green); color:var(--white); border-color:var(--green);}
+button.btn-inquiry:hover{background:#256238;}
+button.btn-booking{background:var(--sky); color:var(--white); border-color:var(--sky);}
+button.btn-booking:hover{background:#3A8FC0;}
+button.btn-tab{background:#EDEDED; border-color:#D6D6D6; color:var(--steel);}
+button.btn-tab.active{background:var(--navy); border-color:var(--navy); color:var(--white);}
+button.btn-inquiry-tab.active{background:var(--green); border-color:var(--green);}
+button.btn-booking-tab.active{background:var(--sky); border-color:var(--sky);}
+
+.sheet{
+  background:var(--white); position:relative; border:1px solid var(--line);
+  border-radius:2px; padding:0; overflow:hidden;
+}
+.tear{
+  height:14px; background:
+    radial-gradient(circle at 8px 0, transparent 6px, var(--paper) 6.5px) top/16px 14px repeat-x;
+}
+.head{
+  background:var(--booking-header); color:var(--booking-header-text); padding:20px 28px 16px;
+  display:flex; justify-content:space-between; align-items:flex-start; gap:16px;
+  transition:background 0.15s ease;
+}
+body.type-inquiry .head{background:var(--inquiry-header); color:var(--inquiry-header-text);}
+.head h1{font-size:24px; margin:0; font-family:'Oswald',sans-serif; letter-spacing:0.05em; text-transform:uppercase;}
+.head .sub{font-size:12px; color:rgba(27,42,68,0.6); margin-top:2px;}
+body.type-inquiry .head .sub{color:rgba(31,74,46,0.6);}
+.head .jobno{text-align:right;}
+.head .jobno .lbl{font-size:10px; color:rgba(27,42,68,0.6); text-transform:uppercase; letter-spacing:0.08em;}
+body.type-inquiry .head .jobno .lbl{color:rgba(31,74,46,0.6);}
+.head .jobno .val{font-size:17px; font-family:'IBM Plex Mono',monospace;}
+.type-badge{color:rgba(27,42,68,0.6);}
+body.type-inquiry .type-badge{color:rgba(31,74,46,0.6);}
+
+.dash-head{
+  background:var(--dash-header); color:var(--white); padding:16px 24px; border-radius:6px 6px 0 0;
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+}
+.dash-head h2{font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:0.05em; text-transform:uppercase; margin:0; color:var(--white);}
+.dash-head label{font-size:11px; color:#D6E3EF; text-transform:uppercase; letter-spacing:0.05em;}
+.dash-head input[type=month]{display:block; margin-top:2px;}
+.dash-head .mono{color:#D6E3EF;}
+
+.stamp{
+  position:absolute; top:78px; right:32px; border:3px solid var(--orange); color:var(--orange);
+  font-family:'Oswald',sans-serif; font-weight:600; font-size:13px; letter-spacing:0.08em;
+  padding:4px 12px; border-radius:4px; transform:rotate(-8deg); text-transform:uppercase;
+  background:rgba(217,105,31,0.06); pointer-events:none;
+}
+.stamp.win, .stamp.pod, .stamp.flight-booked, .stamp.truck-booked{border-color:var(--green); color:var(--green); background:rgba(47,122,70,0.06);}
+.stamp.failed, .stamp.cancelled{border-color:#A32D2D; color:#A32D2D; background:rgba(163,45,45,0.06);}
+.stamp.transit, .stamp.negotiation{border-color:#185FA5; color:#185FA5; background:rgba(24,95,165,0.06);}
+.stamp.quotation-preparation{border-color:var(--steel); color:var(--steel); background:rgba(107,111,118,0.06);}
+
+.body{padding:22px 28px 8px;}
+.section-label{
+  font-size:12px; letter-spacing:0.06em; text-transform:uppercase;
+  color:var(--ink); background:#EDEDED; padding:7px 10px; border-radius:3px; margin:22px 0 12px;
+}
+.section-label:first-child{margin-top:0;}
+.grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px 16px;}
+.field label{display:block; font-size:11px; color:var(--steel); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;}
+.field input, .field select{width:100%;}
+.field .readout{padding:7px 0; font-size:13px; color:var(--steel);}
+
+table.items{width:100%; border-collapse:collapse; margin-top:4px;}
+table.items th{
+  font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:var(--steel);
+  text-align:left; border-bottom:1px solid var(--navy); padding:6px 6px;
+}
+table.items td{padding:4px 6px; border-bottom:1px solid var(--line); vertical-align:top;}
+table.items input{width:100%; border:none; background:transparent; padding:5px 2px; font-size:13px;}
+table.items input:focus{outline:1px solid var(--orange); background:var(--orange-tint);}
+table.items .qty{width:90px;}
+table.items .rmcol{width:34px; text-align:center;}
+.rm-btn{border:none; background:none; color:var(--steel); cursor:pointer; font-size:15px; padding:2px 6px;}
+.rm-btn:hover{color:#A32D2D;}
+.add-row{margin-top:8px; font-size:12px; padding:5px 10px;}
+
+.sig-strip{display:grid; grid-template-columns:1fr 1fr; gap:24px; margin:26px 0 8px;}
+.sig-box{border-top:1px solid var(--ink); padding-top:6px;}
+.sig-box .role{font-size:11px; color:var(--steel); text-transform:uppercase; letter-spacing:0.05em;}
+.sig-box input{width:100%; border:none; border-bottom:1px dashed var(--line); background:transparent; padding:8px 2px; font-size:14px;}
+
+.footer-bar{
+  padding:14px 28px 20px; display:flex; justify-content:space-between; align-items:center;
+  border-top:1px solid var(--line); margin-top:10px; flex-wrap:wrap; gap:10px;
+}
+.status-toggle{display:flex; gap:6px; align-items:center; font-size:12px; color:var(--steel); flex-wrap:wrap;}
+body.type-inquiry .booking-only{display:none;}
+body.type-inquiry #statusBooking{display:none;}
+body.type-booking #statusInquiry{display:none;}
+body.mode-sea .air-col{display:none;}
+body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
+
+.list-panel{
+  background:var(--white); border:1px solid var(--line); border-radius:6px; padding:14px 16px; margin-bottom:16px;
+}
+.list-panel h3{font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:0.06em; text-transform:uppercase; color:var(--navy); margin:0 0 10px;}
+.list-row{
+  display:flex; justify-content:space-between; align-items:center; gap:8px;
+  padding:8px 4px; border-bottom:1px solid var(--gray-tint); font-size:13px; cursor:pointer;
+}
+.list-row:hover{background:var(--gray-tint);}
+.list-row .meta{color:var(--steel); font-size:12px;}
+.list-row .badge{
+  font-size:10px; text-transform:uppercase; letter-spacing:0.05em; padding:2px 8px; border-radius:10px;
+  background:var(--gray-tint); color:var(--steel);
+}
+.empty{color:var(--steel); font-size:13px; padding:8px 0;}
+
+.dash{background:var(--white); border:1px solid var(--line); border-radius:6px; padding:0 24px 22px; overflow:hidden;}
+.metric-cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:24px;}
+.metric{border-radius:6px; padding:14px 16px;}
+.metric.m-navy{background:var(--navy-tint);}
+.metric.m-orange{background:var(--orange-tint);}
+.metric.m-green{background:var(--green-tint);}
+.metric.m-gray{background:var(--gray-tint);}
+.metric .num{font-family:'Oswald',sans-serif; font-size:26px;}
+.metric.m-navy .num{color:var(--navy);}
+.metric.m-orange .num{color:var(--orange);}
+.metric.m-green .num{color:var(--green);}
+.metric.m-gray .num{color:var(--steel);}
+.metric .lbl{font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--steel); margin-top:2px;}
+.bar-section{margin-bottom:24px;}
+.bar-section h3{font-size:12px; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink); background:#EDEDED; padding:7px 10px; border-radius:3px; margin:0 0 10px;}
+.bar-row{display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:13px;}
+.bar-row .bar-lbl{width:150px; flex-shrink:0; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.bar-row .bar-track{flex:1; background:var(--gray-tint); border-radius:3px; height:16px; position:relative; overflow:hidden;}
+.bar-row .bar-fill{height:100%; border-radius:3px;}
+.bar-row .bar-fill.c-orange{background:var(--orange);}
+.bar-row .bar-fill.c-navy{background:var(--navy);}
+.bar-row .bar-fill.c-green{background:var(--green);}
+.bar-row .bar-num{width:28px; text-align:right; font-family:'IBM Plex Mono',monospace; color:var(--steel); flex-shrink:0;}
+.dash-table{width:100%; border-collapse:collapse; font-size:13px;}
+.dash-table th{text-align:left; font-size:11px; text-transform:uppercase; color:var(--steel); background:#EAF1F7; border-bottom:1px solid var(--navy); padding:6px 8px;}
+.dash-table td{padding:7px 8px; border-bottom:1px solid var(--line);}
+.dash-table tr:hover{background:var(--gray-tint); cursor:pointer;}
+
+.toast{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--green); color:var(--white); padding:12px 22px; border-radius:6px;
+  font-family:'Inter',sans-serif; font-size:14px; font-weight:500; box-shadow:0 4px 16px rgba(0,0,0,0.2);
+  opacity:0; pointer-events:none; transition:opacity 0.25s ease, transform 0.25s ease; z-index:9999;
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+@media print{
+  body{background:#fff;}
+  .toolbar, .list-panel, .dash{display:none;}
+  .sheet{border:none;}
+  .wrap{padding:0; max-width:none;}
+}
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+<div class="wrap">
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <span id="connStatus" class="mono" style="font-size:11px; color:var(--steel);">● Local storage only</span>
+    </div>
+    <div class="toolbar-left">
+      <button onclick="refreshList(); if(document.getElementById('dashPanel').style.display!=='none') renderDashboard();">Refresh</button>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <button class="btn-inquiry" onclick="if(confirmDiscard()) newSheet('inquiry')">+ New Inquiry</button>
+      <button class="btn-booking" onclick="if(confirmDiscard()) newSheet('booking')">+ New Booking</button>
+      <button onclick="toggleList()">Saved Job Sheets</button>
+      <button class="btn-dash" onclick="toggleDash()" id="dashBtn">Dashboard</button>
+    </div>
+    <div class="toolbar-left">
+      <button class="ghost" onclick="deleteCurrent()">Delete</button>
+      <button onclick="window.print()">Print</button>
+      <button class="green" onclick="loadJuneSamples()">+ Load sample data</button>
+    </div>
+  </div>
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <button onclick="exportCSV()">Export to Excel (CSV)</button>
+      <button onclick="exportJSON()">Export backup (JSON)</button>
+      <button onclick="document.getElementById('importFile').click()">Import backup (JSON)</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(this.files[0])">
+      <button onclick="downloadCSVTemplate()">Download CSV template</button>
+      <button class="accent" onclick="document.getElementById('importCsvFile').click()">Batch upload (CSV)</button>
+      <input type="file" id="importCsvFile" accept=".csv" style="display:none" onchange="importCSV(this.files[0])">
+    </div>
+  </div>
+
+  <div class="list-panel" id="listPanel" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+      <h3 style="margin:0;">Saved job sheets</h3>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <label style="font-size:12px; color:var(--steel); display:flex; align-items:center; gap:5px;">
+          <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this.checked)"> Select all
+        </label>
+        <button class="ghost" onclick="deleteSelected()">Delete selected (<span id="selectedCount">0</span>)</button>
+      </div>
+    </div>
+    <div style="display:flex; gap:8px; margin-bottom:10px;">
+      <button class="btn-tab active" id="typeTabAll" onclick="setListTypeFilter('')">All</button>
+      <button class="btn-tab btn-inquiry-tab" id="typeTabInquiry" onclick="setListTypeFilter('inquiry')">Inquiry</button>
+      <button class="btn-tab btn-booking-tab" id="typeTabBooking" onclick="setListTypeFilter('booking')">Booking</button>
+    </div>
+    <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
+      <input type="text" id="listSearchBox" placeholder="Search MAWB or Job No..." oninput="applyListFilters()" style="flex:1; min-width:180px;">
+      <select id="listStatusFilter" onchange="applyListFilters()" style="min-width:160px;">
+        <option value="">All Status</option>
+        <option value="quotation-preparation">Quotation prep</option>
+        <option value="negotiation">Negotiation</option>
+        <option value="win">Win</option>
+        <option value="failed">Failed</option>
+        <option value="flight-booked">Flight Booked</option>
+        <option value="truck-booked">Truck Booked</option>
+        <option value="transit">In Transit</option>
+        <option value="pod">POD</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+    <div id="listBody"><div class="empty">Loading...</div></div>
+  </div>
+
+  <div class="dash" id="dashPanel" style="display:none;">
+    <div class="dash-head" style="margin:0 -24px 22px;">
+      <h2>Global FF — Daily Dashboard Summary</h2>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <label>Month<input type="month" id="dashMonthPicker" onchange="renderDashboard()"></label>
+        <div class="mono">Data as of: <span id="dataAsOf">—</span></div>
+      </div>
+    </div>
+
+    <div class="metric-cards" id="metricCards"></div>
+
+    <div class="bar-section">
+      <h3>A.1 — Inquiry log</h3>
+      <table class="dash-table">
+        <thead><tr><th>Period</th><th>Total requests</th><th>Win</th><th>Failed</th><th>Negotiation</th><th>Quotation preparation</th></tr></thead>
+        <tbody id="inquiryLogBody"></tbody>
+      </table>
+    </div>
+
+    <div class="bar-section">
+      <h3>A.2 — Summary Air freight (Freight Forward &amp; Express)</h3>
+      <table class="dash-table">
+        <thead><tr><th>Period</th><th>Total shipments</th><th>Booking weight (kg)</th><th>Chargeable weight (kg)</th></tr></thead>
+        <tbody id="bookingAirBody"></tbody>
+      </table>
+    </div>
+
+    <div class="bar-section" style="padding-left:14px; border-left:2px solid var(--line);">
+      <h3 style="color:var(--navy);">A.2.1) Export</h3>
+
+      <div style="padding-left:14px; margin-bottom:18px;">
+        <h3 style="font-size:11px;">A.2.1.1) Freight Forwarding</h3>
+        <table class="dash-table">
+          <thead><tr><th>Period</th><th>Total shipments</th><th>Booking weight (kg)</th><th>Chargeable weight (kg)</th></tr></thead>
+          <tbody id="ffAirExportBody"></tbody>
+        </table>
+      </div>
+
+      <div style="padding-left:14px;">
+        <h3 style="font-size:11px;">A.2.1.2) Express</h3>
+        <table class="dash-table">
+          <thead><tr><th>Period</th><th>Total shipments</th><th>Booking weight (kg)</th><th>Chargeable weight (kg)</th></tr></thead>
+          <tbody id="expressBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bar-section" style="padding-left:14px; border-left:2px solid var(--line);">
+      <h3 style="color:var(--navy);">A.2.2) Import</h3>
+
+      <div style="padding-left:14px;">
+        <h3 style="font-size:11px;">A.2.2.1) Freight Forwarding</h3>
+        <table class="dash-table">
+          <thead><tr><th>Period</th><th>Total shipments</th><th>Booking weight (kg)</th><th>Chargeable weight (kg)</th></tr></thead>
+          <tbody id="ffAirImportBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bar-section">
+      <h3>A.3 — Summary Sea freight</h3>
+      <table class="dash-table">
+        <thead><tr><th>Period</th><th>Total shipments</th><th>Total container</th></tr></thead>
+        <tbody id="bookingSeaBody"></tbody>
+      </table>
+    </div>
+
+    <div class="bar-section" style="padding-left:14px; border-left:2px solid var(--line);">
+      <h3 style="color:var(--navy);">A.3.1) Export</h3>
+
+      <div style="padding-left:14px;">
+        <h3 style="font-size:11px;">A.3.1.1) Freight Forwarding</h3>
+        <table class="dash-table">
+          <thead><tr><th>Period</th><th>Total shipments</th><th>Total container</th></tr></thead>
+          <tbody id="ffSeaExportBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bar-section" style="padding-left:14px; border-left:2px solid var(--line);">
+      <h3 style="color:var(--navy);">A.3.2) Import</h3>
+
+      <div style="padding-left:14px;">
+        <h3 style="font-size:11px;">A.3.2.1) Freight Forwarding</h3>
+        <table class="dash-table">
+          <thead><tr><th>Period</th><th>Total shipments</th><th>Total container</th></tr></thead>
+          <tbody id="ffSeaImportBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bar-section">
+      <h3>Vol by customer (KG) — Airfreight — <span id="volYearAir">—</span></h3>
+      <div style="overflow-x:auto;">
+        <table class="dash-table" style="min-width:820px;">
+          <thead><tr id="volHeaderRowAir"><th>Customer</th></tr></thead>
+          <tbody id="volByCustomerBodyAir"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bar-section">
+      <h3>Vol by customer — Seafreight (Container) — <span id="volYearSea">—</span></h3>
+      <div style="overflow-x:auto;">
+        <table class="dash-table" style="min-width:820px;">
+          <thead><tr id="volHeaderRowSea"><th>Customer</th></tr></thead>
+          <tbody id="volByCustomerBodySea"></tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <div class="bar-section">
+      <h3>Recent</h3>
+      <table class="dash-table">
+        <thead><tr><th>Job no.</th><th>Customer</th><th>MAWB no.</th><th>Route</th><th>Status</th></tr></thead>
+        <tbody id="recentBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <div class="sheet" id="sheetRoot">
+    <div class="head">
+      <div>
+        <h1 id="sheetTitle">Booking</h1>
+      </div>
+      <div class="jobno">
+        <div class="lbl">Job no.</div>
+        <div class="val mono" id="jobNoDisplay">—</div>
+      </div>
+    </div>
+    <div class="tear"></div>
+    <div class="stamp" id="statusStamp">booked</div>
+
+    <div class="body">
+      <div class="section-label">Booking info</div>
+      <div class="grid">
+        <div class="field"><label id="dateLabel">Booking Date</label><input type="date" id="f_date" onchange="updateMonth()"></div>
+        <div class="field"><label>Month</label><div class="readout mono" id="f_month">—</div></div>
+        <div class="field">
+          <label>Customer</label>
+          <select id="f_customer">
+            <option value="">—</option>
+            <option>New Customer</option>
+            <option>ADM Promotion (Thailand)</option>
+            <option>ARC Design</option>
+            <option>Asian Development Bank</option>
+            <option>Bhawa spa product</option>
+            <option>BNBM (THAILAND)</option>
+            <option>Bo</option>
+            <option>C.A. Info Media</option>
+            <option>CP Fresh</option>
+            <option>EOPTOLINK</option>
+            <option>Ionic Express</option>
+            <option>JDL</option>
+            <option>KEC (Bangkok)</option>
+            <option>K-EAS Logistics (M-FLEX)</option>
+            <option>KONVY</option>
+            <option>Linxens</option>
+            <option>Luo</option>
+            <option>Mikasa</option>
+            <option>MULTI-FINELINE ELECTRONICS</option>
+            <option>NanYang</option>
+            <option>P K K Siam</option>
+            <option>SINH TY INTERNATIONAL TRADING</option>
+            <option>TBE</option>
+            <option>Thanapong</option>
+            <option>THAI-HORNG TECHNOLOGY CO., LTD.</option>
+            <option>Thumbinthai</option>
+            <option>Tiong woon Thai Co.,Ltd.</option>
+            <option>WTT Electronics</option>
+          </select>
+        </div>
+        <div class="field"><label>Remark</label><input type="text" id="f_remark" placeholder="e.g. new customer details"></div>
+        <div class="field">
+          <label>Cargo service</label>
+          <select id="f_cargoservice">
+            <option>Freight Forwarding</option>
+            <option>Express</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Mode</label>
+          <select id="f_mode" onchange="updateModeClass()">
+            <option>Air</option>
+            <option>Sea</option>
+            <option>Truck</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Export / import</label>
+          <select id="f_expimp">
+            <option>Export</option>
+            <option>Import</option>
+          </select>
+        </div>
+        <div class="field booking-only"><label>MAWB no.</label><input type="text" id="f_mawb" class="mono"></div>
+      </div>
+
+      <div class="section-label">Routing &amp; schedule</div>
+      <div class="grid">
+        <div class="field">
+          <label>Service (Incoterm)</label>
+          <select id="f_service">
+            <option value="">—</option>
+            <option>P2P</option>
+            <option>D2P</option>
+            <option>D2D</option>
+            <option>DAP</option>
+            <option>DDP</option>
+            <option>EXW</option>
+            <option>CIP</option>
+            <option>FCL</option>
+            <option>LCL</option>
+            <option>FTL</option>
+            <option>LTL</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Origin</label>
+          <select id="f_origin">
+            <option value="">—</option>
+            <optgroup label="Thailand">
+              <option>BKK</option><option>DMK</option><option>HKT</option><option>CNX</option><option>URT</option>
+            </optgroup>
+            <optgroup label="China">
+              <option>PVG</option><option>PEK</option><option>PKX</option><option>CAN</option><option>SZX</option>
+              <option>CTU</option><option>TFU</option><option>XIY</option><option>CGO</option><option>CSX</option>
+              <option>NKG</option><option>WUH</option><option>XMN</option><option>TSN</option><option>DLC</option>
+              <option>SHE</option><option>HGH</option><option>KMG</option>
+            </optgroup>
+            <optgroup label="East &amp; Southeast Asia">
+              <option>HKG</option><option>TPE</option><option>ICN</option><option>GMP</option><option>NRT</option>
+              <option>HND</option><option>KIX</option><option>NGO</option><option>SIN</option><option>KUL</option>
+              <option>CGK</option><option>DPS</option><option>MNL</option><option>HAN</option><option>SGN</option>
+              <option>PNH</option><option>VTE</option><option>RGN</option>
+            </optgroup>
+            <optgroup label="South Asia">
+              <option>DEL</option><option>BOM</option><option>BLR</option><option>MAA</option><option>CCU</option>
+              <option>HYD</option><option>DAC</option><option>KTM</option><option>CMB</option><option>KHI</option>
+              <option>ISB</option>
+            </optgroup>
+            <optgroup label="Middle East">
+              <option>DXB</option><option>AUH</option><option>DOH</option><option>RUH</option><option>JED</option>
+              <option>KWI</option><option>BAH</option><option>MCT</option><option>AMM</option><option>BEY</option>
+              <option>TLV</option><option>IST</option>
+            </optgroup>
+            <optgroup label="Europe">
+              <option>LHR</option><option>LGW</option><option>MAN</option><option>CDG</option><option>ORY</option>
+              <option>FRA</option><option>MUC</option><option>AMS</option><option>BRU</option><option>MAD</option>
+              <option>BCN</option><option>FCO</option><option>MXP</option><option>ZRH</option><option>GVA</option>
+              <option>VIE</option><option>CPH</option><option>ARN</option><option>OSL</option><option>HEL</option>
+              <option>WAW</option><option>PRG</option><option>BUD</option><option>ATH</option><option>LIS</option>
+              <option>DUB</option><option>SVO</option><option>DME</option><option>LED</option>
+            </optgroup>
+            <optgroup label="North America">
+              <option>JFK</option><option>EWR</option><option>LAX</option><option>ORD</option><option>ATL</option>
+              <option>DFW</option><option>MIA</option><option>SFO</option><option>SEA</option><option>IAH</option>
+              <option>BOS</option><option>YYZ</option><option>YVR</option><option>YUL</option><option>MEX</option>
+            </optgroup>
+            <optgroup label="South America">
+              <option>GRU</option><option>GIG</option><option>EZE</option><option>SCL</option><option>BOG</option>
+              <option>LIM</option><option>UIO</option><option>CCS</option>
+            </optgroup>
+            <optgroup label="Africa">
+              <option>JNB</option><option>CPT</option><option>CAI</option><option>LOS</option><option>NBO</option>
+              <option>ADD</option><option>CMN</option><option>ALG</option><option>TUN</option><option>ACC</option>
+            </optgroup>
+            <optgroup label="Oceania">
+              <option>SYD</option><option>MEL</option><option>BNE</option><option>PER</option><option>AKL</option>
+              <option>CHC</option><option>NAN</option><option>POM</option>
+            </optgroup>
+            <optgroup label="Country">
+              <option>CN</option><option>KR</option><option>UH</option><option>HK</option><option>JP</option><option>SG</option><option>TW</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="field">
+          <label>Destination</label>
+          <select id="f_dest">
+            <option value="">—</option>
+            <optgroup label="Thailand">
+              <option>BKK</option><option>DMK</option><option>HKT</option><option>CNX</option><option>URT</option>
+            </optgroup>
+            <optgroup label="China">
+              <option>PVG</option><option>PEK</option><option>PKX</option><option>CAN</option><option>SZX</option>
+              <option>CTU</option><option>TFU</option><option>XIY</option><option>CGO</option><option>CSX</option>
+              <option>NKG</option><option>WUH</option><option>XMN</option><option>TSN</option><option>DLC</option>
+              <option>SHE</option><option>HGH</option><option>KMG</option>
+            </optgroup>
+            <optgroup label="East &amp; Southeast Asia">
+              <option>HKG</option><option>TPE</option><option>ICN</option><option>GMP</option><option>NRT</option>
+              <option>HND</option><option>KIX</option><option>NGO</option><option>SIN</option><option>KUL</option>
+              <option>CGK</option><option>DPS</option><option>MNL</option><option>HAN</option><option>SGN</option>
+              <option>PNH</option><option>VTE</option><option>RGN</option>
+            </optgroup>
+            <optgroup label="South Asia">
+              <option>DEL</option><option>BOM</option><option>BLR</option><option>MAA</option><option>CCU</option>
+              <option>HYD</option><option>DAC</option><option>KTM</option><option>CMB</option><option>KHI</option>
+              <option>ISB</option>
+            </optgroup>
+            <optgroup label="Middle East">
+              <option>DXB</option><option>AUH</option><option>DOH</option><option>RUH</option><option>JED</option>
+              <option>KWI</option><option>BAH</option><option>MCT</option><option>AMM</option><option>BEY</option>
+              <option>TLV</option><option>IST</option>
+            </optgroup>
+            <optgroup label="Europe">
+              <option>LHR</option><option>LGW</option><option>MAN</option><option>CDG</option><option>ORY</option>
+              <option>FRA</option><option>MUC</option><option>AMS</option><option>BRU</option><option>MAD</option>
+              <option>BCN</option><option>FCO</option><option>MXP</option><option>ZRH</option><option>GVA</option>
+              <option>VIE</option><option>CPH</option><option>ARN</option><option>OSL</option><option>HEL</option>
+              <option>WAW</option><option>PRG</option><option>BUD</option><option>ATH</option><option>LIS</option>
+              <option>DUB</option><option>SVO</option><option>DME</option><option>LED</option>
+            </optgroup>
+            <optgroup label="North America">
+              <option>JFK</option><option>EWR</option><option>LAX</option><option>ORD</option><option>ATL</option>
+              <option>DFW</option><option>MIA</option><option>SFO</option><option>SEA</option><option>IAH</option>
+              <option>BOS</option><option>YYZ</option><option>YVR</option><option>YUL</option><option>MEX</option>
+            </optgroup>
+            <optgroup label="South America">
+              <option>GRU</option><option>GIG</option><option>EZE</option><option>SCL</option><option>BOG</option>
+              <option>LIM</option><option>UIO</option><option>CCS</option>
+            </optgroup>
+            <optgroup label="Africa">
+              <option>JNB</option><option>CPT</option><option>CAI</option><option>LOS</option><option>NBO</option>
+              <option>ADD</option><option>CMN</option><option>ALG</option><option>TUN</option><option>ACC</option>
+            </optgroup>
+            <optgroup label="Oceania">
+              <option>SYD</option><option>MEL</option><option>BNE</option><option>PER</option><option>AKL</option>
+              <option>CHC</option><option>NAN</option><option>POM</option>
+            </optgroup>
+            <optgroup label="Country">
+              <option>CN</option><option>KR</option><option>UH</option><option>HK</option><option>JP</option><option>SG</option><option>TW</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="field booking-only"><label>Carrier</label><input type="text" id="f_carrier"></div>
+        <div class="field booking-only"><label>Co-loader</label><input type="text" id="f_coloader"></div>
+        <div class="field"><label>ETD</label><input type="date" id="f_etd"></div>
+        <div class="field"><label>ETA</label><input type="date" id="f_eta"></div>
+        <div class="field">
+          <label>Transit time (days)</label>
+          <select id="f_transit">
+            <option value="">—</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+            <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-label">Cargo details</div>
+      <table class="items" id="itemsTable">
+        <thead>
+          <tr>
+            <th>Product / commodity</th>
+            <th class="qty air-col">Booking weight (kg)</th>
+            <th class="qty air-col">Chargeable weight (kg)</th>
+            <th class="qty sea-col">Container</th>
+            <th class="qty">Pieces</th>
+            <th>Remarks</th>
+            <th class="rmcol"></th>
+          </tr>
+        </thead>
+        <tbody id="itemsBody"></tbody>
+      </table>
+      <button class="add-row" onclick="addItemRow()">+ Add row</button>
+
+      <div class="section-label booking-only">Local vendors</div>
+      <div class="grid booking-only">
+        <div class="field">
+          <label>Vendor name</label>
+          <select id="f_vendorname">
+            <option value="">—</option>
+            <option>AGX Logistics (Thailand)</option>
+            <option>Anchalee</option>
+            <option>Bigbox E-commerce</option>
+            <option>Chongqing Johnson International Freight Forwarder</option>
+            <option>FMX (M) SDN BHD</option>
+            <option>Freight Master</option>
+            <option>GDB Forwarding</option>
+            <option>Globe Express</option>
+            <option>I Sky packing and moving service</option>
+            <option>Karry on Global Logistics (Thailand)</option>
+            <option>Mass worldwide Logistics (Thailand)</option>
+            <option>Nippon Express Logistics (Thailand)</option>
+            <option>NP Pool Group</option>
+            <option>Penunshin Shipping (Thailand)</option>
+            <option>Saithong Transport</option>
+            <option>Schäfer&amp;SIS Interlogistik</option>
+            <option>SEABRIDGE LOGISTICS GROUP PTY LTD</option>
+            <option>Seven bell</option>
+            <option>SLD Global Logistics</option>
+            <option>Worldwide Logistics (Thailand)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Truck type</label>
+          <select id="f_trucktype">
+            <option value="">—</option>
+            <option>4W</option>
+            <option>6W</option>
+            <option>10W</option>
+            <option>20"</option>
+            <option>40"</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Total truck</label>
+          <select id="f_totaltruck">
+            <option value="">—</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+            <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+          </select>
+        </div>
+        <div class="field"><label>Driver name</label><input type="text" id="f_drivername"></div>
+        <div class="field"><label>License plate</label><input type="text" id="f_licenseplate"></div>
+        <div class="field"><label>Pick up date</label><input type="date" id="f_pickupdate"></div>
+      </div>
+
+      <div class="section-label">Special remarks</div>
+      <div class="field"><textarea id="f_notes" rows="3"></textarea></div>
+    </div>
+
+    <div class="footer-bar">
+      <div class="status-toggle" id="statusInquiry">
+        <label><input type="radio" name="status" value="quotation-preparation" checked onchange="updateStamp()"> Quotation prep</label>
+        <label><input type="radio" name="status" value="negotiation" onchange="updateStamp()"> Negotiation</label>
+        <label><input type="radio" name="status" value="win" onchange="updateStamp()"> Win</label>
+        <label><input type="radio" name="status" value="failed" onchange="updateStamp()"> Failed</label>
+      </div>
+      <div class="status-toggle" id="statusBooking">
+        <label><input type="radio" name="status" value="flight-booked" checked onchange="updateStamp()"> Flight Booked</label>
+        <label><input type="radio" name="status" value="truck-booked" onchange="updateStamp()"> Truck Booked</label>
+        <label><input type="radio" name="status" value="transit" onchange="updateStamp()"> In Transit</label>
+        <label><input type="radio" name="status" value="pod" onchange="updateStamp()"> POD</label>
+        <label><input type="radio" name="status" value="cancelled" onchange="updateStamp()"> Cancelled</label>
+      </div>
+      <div class="mono" style="font-size:11px; color:var(--steel);">saved: <span id="savedTime">—</span></div>
+    </div>
+    <div style="padding:14px 28px 22px; border-top:1px solid var(--line); display:flex; justify-content:flex-end;">
+      <button class="accent" onclick="saveSheet()" style="font-size:15px; padding:11px 28px;">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentJobNo = null;
+let currentType = 'booking';
+let isDirty = false;
+
+function confirmDiscard(){
+  if(!isDirty) return true;
+  return confirm('You have unsaved changes on this job sheet. Discard them and continue without saving?');
+}
+let itemCounter = 0;
+
+function pad(n){return n.toString().padStart(2,'0');}
+
+async function genJobNo(type){
+  const d = new Date();
+  const ym = d.getFullYear().toString()+pad(d.getMonth()+1);
+  const prefix = type==='inquiry' ? 'IQ-' : 'BK-';
+  const datePrefix = prefix+ym+'-';
+  try{
+    const all = await dataGetAll();
+    let maxSeq = 0;
+    all.forEach(r=>{
+      if(r.jobNo && r.jobNo.indexOf(datePrefix)===0){
+        const seq = parseInt(r.jobNo.slice(datePrefix.length), 10);
+        if(!isNaN(seq) && seq>maxSeq) maxSeq = seq;
+      }
+    });
+    return datePrefix + String(maxSeq+1).padStart(3,'0');
+  }catch(e){
+    console.error(e);
+    return datePrefix + String(Math.floor(Math.random()*900+100));
+  }
+}
+
+function setType(type){
+  currentType = type;
+  document.body.classList.remove('type-inquiry','type-booking');
+  document.body.classList.add('type-'+type);
+  document.getElementById('sheetTitle').textContent = type==='inquiry' ? 'Inquiry' : 'Booking';
+  document.getElementById('dateLabel').textContent = type==='inquiry' ? 'Inquiry Date' : 'Booking Date';
+  const defaultStatus = type==='inquiry' ? 'quotation-preparation' : 'flight-booked';
+  const el = document.querySelector('input[name=status][value="'+defaultStatus+'"]');
+  if(el) el.checked = true;
+}
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+}
+
+const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function normalizeMode(v){
+  v = (v||'').trim().toLowerCase();
+  if(v==='sea') return 'Sea';
+  if(v==='truck') return 'Truck';
+  return 'Air';
+}
+function normalizeExpImp(v){
+  v = (v||'').trim().toLowerCase();
+  if(v==='import') return 'Import';
+  return 'Export';
+}
+function normalizeCargoService(v){
+  v = (v||'').trim().toLowerCase();
+  if(v==='express') return 'Express';
+  return 'Freight Forwarding';
+}
+
+function cleanNumStr(v){
+  if(v===undefined || v===null) return '';
+  return String(v).replace(/,/g, '').trim();
+}
+
+function parseFlexibleDate(str){
+  if(!str) return null;
+  str = String(str).trim();
+  let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(m) return new Date(+m[1], +m[2]-1, +m[3]);
+  m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m) return new Date(+m[3], +m[1]-1, +m[2]);
+  m = str.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{2,4})$/);
+  if(m){
+    const monthIdx = monthNames.findIndex(mn=>mn.toLowerCase()===m[2].toLowerCase());
+    if(monthIdx>=0){
+      let yr = +m[3];
+      if(yr<100) yr += 2000;
+      return new Date(yr, monthIdx, +m[1]);
+    }
+  }
+  m = str.match(/^\d{4,6}$/);
+  if(m){
+    const serial = parseInt(str, 10);
+    if(serial > 20000 && serial < 60000){
+      const utcDays = serial - 25569;
+      const d = new Date(utcDays * 86400000);
+      return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    }
+    return null;
+  }
+  const d = new Date(str);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function formatDateStr(d){
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+}
+
+function updateMonth(){
+  const v = document.getElementById('f_date').value;
+  if(!v){ document.getElementById('f_month').textContent = '—'; return; }
+  const d = new Date(v+'T00:00:00');
+  document.getElementById('f_month').textContent = monthNames[d.getMonth()]+'-'+d.getFullYear().toString().slice(2);
+}
+
+function computeRoute(){
+  const o = document.getElementById('f_origin').value.trim();
+  const de = document.getElementById('f_dest').value.trim();
+  return (o||de) ? (o||'?')+'-'+(de||'?') : '';
+}
+
+function updateModeClass(){
+  const mode = document.getElementById('f_mode').value;
+  document.body.classList.remove('mode-air','mode-sea','mode-truck');
+  document.body.classList.add('mode-'+mode.toLowerCase());
+}
+
+function addItemRow(data){
+  itemCounter++;
+  const id = 'row'+itemCounter;
+  const tr = document.createElement('tr');
+  tr.id = id;
+  tr.innerHTML = `
+    <td><input type="text" class="it-product" value="${data?data.product:''}"></td>
+    <td class="qty air-col"><input type="number" class="it-bookingweight" value="${data?data.bookingWeight:''}"></td>
+    <td class="qty air-col"><input type="number" class="it-chargeableweight" value="${data?data.chargeableWeight:''}"></td>
+    <td class="qty sea-col"><input type="number" class="it-container" value="${data?data.container:''}"></td>
+    <td class="qty"><input type="number" class="it-pieces" value="${data?data.pieces:''}"></td>
+    <td><input type="text" class="it-remarks" value="${data?data.remarks:''}"></td>
+    <td class="rmcol"><button class="rm-btn" onclick="this.closest('tr').remove()">×</button></td>
+  `;
+  document.getElementById('itemsBody').appendChild(tr);
+}
+
+function collectItems(){
+  const rows = document.querySelectorAll('#itemsBody tr');
+  const items = [];
+  rows.forEach(r=>{
+    items.push({
+      product: r.querySelector('.it-product').value,
+      bookingWeight: r.querySelector('.it-bookingweight').value,
+      chargeableWeight: r.querySelector('.it-chargeableweight').value,
+      container: r.querySelector('.it-container').value,
+      pieces: r.querySelector('.it-pieces').value,
+      remarks: r.querySelector('.it-remarks').value
+    });
+  });
+  return items;
+}
+
+function updateStamp(){
+  const status = document.querySelector('input[name=status]:checked').value;
+  const stamp = document.getElementById('statusStamp');
+  stamp.textContent = status.replace('-',' ');
+  stamp.className = 'stamp ' + status;
+}
+
+async function newSheet(type){
+  type = type || currentType || 'booking';
+  setType(type);
+  document.getElementById('jobNoDisplay').textContent = '…';
+  currentJobNo = await genJobNo(type);
+  document.getElementById('jobNoDisplay').textContent = currentJobNo;
+  document.getElementById('f_date').value = todayStr();
+  document.getElementById('f_customer').value = '';
+  document.getElementById('f_remark').value = '';
+  document.getElementById('f_cargoservice').selectedIndex = 0;
+  document.getElementById('f_mode').selectedIndex = 0;
+  document.getElementById('f_expimp').selectedIndex = 0;
+  document.getElementById('f_service').value = '';
+  document.getElementById('f_origin').value = '';
+  document.getElementById('f_dest').value = '';
+  document.getElementById('f_carrier').value = '';
+  document.getElementById('f_coloader').value = '';
+  document.getElementById('f_etd').value = '';
+  document.getElementById('f_eta').value = '';
+  document.getElementById('f_mawb').value = '';
+  document.getElementById('f_vendorname').value = '';
+  document.getElementById('f_trucktype').value = '';
+  document.getElementById('f_totaltruck').value = '';
+  document.getElementById('f_drivername').value = '';
+  document.getElementById('f_licenseplate').value = '';
+  document.getElementById('f_pickupdate').value = '';
+  document.getElementById('f_notes').value = '';
+  document.getElementById('itemsBody').innerHTML = '';
+  itemCounter = 0;
+  addItemRow();
+  updateStamp();
+  updateMonth();
+  updateModeClass();
+  document.getElementById('savedTime').textContent = '—';
+  isDirty = false;
+}
+
+function gatherRecord(){
+  const items = collectItems();
+  return {
+    jobNo: currentJobNo,
+    type: currentType,
+    date: document.getElementById('f_date').value,
+    month: document.getElementById('f_month').textContent,
+    customer: document.getElementById('f_customer').value,
+    remark: document.getElementById('f_remark').value,
+    cargoService: document.getElementById('f_cargoservice').value,
+    mode: document.getElementById('f_mode').value,
+    expImp: document.getElementById('f_expimp').value,
+    service: document.getElementById('f_service').value,
+    origin: document.getElementById('f_origin').value,
+    dest: document.getElementById('f_dest').value,
+    route: computeRoute(),
+    carrier: document.getElementById('f_carrier').value,
+    coloader: document.getElementById('f_coloader').value,
+    etd: document.getElementById('f_etd').value,
+    eta: document.getElementById('f_eta').value,
+    transit: document.getElementById('f_transit').value,
+    items: items,
+    mawb: document.getElementById('f_mawb').value,
+    containers: items.reduce((s,it)=>s+(parseFloat(it.container)||0),0),
+    bookingWeight: items.reduce((s,it)=>s+(parseFloat(it.bookingWeight)||0),0),
+    chargeableWeight: items.reduce((s,it)=>s+itemWeight(it),0),
+    vendorName: document.getElementById('f_vendorname').value,
+    truckType: document.getElementById('f_trucktype').value,
+    totalTruck: document.getElementById('f_totaltruck').value,
+    driverName: document.getElementById('f_drivername').value,
+    licensePlate: document.getElementById('f_licenseplate').value,
+    pickupDate: document.getElementById('f_pickupdate').value,
+    notes: document.getElementById('f_notes').value,
+    status: document.querySelector('input[name=status]:checked').value,
+    savedAt: new Date().toISOString()
+  };
+}
+
+function applyRecord(rec){
+  currentJobNo = rec.jobNo;
+  setType(rec.type || 'booking');
+  document.getElementById('jobNoDisplay').textContent = rec.jobNo;
+  document.getElementById('f_date').value = rec.date || '';
+  document.getElementById('f_customer').value = rec.customer || '';
+  document.getElementById('f_remark').value = rec.remark || '';
+  document.getElementById('f_cargoservice').value = rec.cargoService || 'Freight Forwarding';
+  document.getElementById('f_mode').value = rec.mode || 'Air';
+  document.getElementById('f_expimp').value = rec.expImp || 'Export';
+  document.getElementById('f_service').value = rec.service || '';
+  document.getElementById('f_origin').value = rec.origin || '';
+  document.getElementById('f_dest').value = rec.dest || '';
+  document.getElementById('f_carrier').value = rec.carrier || '';
+  document.getElementById('f_coloader').value = rec.coloader || '';
+  document.getElementById('f_etd').value = rec.etd || '';
+  document.getElementById('f_eta').value = rec.eta || '';
+  document.getElementById('f_transit').value = rec.transit || '';
+  document.getElementById('f_mawb').value = rec.mawb || '';
+  document.getElementById('f_vendorname').value = rec.vendorName || '';
+  document.getElementById('f_trucktype').value = rec.truckType || '';
+  document.getElementById('f_totaltruck').value = rec.totalTruck || '';
+  document.getElementById('f_drivername').value = rec.driverName || '';
+  document.getElementById('f_licenseplate').value = rec.licensePlate || '';
+  document.getElementById('f_pickupdate').value = rec.pickupDate || '';
+  document.getElementById('f_notes').value = rec.notes || '';
+  document.getElementById('itemsBody').innerHTML = '';
+  itemCounter = 0;
+  (rec.items||[]).forEach(it=>addItemRow(it));
+  if((rec.items||[]).length===0) addItemRow();
+  const statusEl = document.querySelector('input[name=status][value="'+(rec.status||'flight-booked')+'"]');
+  if(statusEl) statusEl.checked = true;
+  updateStamp();
+  updateMonth();
+  updateModeClass();
+  document.getElementById('savedTime').textContent = rec.savedAt ? new Date(rec.savedAt).toLocaleString('en-GB') : '—';
+  isDirty = false;
+}
+
+const memStore = {};
+function storageGet(key){
+  try{ return localStorage.getItem(key); }catch(e){ return (key in memStore) ? memStore[key] : null; }
+}
+function storageSet(key, val){
+  try{ localStorage.setItem(key, val); }catch(e){ memStore[key] = val; }
+}
+function storageRemove(key){
+  try{ localStorage.removeItem(key); }catch(e){ delete memStore[key]; }
+}
+
+// ⚠️ PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BELOW (must end in /exec)
+// Replace the text between the quotes with your real URL before uploading to GitHub.
+let API_URL = 'PASTE_YOUR_APPS_SCRIPT_URL_HERE';
+
+function updateConnStatus(){
+  const el = document.getElementById('connStatus');
+  const configured = API_URL && API_URL.indexOf('PASTE_YOUR') === -1;
+  el.textContent = configured ? '● Online — shared with your team' : '⚠ Not configured — edit API_URL in the code';
+  el.style.color = configured ? 'var(--green)' : '#A32D2D';
+}
+
+async function apiFetchAll(){
+  const res = await fetch(API_URL + '?t=' + Date.now(), {method:'GET', cache:'no-store'});
+  if(!res.ok) throw new Error('API GET failed: '+res.status);
+  return await res.json();
+}
+async function apiSaveRecord(rec){
+  const res = await fetch(API_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({action:'save', record:rec})
+  });
+  if(!res.ok) throw new Error('API POST failed: '+res.status);
+}
+async function apiDeleteRecord(jobNo){
+  const res = await fetch(API_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({action:'delete', jobNo})
+  });
+  if(!res.ok) throw new Error('API DELETE failed: '+res.status);
+}
+
+function itemWeight(it){
+  return parseFloat(it.chargeableWeight!==undefined && it.chargeableWeight!=='' ? it.chargeableWeight : it.weight) || 0;
+}
+function itemContainer(it){
+  return parseFloat(it.container) || 0;
+}
+
+function normalizeRecord(r){
+  const items = r.items||[];
+  const weight = items.reduce((s,it)=>s+itemWeight(it),0);
+  const bookingWeight = items.reduce((s,it)=>s+(parseFloat(it.bookingWeight)||0),0);
+  const containers = items.length ? items.reduce((s,it)=>s+itemContainer(it),0) : (parseFloat(r.containers)||0);
+  return Object.assign({}, r, {weight, bookingWeight, containers});
+}
+
+function getLocalIndex(){
+  const v = storageGet('jobsheet-index');
+  return v ? JSON.parse(v) : [];
+}
+function setLocalIndex(idx){
+  storageSet('jobsheet-index', JSON.stringify(idx));
+}
+
+async function dataGetAll(){
+  if(API_URL){
+    try{
+      const records = await apiFetchAll();
+      return records.map(normalizeRecord).sort((a,b)=> (b.savedAt||'').localeCompare(a.savedAt||''));
+    }catch(e){
+      console.error(e);
+      alert('Could not reach the Google Sheet. Check your internet connection and try Refresh, or make sure API_URL is set correctly in the code.');
+      return [];
+    }
+  }else{
+    const idx = getLocalIndex();
+    return idx.map(i=>{
+      const v = storageGet('jobsheet:'+i.jobNo);
+      const full = v ? JSON.parse(v) : i;
+      return normalizeRecord(full);
+    });
+  }
+}
+
+async function dataSave(rec){
+  if(API_URL){
+    await apiSaveRecord(rec);
+  }else{
+    storageSet('jobsheet:'+rec.jobNo, JSON.stringify(rec));
+    let idx = getLocalIndex();
+    idx = idx.filter(i=>i.jobNo !== rec.jobNo);
+    const totalWeight = (rec.items||[]).reduce((sum,it)=>sum+itemWeight(it),0);
+    const totalContainers = (rec.items||[]).reduce((sum,it)=>sum+itemContainer(it),0);
+    idx.unshift({jobNo:rec.jobNo, type:rec.type, date:rec.date, etd:rec.etd, customer:rec.customer, mode:rec.mode, cargoService:rec.cargoService, route:rec.route, mawb:rec.mawb, status:rec.status, weight:totalWeight, containers:totalContainers});
+    setLocalIndex(idx);
+  }
+}
+
+async function dataDelete(jobNo){
+  if(API_URL){
+    await apiDeleteRecord(jobNo);
+  }else{
+    storageRemove('jobsheet:'+jobNo);
+    let idx = getLocalIndex();
+    idx = idx.filter(i=>i.jobNo !== jobNo);
+    setLocalIndex(idx);
+  }
+}
+
+function showToast(message){
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>{ toast.classList.remove('show'); }, 2200);
+}
+
+async function saveSheet(){
+  if(!currentJobNo){ await newSheet(); }
+  const rec = gatherRecord();
+
+  if(rec.mawb && rec.mawb.trim()){
+    try{
+      const all = await dataGetAll();
+      const dup = all.find(r => r.jobNo !== rec.jobNo && r.mawb && r.mawb.trim() === rec.mawb.trim());
+      if(dup){
+        const proceed = confirm('เลข MAWB ซ้ำ (พบใน Job No. '+dup.jobNo+') ต้องการบันทึกต่อหรือไม่?');
+        if(!proceed) return;
+      }
+    }catch(e){ console.error(e); }
+  }
+
+  try{
+    await dataSave(rec);
+    document.getElementById('savedTime').textContent = new Date(rec.savedAt).toLocaleString('en-GB');
+    isDirty = false;
+    showToast('✓ Save successful');
+    refreshList();
+  }catch(e){
+    alert('Save failed, please try again.');
+    console.error(e);
+  }
+}
+
+async function deleteCurrent(){
+  if(!currentJobNo){ return; }
+  if(!confirm('Delete job sheet '+currentJobNo+' ?')) return;
+  try{
+    await dataDelete(currentJobNo);
+    newSheet();
+    refreshList();
+  }catch(e){
+    alert('Delete failed, please try again.');
+    console.error(e);
+  }
+}
+
+let selectedJobNos = new Set();
+
+function updateSelectedCount(){
+  document.getElementById('selectedCount').textContent = selectedJobNos.size;
+  const allBoxes = document.querySelectorAll('.row-checkbox');
+  const selectAll = document.getElementById('selectAllCheckbox');
+  if(selectAll) selectAll.checked = allBoxes.length>0 && selectedJobNos.size===allBoxes.length;
+}
+
+function toggleSelectAll(checked){
+  document.querySelectorAll('.row-checkbox').forEach(cb=>{
+    cb.checked = checked;
+    if(checked) selectedJobNos.add(cb.dataset.jobno);
+    else selectedJobNos.delete(cb.dataset.jobno);
+  });
+  updateSelectedCount();
+}
+
+async function deleteSelected(){
+  if(selectedJobNos.size===0){ alert('No job sheets selected.'); return; }
+  if(!confirm('Delete '+selectedJobNos.size+' selected job sheet(s)? This cannot be undone.')) return;
+  for(const jobNo of selectedJobNos){
+    try{ await dataDelete(jobNo); }catch(e){ console.error(e); }
+  }
+  selectedJobNos.clear();
+  if(selectedJobNos.has(currentJobNo)){} // no-op, kept for clarity
+  refreshList();
+}
+
+let allListRecords = [];
+
+async function refreshList(){
+  const body = document.getElementById('listBody');
+  body.innerHTML = '<div class="empty">Loading...</div>';
+  selectedJobNos.clear();
+  const searchBox = document.getElementById('listSearchBox');
+  if(searchBox) searchBox.value = '';
+  const statusFilter = document.getElementById('listStatusFilter');
+  if(statusFilter) statusFilter.value = '';
+  listTypeFilter = '';
+  const tabAll = document.getElementById('typeTabAll');
+  if(tabAll){
+    tabAll.classList.add('active');
+    document.getElementById('typeTabInquiry').classList.remove('active');
+    document.getElementById('typeTabBooking').classList.remove('active');
+  }
+  allListRecords = await dataGetAll();
+  renderListRows(allListRecords);
+}
+
+function renderListRows(records){
+  const body = document.getElementById('listBody');
+  if(records.length===0){
+    body.innerHTML = '<div class="empty">No saved job sheets yet</div>';
+    updateSelectedCount();
+    return;
+  }
+  body.innerHTML = '';
+  records.forEach(i=>{
+    const row = document.createElement('div');
+    row.className = 'list-row';
+    row.innerHTML = `
+      <div style="display:flex; align-items:center; gap:10px;">
+        <input type="checkbox" class="row-checkbox" data-jobno="${i.jobNo}" onclick="event.stopPropagation();" onchange="if(this.checked){selectedJobNos.add('${i.jobNo}');}else{selectedJobNos.delete('${i.jobNo}');} updateSelectedCount();">
+        <div>
+          <span class="mono">${i.jobNo}</span>
+          <span class="meta"> — ${i.type==='inquiry'?'Inquiry':'Booking'} · ${i.customer||''} · ${i.route||''} · ${i.date||''}${i.mawb?' · MAWB '+i.mawb:''}</span>
+        </div>
+      </div>
+      <span class="badge">${i.status}</span>
+    `;
+    row.addEventListener('click', (e)=>{
+      if(e.target.classList.contains('row-checkbox')) return;
+      loadSheet(i.jobNo);
+    });
+    body.appendChild(row);
+  });
+  updateSelectedCount();
+}
+
+let listTypeFilter = '';
+
+function setListTypeFilter(type){
+  listTypeFilter = type;
+  document.getElementById('typeTabAll').classList.toggle('active', type==='');
+  document.getElementById('typeTabInquiry').classList.toggle('active', type==='inquiry');
+  document.getElementById('typeTabBooking').classList.toggle('active', type==='booking');
+  applyListFilters();
+}
+
+function applyListFilters(){
+  const query = document.getElementById('listSearchBox').value.trim().toLowerCase();
+  const status = document.getElementById('listStatusFilter').value;
+  let filtered = allListRecords;
+  if(listTypeFilter){
+    filtered = filtered.filter(i=>i.type===listTypeFilter);
+  }
+  if(query){
+    filtered = filtered.filter(i=>
+      (i.mawb && i.mawb.toLowerCase().indexOf(query)!==-1) ||
+      (i.jobNo && i.jobNo.toLowerCase().indexOf(query)!==-1)
+    );
+  }
+  if(status){
+    filtered = filtered.filter(i=>i.status===status);
+  }
+  if(filtered.length===0){
+    document.getElementById('listBody').innerHTML = '<div class="empty">No matching job sheets</div>';
+    updateSelectedCount();
+  }else{
+    renderListRows(filtered);
+  }
+}
+
+async function loadSheet(jobNo){
+  if(!confirmDiscard()) return;
+  let rec = null;
+  if(API_URL){
+    const records = await dataGetAll();
+    rec = records.find(r=>r.jobNo===jobNo) || null;
+  }else{
+    const v = storageGet('jobsheet:'+jobNo);
+    rec = v ? JSON.parse(v) : null;
+  }
+  if(rec){
+    applyRecord(rec);
+    document.getElementById('listPanel').style.display = 'none';
+    document.getElementById('sheetRoot').style.display = 'block';
+  }
+}
+
+function toggleList(){
+  const panel = document.getElementById('listPanel');
+  const showing = panel.style.display !== 'none';
+  if(!showing && !confirmDiscard()) return;
+  document.getElementById('dashPanel').style.display = 'none';
+  document.getElementById('sheetRoot').style.display = showing ? 'block' : 'none';
+  panel.style.display = showing ? 'none' : 'block';
+  if(!showing) refreshList();
+}
+
+function toggleDash(){
+  const panel = document.getElementById('dashPanel');
+  const showing = panel.style.display !== 'none';
+  if(!showing && !confirmDiscard()) return;
+  document.getElementById('listPanel').style.display = 'none';
+  document.getElementById('sheetRoot').style.display = showing ? 'block' : 'none';
+  panel.style.display = showing ? 'none' : 'block';
+  if(!showing) renderDashboard();
+}
+
+function fmtNum(n){
+  const num = Math.round(n);
+  return num===0 ? '—' : num.toLocaleString();
+}
+
+async function renderDashboard(){
+  const idx = await dataGetAll();
+
+  const now = new Date();
+  const todayKey = now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
+  const tmr = new Date(now); tmr.setDate(tmr.getDate()+1);
+  const tmrKey = tmr.getFullYear()+'-'+pad(tmr.getMonth()+1)+'-'+pad(tmr.getDate());
+
+  const picker = document.getElementById('dashMonthPicker');
+  if(!picker.value){ picker.value = now.getFullYear()+'-'+pad(now.getMonth()+1); }
+  const [pickYear, pickMonth] = picker.value.split('-').map(Number);
+  const curYear = pickYear, curMonth = pickMonth-1;
+  const nextMonthDate = new Date(curYear, curMonth+1, 1);
+  const nextYear = nextMonthDate.getFullYear(), nextMonth = nextMonthDate.getMonth();
+
+  document.getElementById('dataAsOf').textContent = now.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+
+  const mtdRecords = idx.filter(i=>{
+    if(!i.etd) return false;
+    const d = new Date(i.etd+'T00:00:00');
+    return d.getFullYear()===curYear && d.getMonth()===curMonth && i.etd<=todayKey;
+  });
+  const total = mtdRecords.length;
+  const totalBookingWeight = mtdRecords.reduce((sum,i)=>sum+(parseFloat(i.bookingWeight)||0),0);
+  const totalWeight = mtdRecords.reduce((sum,i)=>sum+(parseFloat(i.weight)||0),0);
+
+  document.getElementById('metricCards').innerHTML = `
+    <div class="metric m-navy"><div class="num">${fmtNum(total)}</div><div class="lbl">Total shipment (MTD, by ETD)</div></div>
+    <div class="metric m-gray"><div class="num">${fmtNum(totalBookingWeight)}</div><div class="lbl">Total booking weight (MTD, kg)</div></div>
+    <div class="metric m-orange"><div class="num">${fmtNum(totalWeight)}</div><div class="lbl">Total chargeable weight (MTD, kg)</div></div>
+  `;
+
+  function isThisMonth(dateStr){
+    if(!dateStr) return false;
+    const d = new Date(dateStr+'T00:00:00');
+    return d.getFullYear()===curYear && d.getMonth()===curMonth;
+  }
+  function isNextMonth(dateStr){
+    if(!dateStr) return false;
+    const d = new Date(dateStr+'T00:00:00');
+    return d.getFullYear()===nextYear && d.getMonth()===nextMonth;
+  }
+
+  function renderBars(map, targetId, colorClass){
+    const max = Math.max(1, ...Object.values(map));
+    const el = document.getElementById(targetId);
+    const entries = Object.entries(map).sort((a,b)=>b[1]-a[1]);
+    if(entries.length===0){ el.innerHTML = '<div class="empty">No data yet</div>'; return; }
+    el.innerHTML = entries.map(([label,count])=>`
+      <div class="bar-row">
+        <div class="bar-lbl">${label}</div>
+        <div class="bar-track"><div class="bar-fill ${colorClass}" style="width:${Math.round(count/max*100)}%"></div></div>
+        <div class="bar-num">${count}</div>
+      </div>
+    `).join('');
+  }
+
+  const inquiryStatuses = ['win','failed','negotiation','quotation-preparation'];
+  function inquiryRow(label, filterFn){
+    const matches = idx.filter(i=>i.type==='inquiry' && inquiryStatuses.includes(i.status) && filterFn(i));
+    const totalReq = matches.length;
+    const win = matches.filter(i=>i.status==='win').length;
+    const failed = matches.filter(i=>i.status==='failed').length;
+    const negotiation = matches.filter(i=>i.status==='negotiation').length;
+    const quotePrep = matches.filter(i=>i.status==='quotation-preparation').length;
+    return `<tr><td>${label}</td><td>${fmtNum(totalReq)}</td><td>${fmtNum(win)}</td><td>${fmtNum(failed)}</td><td>${fmtNum(negotiation)}</td><td>${fmtNum(quotePrep)}</td></tr>`;
+  }
+  document.getElementById('inquiryLogBody').innerHTML =
+    inquiryRow('MTD', i=>isThisMonth(i.date)) +
+    inquiryRow('Today', i=>i.date===todayKey);
+
+  function periodTableRows(records, metric){
+    function row(label, filterFn){
+      const matches = records.filter(filterFn);
+      const shipments = matches.length;
+      if(metric==='sea'){
+        const containers = matches.reduce((sum,i)=>sum+(parseFloat(i.containers)||0),0);
+        return `<tr><td>${label}</td><td>${fmtNum(shipments)}</td><td>${fmtNum(containers)}</td></tr>`;
+      }
+      const bookingWeight = matches.reduce((sum,i)=>sum+(parseFloat(i.bookingWeight)||0),0);
+      const chargeableWeight = matches.reduce((sum,i)=>sum+(parseFloat(i.weight)||0),0);
+      return `<tr><td>${label}</td><td>${fmtNum(shipments)}</td><td>${fmtNum(bookingWeight)}</td><td>${fmtNum(chargeableWeight)}</td></tr>`;
+    }
+    return row('MTD', i=>isThisMonth(i.etd) && i.etd<=todayKey) +
+      row('Today', i=>i.etd===todayKey) +
+      row('Tomorrow', i=>i.etd===tmrKey) +
+      row('Planned this month', i=>isThisMonth(i.etd) && i.etd>todayKey) +
+      row('Planned next month', i=>isNextMonth(i.etd));
+  }
+
+  document.getElementById('bookingAirBody').innerHTML = periodTableRows(idx.filter(i=>i.type==='booking' && i.mode==='Air'), 'air');
+  document.getElementById('bookingSeaBody').innerHTML = periodTableRows(idx.filter(i=>i.type==='booking' && i.mode==='Sea'), 'sea');
+
+  document.getElementById('ffAirExportBody').innerHTML = periodTableRows(idx.filter(i=>i.type==='booking' && i.mode==='Air' && i.cargoService==='Freight Forwarding' && i.expImp==='Export'), 'air');
+  document.getElementById('ffAirImportBody').innerHTML = periodTableRows(idx.filter(i=>i.type==='booking' && i.mode==='Air' && i.cargoService==='Freight Forwarding' && i.expImp==='Import'), 'air');
+  document.getElementById('ffSeaExportBody').innerHTML = periodTableRows(idx.filter(i=>i.type==='booking' && i.mode==='Sea' && i.cargoService==='Freight Forwarding' && i.expImp==='Export'), 'sea');
+  document.getElementById('ffSeaImportBody').innerHTML = periodTableRows(idx.filter(i=>i.type==='booking' && i.mode==='Sea' && i.cargoService==='Freight Forwarding' && i.expImp==='Import'), 'sea');
+  document.getElementById('expressBody').innerHTML = periodTableRows(idx.filter(i=>i.type==='booking' && i.cargoService==='Express' && i.expImp==='Export'), 'air');
+
+  const monthShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function renderVolTable(headerRowId, bodyId, yearSpanId, records, valueField, unitLabel){
+    document.getElementById(yearSpanId).textContent = curYear;
+    document.getElementById(headerRowId).innerHTML = '<th>Customer</th>' + monthShort.map(m=>`<th>${m}</th>`).join('') + `<th>Total (${unitLabel})</th><th>Vol %</th>`;
+
+    const volMap = {};
+    let grandTotal = 0;
+    records.filter(i=>i.etd).forEach(i=>{
+      const d = new Date(i.etd+'T00:00:00');
+      if(d.getFullYear()!==curYear) return;
+      const k = i.customer||'—';
+      if(!volMap[k]) volMap[k] = new Array(12).fill(0);
+      const w = parseFloat(i[valueField])||0;
+      volMap[k][d.getMonth()] += w;
+      grandTotal += w;
+    });
+    const volEntries = Object.entries(volMap).sort((a,b)=>b[1].reduce((s,v)=>s+v,0)-a[1].reduce((s,v)=>s+v,0));
+    const volBody = document.getElementById(bodyId);
+    if(volEntries.length===0){
+      volBody.innerHTML = `<tr><td colspan="15" class="empty">No data yet for ${curYear}</td></tr>`;
+    }else{
+      volBody.innerHTML = volEntries.map(([customer,months])=>{
+        const total = months.reduce((s,v)=>s+v,0);
+        const pct = grandTotal>0 ? (total/grandTotal*100) : 0;
+        return `<tr><td>${customer}</td>` + months.map(v=>`<td>${fmtNum(v)}</td>`).join('') + `<td>${fmtNum(total)}</td><td>${pct.toFixed(1)}%</td></tr>`;
+      }).join('') + `<tr style="font-weight:500;"><td>Grand total</td>` + monthShort.map((_,mi)=>{
+        const sum = volEntries.reduce((s,[,months])=>s+months[mi],0);
+        return `<td>${fmtNum(sum)}</td>`;
+      }).join('') + `<td>${fmtNum(grandTotal)}</td><td>100%</td></tr>`;
+    }
+  }
+
+  renderVolTable('volHeaderRowAir', 'volByCustomerBodyAir', 'volYearAir', idx.filter(i=>i.type==='booking' && i.mode==='Air'), 'weight', 'kg');
+  renderVolTable('volHeaderRowSea', 'volByCustomerBodySea', 'volYearSea', idx.filter(i=>i.type==='booking' && i.mode==='Sea'), 'containers', 'container');
+
+  const recent = idx.slice(0,8);
+  const rb = document.getElementById('recentBody');
+  if(recent.length===0){
+    rb.innerHTML = '<tr><td colspan="5" class="empty">No job sheets yet</td></tr>';
+  }else{
+    rb.innerHTML = recent.map(i=>`
+      <tr onclick="loadFromDash('${i.jobNo}')">
+        <td class="mono">${i.jobNo}</td>
+        <td>${i.customer||''}</td>
+        <td class="mono">${i.mawb||''}</td>
+        <td>${i.route||''}</td>
+        <td>${i.status||''}</td>
+      </tr>
+    `).join('');
+  }
+}
+
+function loadFromDash(jobNo){
+  loadSheet(jobNo);
+  document.getElementById('dashPanel').style.display = 'none';
+  document.getElementById('sheetRoot').style.display = 'block';
+}
+
+const juneSamples = [
+  {
+    date:'2026-06-03', pic:'Mai', customer:'Nanyang', cargoService:'Freight Forwarding', mode:'Air', expImp:'Export',
+    service:'P2P', origin:'BKK', dest:'BNE', carrier:'', coloader:'HP', etd:'2026-06-03', eta:'2026-06-08',
+    items:[{product:'Garment', weight:2293, pieces:1, remarks:''}],
+    mawb:'618-5359 3175', hawb:'', finalAwb:'618-5359 3175', quoteRef:'',
+    notes:'', status:'flight-booked'
+  },
+  {
+    date:'2026-06-16', pic:'Mai', customer:'Nanyang', cargoService:'Freight Forwarding', mode:'Air', expImp:'Export',
+    service:'P2P', origin:'BKK', dest:'BNE', carrier:'', coloader:'HP', etd:'2026-06-16', eta:'2026-06-17',
+    items:[{product:'Garment', weight:3000, pieces:1, remarks:''}],
+    mawb:'618-5549 7503', hawb:'', finalAwb:'618-5549 7503', quoteRef:'',
+    notes:'', status:'flight-booked'
+  },
+  {
+    date:'2026-06-20', pic:'Mai', customer:'Nanyang', cargoService:'Freight Forwarding', mode:'Air', expImp:'Export',
+    service:'P2P', origin:'BKK', dest:'BNE', carrier:'', coloader:'HP', etd:'2026-06-20', eta:'2026-06-21',
+    items:[{product:'Garment', weight:7500, pieces:1, remarks:''}],
+    mawb:'618-5634 4901', hawb:'', finalAwb:'618-5634 4901', quoteRef:'',
+    notes:'Customer cancelled', status:'cancelled'
+  },
+  {
+    date:'2026-06-05', pic:'New', customer:'MULTI-FINELINE ELECTRONICS', cargoService:'Freight Forwarding', mode:'Air', expImp:'Export',
+    service:'D2P', origin:'BKK', dest:'SZX', carrier:'', coloader:'FM', etd:'2026-06-05', eta:'2026-06-05',
+    items:[{product:'Flexible Printed Circuit', weight:68, pieces:1, remarks:''}],
+    mawb:'999-9383 0015', hawb:'', finalAwb:'999-9383 0015', quoteRef:'',
+    notes:'', status:'flight-booked'
+  },
+  {
+    date:'2026-06-02', pic:'New', customer:'EOPTOLINK', cargoService:'Freight Forwarding', mode:'Air', expImp:'Export',
+    service:'D2P', origin:'BKK', dest:'ORD', carrier:'', coloader:'', etd:'2026-06-02', eta:'2026-06-03',
+    items:[{product:'Optical Transceiver', weight:4998, pieces:1, remarks:''}],
+    mawb:'057-4969 2672', hawb:'', finalAwb:'057-4969 2672', quoteRef:'',
+    notes:'', status:'flight-booked'
+  },
+  {
+    date:'2026-07-07', pic:'Mai', customer:'Nanyang', cargoService:'Freight Forwarding', mode:'Air', expImp:'Export',
+    service:'P2P', origin:'BKK', dest:'BNE', carrier:'', coloader:'HP', etd:'2026-07-07', eta:'2026-07-08',
+    items:[{product:'Garment', weight:1000, pieces:1, remarks:''}],
+    mawb:'618-5442 4193', hawb:'', finalAwb:'618-5442 4193', quoteRef:'',
+    notes:'', status:'flight-booked'
+  },
+  {
+    date:'2026-07-07', pic:'New', customer:'MULTI-FINELINE ELECTRONICS', cargoService:'Freight Forwarding', mode:'Air', expImp:'Export',
+    service:'D2P', origin:'BKK', dest:'CGO', carrier:'', coloader:'FM', etd:'2026-07-07', eta:'2026-07-08',
+    items:[{product:'Flexible Printed Circuit', weight:15, pieces:1, remarks:''}],
+    mawb:'160-1442 7103', hawb:'', finalAwb:'160-1442 7103', quoteRef:'',
+    notes:'', status:'flight-booked'
+  }
+];
+
+async function loadJuneSamples(){
+  if(!confirm('Add sample job sheets to your saved list?')) return;
+
+  for(const s of juneSamples){
+    const jobNo = 'BK-'+s.date.replace(/-/g,'')+'-'+Math.floor(Math.random()*900+100);
+    const d = new Date(s.date+'T00:00:00');
+    const rec = Object.assign({}, s, {
+      jobNo,
+      type: 'booking',
+      month: monthNames[d.getMonth()]+'-'+d.getFullYear().toString().slice(2),
+      route:s.origin+'-'+s.dest,
+      transit: (s.etd && s.eta) ? Math.round((new Date(s.eta+'T00:00:00')-new Date(s.etd+'T00:00:00'))/86400000) : '',
+      bookingWeight: (s.items||[]).reduce((sum,it)=>sum+(parseFloat(it.bookingWeight!==undefined?it.bookingWeight:it.weight)||0),0),
+      chargeableWeight: (s.items||[]).reduce((sum,it)=>sum+itemWeight(it),0),
+      savedAt: new Date().toISOString()
+    });
+    try{ await dataSave(rec); }catch(e){ console.error(e); }
+  }
+  alert('Sample data added — check Saved Job Sheets or Dashboard.');
+  refreshList();
+}
+
+function downloadFile(filename, content, mime){
+  const blob = new Blob([content], {type:mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function csvEscape(val){
+  const s = (val===undefined || val===null) ? '' : String(val);
+  if(/[",\n]/.test(s)) return '"'+s.replace(/"/g,'""')+'"';
+  return s;
+}
+
+async function exportCSV(){
+  const records = await dataGetAll();
+  if(records.length===0){ alert('No job sheets to export yet.'); return; }
+  const cols = ['jobNo','type','date','month','customer','cargoService','mode','expImp','service','origin','dest','route','carrier','coloader','etd','eta','transit','containers','vendorName','truckType','totalTruck','driverName','licensePlate','pickupDate','mawb','itemsSummary','totalBookingWeight','totalChargeableWeight','notes','status','savedAt'];
+  const header = cols.join(',');
+  const rows = records.map(r=>{
+    const itemsSummary = (r.items||[]).map(it=>{
+      if(r.mode==='Sea') return `${it.product||''} (${it.container||0} container x${it.pieces||1})`;
+      return `${it.product||''} (${itemWeight(it)}kg x${it.pieces||1})`;
+    }).join(' | ');
+    const totalBookingWeight = (r.items||[]).reduce((sum,it)=>sum+(parseFloat(it.bookingWeight)||0),0);
+    const totalChargeableWeight = (r.items||[]).reduce((sum,it)=>sum+itemWeight(it),0);
+    const rowObj = Object.assign({}, r, {itemsSummary, totalBookingWeight, totalChargeableWeight});
+    return cols.map(c=>csvEscape(rowObj[c])).join(',');
+  });
+  const csv = [header].concat(rows).join('\n');
+  downloadFile('job-sheets-'+todayStr()+'.csv', csv, 'text/csv');
+}
+
+async function exportJSON(){
+  const records = await dataGetAll();
+  if(records.length===0){ alert('No job sheets to export yet.'); return; }
+  const payload = {exportedAt: new Date().toISOString(), records};
+  downloadFile('job-sheets-backup-'+todayStr()+'.json', JSON.stringify(payload, null, 2), 'application/json');
+}
+
+function importJSON(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async function(e){
+    try{
+      const payload = JSON.parse(e.target.result);
+      const records = Array.isArray(payload) ? payload : (payload.records || []);
+      if(records.length===0){ alert('No records found in this file.'); return; }
+      if(!confirm('Import '+records.length+' job sheet(s)? Existing job sheets with the same job no. will be overwritten.')) return;
+      for(const rec of records){
+        if(!rec.jobNo) continue;
+        try{ await dataSave(rec); }catch(err){ console.error(err); }
+      }
+      alert('Imported '+records.length+' job sheet(s).');
+      refreshList();
+    }catch(err){
+      alert('Could not read this file. Make sure it is a JSON backup exported from this app.');
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+}
+
+const csvTemplateCols = ['type','jobNo','date','customer','cargoService','mode','expImp','service','origin','dest','etd','eta','product','bookingWeight','chargeableWeight','container','pieces','remarks','vendorName','truckType','totalTruck','driverName','licensePlate','pickupDate','mawb','notes','status'];
+
+function downloadCSVTemplate(){
+  const sampleRow = ['booking','','2026-07-10','Nanyang','Freight Forwarding','Air','Export','P2P','BKK','BNE','2026-07-10','2026-07-11','Garment','2000','2050','','1','','ABC Trucking','6-wheel','1','Somchai','1กก-1234','','','flight-booked'];
+  const csv = csvTemplateCols.join(',') + '\n' + sampleRow.map(csvEscape).join(',');
+  downloadFile('job-sheet-import-template.csv', csv, 'text/csv');
+}
+
+function parseCSV(text){
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for(let i=0; i<text.length; i++){
+    const c = text[i];
+    if(inQuotes){
+      if(c==='"'){
+        if(text[i+1]==='"'){ field+='"'; i++; } else { inQuotes = false; }
+      } else field += c;
+    }else{
+      if(c==='"') inQuotes = true;
+      else if(c===','){ row.push(field); field=''; }
+      else if(c==='\n' || c==='\r'){
+        if(c==='\r' && text[i+1]==='\n') i++;
+        row.push(field); field='';
+        rows.push(row); row=[];
+      } else field += c;
+    }
+  }
+  if(field.length>0 || row.length>0){ row.push(field); rows.push(row); }
+  return rows.filter(r=>r.length>1 || r[0]!=='');
+}
+
+function importCSV(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async function(e){
+    try{
+      const rows = parseCSV(e.target.result);
+      if(rows.length<2){ alert('No data rows found in this file.'); return; }
+      const header = rows[0].map(h=>h.trim());
+      const dataRows = rows.slice(1);
+      if(!confirm('Import '+dataRows.length+' job sheet row(s) from this CSV?')) return;
+
+      let count = 0;
+      for(const cols of dataRows){
+        const obj = {};
+        header.forEach((h,i)=>{ obj[h] = cols[i]!==undefined ? cols[i] : ''; });
+        if(!obj.customer && !obj.date) continue;
+
+        const type = (obj.type||'booking').trim().toLowerCase()==='inquiry' ? 'inquiry' : 'booking';
+        const jobNo = obj.jobNo && obj.jobNo.trim() ? obj.jobNo.trim() : await genJobNo(type);
+        const origin = obj.origin||'', dest = obj.dest||'';
+        const route = (origin||dest) ? (origin||'?')+'-'+(dest||'?') : '';
+
+        const dDate = parseFlexibleDate(obj.date);
+        const dateStr = dDate ? formatDateStr(dDate) : '';
+        const month = dDate ? monthNames[dDate.getMonth()]+'-'+dDate.getFullYear().toString().slice(2) : '';
+
+        const dEtd = parseFlexibleDate(obj.etd);
+        const etdStr = dEtd ? formatDateStr(dEtd) : '';
+        const dEta = parseFlexibleDate(obj.eta);
+        const etaStr = dEta ? formatDateStr(dEta) : '';
+        const dPickup = parseFlexibleDate(obj.pickupDate);
+        const pickupStr = dPickup ? formatDateStr(dPickup) : '';
+
+        const transit = (dEtd && dEta) ? Math.round((dEta-dEtd)/86400000) : '';
+
+        const rec = {
+          jobNo, type, date:dateStr, month, customer:obj.customer||'',
+          cargoService:normalizeCargoService(obj.cargoService), mode:normalizeMode(obj.mode), expImp:normalizeExpImp(obj.expImp),
+          service:obj.service||'', origin, dest, route, carrier:'', coloader:'',
+          etd:etdStr, eta:etaStr, transit, containers:cleanNumStr(obj.containers),
+          items:[{product:obj.product||'', bookingWeight:cleanNumStr(obj.bookingWeight), chargeableWeight:cleanNumStr(obj.chargeableWeight), container:cleanNumStr(obj.container), pieces:cleanNumStr(obj.pieces)||1, remarks:obj.remarks||''}],
+          bookingWeight:cleanNumStr(obj.bookingWeight), chargeableWeight:cleanNumStr(obj.chargeableWeight),
+          vendorName:obj.vendorName||'', truckType:obj.truckType||'', totalTruck:cleanNumStr(obj.totalTruck),
+          driverName:obj.driverName||'', licensePlate:obj.licensePlate||'', pickupDate:pickupStr,
+          mawb:obj.mawb||'',
+          notes:obj.notes||'',
+          status:obj.status||(type==='inquiry'?'quotation-preparation':'flight-booked'),
+          savedAt:new Date().toISOString()
+        };
+        try{ await dataSave(rec); count++; }catch(err){ console.error(err); }
+      }
+      alert('Imported '+count+' job sheet(s) from CSV.');
+      refreshList();
+    }catch(err){
+      alert('Could not read this CSV file. Make sure it matches the template columns.');
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById('sheetRoot').addEventListener('input', ()=>{ isDirty = true; });
+document.getElementById('sheetRoot').addEventListener('change', ()=>{ isDirty = true; });
+
+window.addEventListener('beforeunload', function(e){
+  if(isDirty){
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  }
+});
+
+updateConnStatus();
+newSheet();
+refreshList();
+</script>
+</body>
+</html>
