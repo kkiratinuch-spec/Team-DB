@@ -1092,7 +1092,7 @@ function round2(n){
 }
 
 function fmtMoney(n){
-  return n.toLocaleString(undefined, {maximumFractionDigits:2});
+  return n.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
 }
 
 function updateGP(){
@@ -1994,9 +1994,11 @@ function toggleRevDash(){
   }
 }
 
-function fmtNum(n){
-  const num = Math.round(n);
-  return num===0 ? '—' : num.toLocaleString();
+function fmtNum(n, decimals){
+  decimals = decimals || 0;
+  const num = decimals>0 ? n : Math.round(n);
+  if(num===0) return '—';
+  return num.toLocaleString(undefined, {minimumFractionDigits:decimals, maximumFractionDigits:decimals});
 }
 
 async function renderDashboard(){
@@ -2027,8 +2029,8 @@ async function renderDashboard(){
 
   document.getElementById('metricCards').innerHTML = `
     <div class="metric m-navy"><div class="num">${fmtNum(total)}</div><div class="lbl">Total shipment (MTD, by ETD)</div></div>
-    <div class="metric m-orange"><div class="num">${fmtNum(totalBookingWeight)}</div><div class="lbl">Total booking weight (MTD, kg)</div></div>
-    <div class="metric m-green"><div class="num">${fmtNum(totalWeight)}</div><div class="lbl">Total chargeable weight (MTD, kg)</div></div>
+    <div class="metric m-orange"><div class="num">${fmtNum(totalBookingWeight,2)}</div><div class="lbl">Total booking weight (MTD, kg)</div></div>
+    <div class="metric m-green"><div class="num">${fmtNum(totalWeight,2)}</div><div class="lbl">Total chargeable weight (MTD, kg)</div></div>
   `;
 
   function isThisMonth(dateStr){
@@ -2080,7 +2082,7 @@ async function renderDashboard(){
       }
       const bookingWeight = matches.reduce((sum,i)=>sum+(parseFloat(i.bookingWeight)||0),0);
       const chargeableWeight = matches.reduce((sum,i)=>sum+(parseFloat(i.weight)||0),0);
-      return `<tr><td>${label}</td><td>${fmtNum(shipments)}</td><td>${fmtNum(bookingWeight)}</td><td>${fmtNum(chargeableWeight)}</td></tr>`;
+      return `<tr><td>${label}</td><td>${fmtNum(shipments)}</td><td>${fmtNum(bookingWeight,2)}</td><td>${fmtNum(chargeableWeight,2)}</td></tr>`;
     }
     return row('MTD', i=>isThisMonth(i.etd) && i.etd<=todayKey) +
       row('Today', i=>i.etd===todayKey) +
@@ -2127,16 +2129,16 @@ async function renderMonthlyDashboard(){
   const afCount = airFreightMonthly.reduce((s,m)=>s+m.count,0);
   const afWeight = airFreightMonthly.reduce((s,m)=>s+m.a,0);
   document.getElementById('monthlyAirFreightBody').innerHTML = monthShortNames.map((m,i)=>
-    `<tr><td>${m}</td><td>${fmtNum(airFreightMonthly[i].count)}</td><td>${fmtNum(airFreightMonthly[i].a)}</td></tr>`
-  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(afCount)}</td><td>${fmtNum(afWeight)}</td></tr>`;
+    `<tr><td>${m}</td><td>${fmtNum(airFreightMonthly[i].count)}</td><td>${fmtNum(airFreightMonthly[i].a,2)}</td></tr>`
+  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(afCount)}</td><td>${fmtNum(afWeight,2)}</td></tr>`;
 
   const airExpressRecords = idx.filter(i=>i.type==='booking' && i.mode==='Air' && i.cargoService==='Express');
   const airExpressMonthly = monthlyRows(airExpressRecords, ['weight']);
   const aeCount = airExpressMonthly.reduce((s,m)=>s+m.count,0);
   const aeWeight = airExpressMonthly.reduce((s,m)=>s+m.a,0);
   document.getElementById('monthlyAirExpressBody').innerHTML = monthShortNames.map((m,i)=>
-    `<tr><td>${m}</td><td>${fmtNum(airExpressMonthly[i].count)}</td><td>${fmtNum(airExpressMonthly[i].a)}</td></tr>`
-  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(aeCount)}</td><td>${fmtNum(aeWeight)}</td></tr>`;
+    `<tr><td>${m}</td><td>${fmtNum(airExpressMonthly[i].count)}</td><td>${fmtNum(airExpressMonthly[i].a,2)}</td></tr>`
+  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(aeCount)}</td><td>${fmtNum(aeWeight,2)}</td></tr>`;
 
   const seaFreightRecords = idx.filter(i=>i.type==='booking' && i.mode==='Sea' && i.cargoService==='Freight Forwarding');
   const seaFreightMonthly = monthlyRows(seaFreightRecords, ['containers']);
@@ -2165,6 +2167,7 @@ async function renderMonthlyDashboard(){
   ).join('');
 
   function renderVolTable(headerRowId, bodyId, yearSpanId, records, valueField, unitLabel){
+    const dec = unitLabel==='kg' ? 2 : 0;
     document.getElementById(yearSpanId).textContent = year;
     document.getElementById(headerRowId).innerHTML = '<th>Customer</th>' + monthShortNames.map(m=>`<th>${m}</th>`).join('') + `<th>Total (${unitLabel})</th><th>Vol %</th>`;
 
@@ -2187,11 +2190,11 @@ async function renderMonthlyDashboard(){
       volBody.innerHTML = volEntries.map(([customer,months])=>{
         const total = months.reduce((s,v)=>s+v,0);
         const pct = grandTotal>0 ? (total/grandTotal*100) : 0;
-        return `<tr><td>${customer}</td>` + months.map(v=>`<td>${fmtNum(v)}</td>`).join('') + `<td>${fmtNum(total)}</td><td>${pct.toFixed(1)}%</td></tr>`;
+        return `<tr><td>${customer}</td>` + months.map(v=>`<td>${fmtNum(v,dec)}</td>`).join('') + `<td>${fmtNum(total,dec)}</td><td>${pct.toFixed(1)}%</td></tr>`;
       }).join('') + `<tr style="font-weight:500;"><td>Grand total</td>` + monthShortNames.map((_,mi)=>{
         const sum = volEntries.reduce((s,[,months])=>s+months[mi],0);
-        return `<td>${fmtNum(sum)}</td>`;
-      }).join('') + `<td>${fmtNum(grandTotal)}</td><td>100%</td></tr>`;
+        return `<td>${fmtNum(sum,dec)}</td>`;
+      }).join('') + `<td>${fmtNum(grandTotal,dec)}</td><td>100%</td></tr>`;
     }
   }
 
@@ -2226,11 +2229,11 @@ function buildSimpleModeTables(containerId, records, year, valueField, categorie
     const catRecords = revFilterByCat(records, cat);
     const totals = revMonthlyTotals(catRecords, year, valueField);
     const grand = totals.reduce((s,v)=>s+v,0);
-    const rows = monthShortNames.map((m,i)=>`<tr><td>${m}</td><td>${fmtNum(totals[i])}</td></tr>`).join('');
+    const rows = monthShortNames.map((m,i)=>`<tr><td>${m}</td><td>${fmtNum(totals[i],2)}</td></tr>`).join('');
     return `<div style="margin-bottom:16px;">
       <div style="font-size:11px; font-weight:700; color:var(--steel); margin-bottom:6px; text-transform:uppercase;">${cat.label}</div>
       <table class="dash-table"><thead><tr><th>Month</th><th>THB</th></tr></thead><tbody>${rows}
-      <tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(grand)}</td></tr></tbody></table>
+      <tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(grand,2)}</td></tr></tbody></table>
     </div>`;
   }).join('');
   document.getElementById(containerId).innerHTML = html;
@@ -2257,11 +2260,11 @@ function buildByCustomerModeTables(containerId, records, year, valueField, categ
     }else{
       bodyHtml = entries.map(([customer,months])=>{
         const total = months.reduce((s,v)=>s+v,0);
-        return `<tr><td>${customer}</td>` + months.map(v=>`<td>${fmtNum(v)}</td>`).join('') + `<td>${fmtNum(total)}</td></tr>`;
+        return `<tr><td>${customer}</td>` + months.map(v=>`<td>${fmtNum(v,2)}</td>`).join('') + `<td>${fmtNum(total,2)}</td></tr>`;
       }).join('') + `<tr style="font-weight:500;"><td>Grand total</td>` + monthShortNames.map((_,mi)=>{
         const sum = entries.reduce((s,[,months])=>s+months[mi],0);
-        return `<td>${fmtNum(sum)}</td>`;
-      }).join('') + `<td>${fmtNum(grand)}</td></tr>`;
+        return `<td>${fmtNum(sum,2)}</td>`;
+      }).join('') + `<td>${fmtNum(grand,2)}</td></tr>`;
     }
     return `<div style="margin-bottom:16px; overflow-x:auto;">
       <div style="font-size:11px; font-weight:700; color:var(--steel); margin-bottom:6px; text-transform:uppercase;">${cat.label}</div>
@@ -2298,12 +2301,12 @@ function buildMonthlyAllModesTable(containerId, records, year){
   const rows = monthShortNames.map((m,i)=>{
     const rev = revTotals[i], cost = costTotals[i], gp = rev-cost;
     const pct = rev>0 ? (gp/rev*100) : null;
-    return `<tr><td>${m}</td><td>${fmtNum(rev)}</td><td>${fmtNum(cost)}</td><td>${fmtNum(gp)}</td><td>${pct===null?'—':pct.toFixed(1)+'%'}</td></tr>`;
+    return `<tr><td>${m}</td><td>${fmtNum(rev,2)}</td><td>${fmtNum(cost,2)}</td><td>${fmtNum(gp,2)}</td><td>${pct===null?'—':pct.toFixed(1)+'%'}</td></tr>`;
   }).join('');
   const grandRev = revTotals.reduce((s,v)=>s+v,0), grandCost = costTotals.reduce((s,v)=>s+v,0), grandGP = grandRev-grandCost;
   const grandPct = grandRev>0 ? (grandGP/grandRev*100) : null;
   document.getElementById(containerId).innerHTML = `<table class="dash-table"><thead><tr><th>Month</th><th>Rev</th><th>Cost</th><th>GP (THB)</th><th>GP %</th></tr></thead><tbody>${rows}
-    <tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(grandRev)}</td><td>${fmtNum(grandCost)}</td><td>${fmtNum(grandGP)}</td><td>${grandPct===null?'—':grandPct.toFixed(1)+'%'}</td></tr></tbody></table>`;
+    <tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(grandRev,2)}</td><td>${fmtNum(grandCost,2)}</td><td>${fmtNum(grandGP,2)}</td><td>${grandPct===null?'—':grandPct.toFixed(1)+'%'}</td></tr></tbody></table>`;
 }
 
 function buildDestinationTable(containerId, records, year){
@@ -2325,11 +2328,11 @@ function buildDestinationTable(containerId, records, year){
       const gp = v.rev-v.cost;
       const pct = v.rev>0 ? (gp/v.rev*100) : null;
       grandRev+=v.rev; grandCost+=v.cost;
-      return `<tr><td>${dest}</td><td>${fmtNum(v.rev)}</td><td>${fmtNum(v.cost)}</td><td>${fmtNum(gp)}</td><td>${pct===null?'—':pct.toFixed(1)+'%'}</td></tr>`;
+      return `<tr><td>${dest}</td><td>${fmtNum(v.rev,2)}</td><td>${fmtNum(v.cost,2)}</td><td>${fmtNum(gp,2)}</td><td>${pct===null?'—':pct.toFixed(1)+'%'}</td></tr>`;
     }).join('');
     const grandGP = grandRev-grandCost;
     const grandPct = grandRev>0 ? (grandGP/grandRev*100) : null;
-    bodyHtml += `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(grandRev)}</td><td>${fmtNum(grandCost)}</td><td>${fmtNum(grandGP)}</td><td>${grandPct===null?'—':grandPct.toFixed(1)+'%'}</td></tr>`;
+    bodyHtml += `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(grandRev,2)}</td><td>${fmtNum(grandCost,2)}</td><td>${fmtNum(grandGP,2)}</td><td>${grandPct===null?'—':grandPct.toFixed(1)+'%'}</td></tr>`;
   }
   document.getElementById(containerId).innerHTML = `<table class="dash-table"><thead><tr><th>Destination</th><th>Rev</th><th>Cost</th><th>GP (THB)</th><th>GP %</th></tr></thead><tbody>${bodyHtml}</tbody></table>`;
 }
@@ -2372,14 +2375,14 @@ function buildCombinedModeTables(containerId, records, year, categories){
     const rows = monthShortNames.map((m,i)=>{
       const rev = revTotals[i], cost = costTotals[i], gp = rev-cost;
       const pct = rev>0 ? (gp/rev*100) : null;
-      return `<tr><td>${m}</td><td>${fmtNum(rev)}</td><td>${fmtNum(cost)}</td><td>${fmtNum(gp)}</td><td>${pct===null?'—':pct.toFixed(1)+'%'}</td></tr>`;
+      return `<tr><td>${m}</td><td>${fmtNum(rev,2)}</td><td>${fmtNum(cost,2)}</td><td>${fmtNum(gp,2)}</td><td>${pct===null?'—':pct.toFixed(1)+'%'}</td></tr>`;
     }).join('');
     const grandRev = revTotals.reduce((s,v)=>s+v,0), grandCost = costTotals.reduce((s,v)=>s+v,0), grandGP = grandRev-grandCost;
     const grandPct = grandRev>0 ? (grandGP/grandRev*100) : null;
     return `<div style="margin-bottom:16px;">
       <div style="font-size:11px; font-weight:700; color:var(--steel); margin-bottom:6px; text-transform:uppercase;">${cat.label}</div>
       <table class="dash-table"><thead><tr><th>Month</th><th>Rev</th><th>Cost</th><th>GP (THB)</th><th>GP %</th></tr></thead><tbody>${rows}
-      <tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(grandRev)}</td><td>${fmtNum(grandCost)}</td><td>${fmtNum(grandGP)}</td><td>${grandPct===null?'—':grandPct.toFixed(1)+'%'}</td></tr></tbody></table>
+      <tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(grandRev,2)}</td><td>${fmtNum(grandCost,2)}</td><td>${fmtNum(grandGP,2)}</td><td>${grandPct===null?'—':grandPct.toFixed(1)+'%'}</td></tr></tbody></table>
     </div>`;
   }).join('');
   document.getElementById(containerId).innerHTML = html;
@@ -2405,11 +2408,11 @@ function buildCustomerOnlyTable(containerId, records, year, valueField){
   }else{
     bodyHtml = entries.map(([customer,months])=>{
       const total = months.reduce((s,v)=>s+v,0);
-      return `<tr><td>${customer}</td>` + months.map(v=>`<td>${fmtNum(v)}</td>`).join('') + `<td>${fmtNum(total)}</td></tr>`;
+      return `<tr><td>${customer}</td>` + months.map(v=>`<td>${fmtNum(v,2)}</td>`).join('') + `<td>${fmtNum(total,2)}</td></tr>`;
     }).join('') + `<tr style="font-weight:500;"><td>Grand total</td>` + monthShortNames.map((_,mi)=>{
       const sum = entries.reduce((s,[,months])=>s+months[mi],0);
-      return `<td>${fmtNum(sum)}</td>`;
-    }).join('') + `<td>${fmtNum(grand)}</td></tr>`;
+      return `<td>${fmtNum(sum,2)}</td>`;
+    }).join('') + `<td>${fmtNum(grand,2)}</td></tr>`;
   }
   document.getElementById(containerId).innerHTML = `<div style="overflow-x:auto;"><table class="dash-table" style="min-width:760px;"><thead><tr>${headerCells}</tr></thead><tbody>${bodyHtml}</tbody></table></div>`;
 }
@@ -2430,9 +2433,9 @@ async function renderRevDashboard(){
   const mtdGP = mtdRev - mtdCost;
   const mtdGPPct = mtdRev>0 ? (mtdGP/mtdRev*100) : null;
   document.getElementById('revMetricCards').innerHTML = `
-    <div class="metric m-sky"><div class="num">${fmtNum(mtdRev)}</div><div class="lbl">Total revenue (MTD, THB)</div></div>
-    <div class="metric m-orange"><div class="num">${fmtNum(mtdCost)}</div><div class="lbl">Total cost (MTD, THB)</div></div>
-    <div class="metric m-green"><div class="num">${fmtNum(mtdGP)}</div><div class="lbl">Total GP (MTD, THB)</div></div>
+    <div class="metric m-sky"><div class="num">${fmtNum(mtdRev,2)}</div><div class="lbl">Total revenue (MTD, THB)</div></div>
+    <div class="metric m-orange"><div class="num">${fmtNum(mtdCost,2)}</div><div class="lbl">Total cost (MTD, THB)</div></div>
+    <div class="metric m-green"><div class="num">${fmtNum(mtdGP,2)}</div><div class="lbl">Total GP (MTD, THB)</div></div>
     <div class="metric m-green"><div class="num">${mtdGPPct===null?'—':mtdGPPct.toFixed(1)+'%'}</div><div class="lbl">GP % (MTD)</div></div>
   `;
 
