@@ -2071,13 +2071,18 @@ async function renderDashboard(){
     const d = new Date(i.etd+'T00:00:00');
     return d.getFullYear()===curYear && d.getMonth()===curMonth && i.etd<=todayKey;
   });
+  const monthRecords = idx.filter(i=>{
+    if(!i.etd) return false;
+    const d = new Date(i.etd+'T00:00:00');
+    return d.getFullYear()===curYear && d.getMonth()===curMonth;
+  });
   const total = mtdRecords.length;
-  const totalBookingWeight = mtdRecords.reduce((sum,i)=>sum+(parseFloat(i.bookingWeight)||0),0);
+  const totalBookingWeight = monthRecords.reduce((sum,i)=>sum+(parseFloat(i.bookingWeight)||0),0);
   const totalWeight = mtdRecords.reduce((sum,i)=>sum+(parseFloat(i.weight)||0),0);
 
   document.getElementById('metricCards').innerHTML = `
     <div class="metric m-navy"><div class="num">${fmtNum(total)}</div><div class="lbl">Total shipment (MTD, by ETD)</div></div>
-    <div class="metric m-orange"><div class="num">${fmtNum(totalBookingWeight)}</div><div class="lbl">Total booking weight (MTD, kg)</div></div>
+    <div class="metric m-orange"><div class="num">${fmtNum(totalBookingWeight)}</div><div class="lbl">Total booking weight (this month, kg)</div></div>
     <div class="metric m-green"><div class="num">${fmtNum(totalWeight)}</div><div class="lbl">Total chargeable weight (MTD, kg)</div></div>
   `;
 
