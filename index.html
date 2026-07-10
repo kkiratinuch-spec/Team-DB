@@ -71,19 +71,19 @@ button.btn-dash-daily{background:#1B2A44; color:var(--white); border-color:#1B2A
 button.btn-dash-daily:hover{background:#111C30;}
 button.btn-dash-monthly{background:#2E5A8F; color:var(--white); border-color:#2E5A8F;}
 button.btn-dash-monthly:hover{background:#254A75;}
-button.btn-dash-rev{background:#E2EFDA; color:#1F4A2E; border-color:#E2EFDA;}
-button.btn-dash-rev:hover{background:#CBE0BE;}
-button.btn-inquiry{background:#D9B23C; color:var(--white); border-color:#D9B23C;}
-button.btn-inquiry:hover{background:#C29F2E;}
-button.btn-booking{background:var(--sky); color:var(--white); border-color:var(--sky);}
-button.btn-booking:hover{background:#3A8FC0;}
-button.btn-finance{background:var(--amber); color:var(--white); border-color:var(--amber);}
-button.btn-finance:hover{background:#96600C;}
+button.btn-dash-rev{background:#6FAE73; color:var(--white); border-color:#6FAE73;}
+button.btn-dash-rev:hover{background:#5A9860;}
+button.btn-inquiry{background:#EAD27A; color:#6B5A0E; border-color:#EAD27A;}
+button.btn-inquiry:hover{background:#E0C463;}
+button.btn-booking{background:#A8D8F0; color:#1B2A44; border-color:#A8D8F0;}
+button.btn-booking:hover{background:#8FC9E8;}
+button.btn-finance{background:#F0D19A; color:#7A4A0E; border-color:#F0D19A;}
+button.btn-finance:hover{background:#E8C078;}
 button.btn-tab{background:#EDEDED; border-color:#D6D6D6; color:var(--steel);}
 button.btn-tab.active{background:var(--navy); border-color:var(--navy); color:var(--white);}
-button.btn-inquiry-tab.active{background:#D9B23C; border-color:#D9B23C;}
-button.btn-booking-tab.active{background:var(--sky); border-color:var(--sky);}
-button.btn-finance-tab.active{background:var(--amber); border-color:var(--amber);}
+button.btn-inquiry-tab.active{background:#EAD27A; border-color:#EAD27A;}
+button.btn-booking-tab.active{background:#A8D8F0; border-color:#A8D8F0;}
+button.btn-finance-tab.active{background:#F0D19A; border-color:#F0D19A;}
 
 .sheet{
   background:var(--white); position:relative; border:1px solid var(--line);
@@ -198,7 +198,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
 .list-panel{
   background:var(--white); border:1px solid var(--line); border-radius:6px; padding:14px 16px; margin-bottom:16px;
 }
-.list-panel h3{font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:0.06em; text-transform:uppercase; color:var(--navy); margin:0 0 10px;}
+.list-panel h3{font-family:'Oswald',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--navy); margin:0 0 10px;}
 .list-row{
   display:flex; justify-content:space-between; align-items:center; gap:8px;
   padding:8px 4px; border-bottom:1px solid var(--gray-tint); font-size:13px; cursor:pointer;
@@ -215,17 +215,19 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
 .metric-cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:24px;}
 .metric{border-radius:6px; padding:14px 16px;}
 .metric.m-navy{background:var(--navy-tint);}
+.metric.m-sky{background:#D6EBF7;}
 .metric.m-orange{background:var(--orange-tint);}
 .metric.m-green{background:var(--green-tint);}
 .metric.m-gray{background:var(--gray-tint);}
 .metric .num{font-family:'Oswald',sans-serif; font-size:26px;}
 .metric.m-navy .num{color:var(--navy);}
+.metric.m-sky .num{color:var(--sky);}
 .metric.m-orange .num{color:var(--orange);}
 .metric.m-green .num{color:var(--green);}
 .metric.m-gray .num{color:var(--steel);}
 .metric .lbl{font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--steel); margin-top:2px;}
 .bar-section{margin-bottom:24px;}
-.bar-section h3{font-size:12px; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink); background:#EDEDED; padding:7px 10px; border-radius:3px; margin:0 0 10px;}
+.bar-section h3{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink); background:#EDEDED; padding:7px 10px; border-radius:3px; margin:0 0 10px;}
 #dailyDashPanel .bar-section h3{background:#DCE1EA; color:#1B2A44;}
 #monthlyDashPanel .bar-section h3{background:#D6E6F4; color:#2E5A8F;}
 #revDashPanel .bar-section h3{background:#EAF4E5; color:#2F7A46;}
@@ -311,6 +313,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <button class="btn-tab btn-booking-tab" id="typeTabBooking" onclick="setListTypeFilter('booking')">Booking</button>
       <button class="btn-tab btn-finance-tab" id="typeTabFinance" onclick="setListTypeFilter('finance')">Cost &amp; Revenue</button>
     </div>
+    <div id="statusSummary" style="margin-bottom:14px;"></div>
     <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
       <input type="text" id="listSearchBox" placeholder="Search MAWB or Job No..." oninput="applyListFilters()" style="flex:1; min-width:180px;">
       <select id="listStatusFilter" onchange="applyListFilters()" style="min-width:160px;">
@@ -324,6 +327,10 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <option value="truck-booked-drafted">Truck Booked (Drafted)</option>
         <option value="pod">POD</option>
         <option value="cancelled">Cancelled</option>
+        <option value="freight-input">Freight Input</option>
+        <option value="local-charge-input">Local Charge Input</option>
+        <option value="reconcile">Reconcile</option>
+        <option value="invoice-issued">Invoice Issued</option>
       </select>
     </div>
     <div id="listBody"><div class="empty">Loading...</div></div>
@@ -360,7 +367,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <h3 style="color:var(--navy);">A.2.1) Export</h3>
 
       <div style="padding-left:14px; margin-bottom:18px;">
-        <h3 style="font-size:11px;">A.2.1.1) Freight Forwarding</h3>
+        <h3 style="font-weight:700;">A.2.1.1) Freight Forwarding</h3>
         <table class="dash-table">
           <thead><tr><th>Period</th><th>Total shipments</th><th>Booking weight (kg)</th><th>Chargeable weight (kg)</th></tr></thead>
           <tbody id="ffAirExportBody"></tbody>
@@ -368,7 +375,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       </div>
 
       <div style="padding-left:14px;">
-        <h3 style="font-size:11px;">A.2.1.2) Express</h3>
+        <h3 style="font-weight:700;">A.2.1.2) Express</h3>
         <table class="dash-table">
           <thead><tr><th>Period</th><th>Total shipments</th><th>Booking weight (kg)</th><th>Chargeable weight (kg)</th></tr></thead>
           <tbody id="expressBody"></tbody>
@@ -380,7 +387,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <h3 style="color:var(--navy);">A.2.2) Import</h3>
 
       <div style="padding-left:14px;">
-        <h3 style="font-size:11px;">A.2.2.1) Freight Forwarding</h3>
+        <h3 style="font-weight:700;">A.2.2.1) Freight Forwarding</h3>
         <table class="dash-table">
           <thead><tr><th>Period</th><th>Total shipments</th><th>Booking weight (kg)</th><th>Chargeable weight (kg)</th></tr></thead>
           <tbody id="ffAirImportBody"></tbody>
@@ -400,7 +407,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <h3 style="color:var(--navy);">A.3.1) Export</h3>
 
       <div style="padding-left:14px;">
-        <h3 style="font-size:11px;">A.3.1.1) Freight Forwarding</h3>
+        <h3 style="font-weight:700;">A.3.1.1) Freight Forwarding</h3>
         <table class="dash-table">
           <thead><tr><th>Period</th><th>Total shipments</th><th>Total container</th></tr></thead>
           <tbody id="ffSeaExportBody"></tbody>
@@ -412,7 +419,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <h3 style="color:var(--navy);">A.3.2) Import</h3>
 
       <div style="padding-left:14px;">
-        <h3 style="font-size:11px;">A.3.2.1) Freight Forwarding</h3>
+        <h3 style="font-weight:700;">A.3.2.1) Freight Forwarding</h3>
         <table class="dash-table">
           <thead><tr><th>Period</th><th>Total shipments</th><th>Total container</th></tr></thead>
           <tbody id="ffSeaImportBody"></tbody>
@@ -425,28 +432,12 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     <div class="dash-head" style="margin:0 -24px 22px;">
       <h2>Global FF — Monthly Dashboard Summary</h2>
       <div style="display:flex; align-items:center; gap:12px;">
-        <label>Year<input type="number" id="monthlyYearPicker" onchange="renderMonthlyDashboard()" style="width:90px;"></label>
+        <label>Year<input type="number" id="monthlyYearPicker" min="2020" max="2100" onchange="renderMonthlyDashboard()" style="width:90px;"></label>
       </div>
     </div>
 
     <div class="bar-section">
-      <h3>Monthly volume — Airfreight (kg)</h3>
-      <table class="dash-table">
-        <thead><tr><th>Month</th><th>Shipments</th><th>Chargeable weight</th></tr></thead>
-        <tbody id="monthlyAirBody"></tbody>
-      </table>
-    </div>
-
-    <div class="bar-section">
-      <h3>Monthly volume — Seafreight (Container)</h3>
-      <table class="dash-table">
-        <thead><tr><th>Month</th><th>Shipments</th><th>Container</th></tr></thead>
-        <tbody id="monthlySeaBody"></tbody>
-      </table>
-    </div>
-
-    <div class="bar-section">
-      <h3>Monthly inquiry outcome</h3>
+      <h3>B.1 — Monthly Inquiry</h3>
       <table class="dash-table">
         <thead><tr><th>Month</th><th>Total requests</th><th>Win</th><th>Failed</th><th>Negotiation</th><th>Quotation preparation</th></tr></thead>
         <tbody id="monthlyInquiryBody"></tbody>
@@ -454,21 +445,55 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>Vol by customer (KG) — Airfreight — <span id="volYearAir">—</span></h3>
+      <h3>B.2 — Monthly Air Freight (kg)</h3>
+      <table class="dash-table">
+        <thead><tr><th>Month</th><th>Shipments</th><th>Chargeable weight</th></tr></thead>
+        <tbody id="monthlyAirFreightBody"></tbody>
+      </table>
+    </div>
+
+    <div class="bar-section">
+      <h3>B.3 — Monthly Air Express (kg)</h3>
+      <table class="dash-table">
+        <thead><tr><th>Month</th><th>Shipments</th><th>Chargeable weight</th></tr></thead>
+        <tbody id="monthlyAirExpressBody"></tbody>
+      </table>
+    </div>
+
+    <div class="bar-section">
+      <h3>B.4 — Monthly Sea Freight (Container)</h3>
+      <table class="dash-table">
+        <thead><tr><th>Month</th><th>Shipments</th><th>Container</th></tr></thead>
+        <tbody id="monthlySeaFreightBody"></tbody>
+      </table>
+    </div>
+
+    <div class="bar-section">
+      <h3>B.5 — Vol by customer — Air Freight (kg) — <span id="volYearAirFreight">—</span></h3>
       <div style="overflow-x:auto;">
         <table class="dash-table" style="min-width:820px;">
-          <thead><tr id="volHeaderRowAir"><th>Customer</th></tr></thead>
-          <tbody id="volByCustomerBodyAir"></tbody>
+          <thead><tr id="volHeaderRowAirFreight"><th>Customer</th></tr></thead>
+          <tbody id="volByCustomerBodyAirFreight"></tbody>
         </table>
       </div>
     </div>
 
     <div class="bar-section">
-      <h3>Vol by customer — Seafreight (Container) — <span id="volYearSea">—</span></h3>
+      <h3>B.6 — Vol by customer — Air Express (kg) — <span id="volYearAirExpress">—</span></h3>
       <div style="overflow-x:auto;">
         <table class="dash-table" style="min-width:820px;">
-          <thead><tr id="volHeaderRowSea"><th>Customer</th></tr></thead>
-          <tbody id="volByCustomerBodySea"></tbody>
+          <thead><tr id="volHeaderRowAirExpress"><th>Customer</th></tr></thead>
+          <tbody id="volByCustomerBodyAirExpress"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bar-section">
+      <h3>B.7 — Vol by customer — Sea Freight (Container) — <span id="volYearSeaFreight">—</span></h3>
+      <div style="overflow-x:auto;">
+        <table class="dash-table" style="min-width:820px;">
+          <thead><tr id="volHeaderRowSeaFreight"><th>Customer</th></tr></thead>
+          <tbody id="volByCustomerBodySeaFreight"></tbody>
         </table>
       </div>
     </div>
@@ -478,44 +503,19 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     <div class="dash-head" style="margin:0 -24px 22px;">
       <h2>💰 Global FF — Revenue Dashboard</h2>
       <div style="display:flex; align-items:center; gap:12px;">
-        <label>Month<input type="month" id="revDashMonthPicker" onchange="renderRevDashboard()"></label>
+        <label>Year<input type="number" id="revYearPicker" min="2020" max="2100" onchange="renderRevDashboard()" style="width:90px;"></label>
       </div>
     </div>
 
     <div class="metric-cards" id="revMetricCards"></div>
 
-    <div class="bar-section">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-        <h3 style="margin:0; flex:1;">Revenue by customer (THB) — <span id="revByCustYear">—</span></h3>
-        <label style="font-size:12px; color:var(--steel);">Year<input type="number" id="revByCustYearPicker" onchange="renderRevDashboard()" style="width:90px; margin-left:6px;"></label>
-      </div>
-      <div style="overflow-x:auto;">
-        <table class="dash-table" style="min-width:820px;">
-          <thead><tr id="revHeaderRowRevenue"><th>Customer</th></tr></thead>
-          <tbody id="revByCustomerBodyRevenue"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="bar-section">
-      <h3>Cost by customer (THB) — <span id="costByCustYear">—</span></h3>
-      <div style="overflow-x:auto;">
-        <table class="dash-table" style="min-width:820px;">
-          <thead><tr id="revHeaderRowCost"><th>Customer</th></tr></thead>
-          <tbody id="revByCustomerBodyCost"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="bar-section">
-      <h3>GP by customer (THB) — <span id="gpByCustYear">—</span></h3>
-      <div style="overflow-x:auto;">
-        <table class="dash-table" style="min-width:820px;">
-          <thead><tr id="revHeaderRowGP"><th>Customer</th></tr></thead>
-          <tbody id="revByCustomerBodyGP"></tbody>
-        </table>
-      </div>
-    </div>
+    <div class="bar-section"><h3>C.1 — Revenue / Cost / GP by Month (THB, all modes)</h3><div id="c1Container"></div></div>
+    <div class="bar-section"><h3>C.2 — Revenue / Cost / GP by Mode (THB)</h3><div id="c2Container"></div></div>
+    <div class="bar-section"><h3>C.3 — Revenue / Cost / GP by Destination (THB)</h3><div id="c9Container"></div></div>
+    <div class="bar-section"><h3>C.4 — Revenue by Customer (THB)</h3><div id="c3Container"></div></div>
+    <div class="bar-section"><h3>C.5 — Cost by Customer (THB)</h3><div id="c5Container"></div></div>
+    <div class="bar-section"><h3>C.6 — GP by Customer (THB)</h3><div id="c8Container"></div></div>
+    <div class="bar-section"><h3>C.7 — GP by Customer (%)</h3><div id="c10Container"></div></div>
   </div>
 
 
@@ -603,6 +603,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <div class="field"><label>MAWB no.</label><input type="text" id="f_cr_mawb" placeholder="Type an existing MAWB..." class="mono" oninput="lookupMAWB()"></div>
         <div class="field"><label>Customer</label><div class="readout mono" id="f_cr_customer">—</div></div>
         <div class="field"><label>Mode</label><div class="readout mono" id="f_cr_mode">—</div></div>
+        <div class="field"><label>Cargo service</label><div class="readout mono" id="f_cr_cargoservice">—</div></div>
         <div class="field"><label>Export / Import</label><div class="readout mono" id="f_cr_expimp">—</div></div>
         <div class="field"><label>Origin</label><div class="readout mono" id="f_cr_origin">—</div></div>
         <div class="field"><label>Destination</label><div class="readout mono" id="f_cr_dest">—</div></div>
@@ -612,7 +613,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
 
       <div class="section-label finance-only">A.2.1 — Local Charge (Cost)</div>
       <div class="grid finance-only" id="a2LocalChargeCost">
-        <div class="field"><label>Vendor name</label><input type="text" id="f_lc_vendor"></div>
+        <div class="field"><label>Vendor name</label><input type="text" id="f_lc_vendor" oninput="document.getElementById('f_lcr_vendor').value=this.value;"></div>
         <div class="field">
           <label>Truck type</label>
           <select id="f_lc_trucktype" onchange="updateGP()">
@@ -626,7 +627,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         </div>
         <div class="field"><label>Truck usage</label><input type="number" id="f_lc_truckusage" oninput="updateGP()" placeholder="qty"></div>
         <div class="field"><label>Rate per truck</label><input type="number" id="f_lc_ratepertruck" oninput="updateGP()"></div>
-        <div class="field"><label>Total pick up cost</label><div class="readout mono" id="f_lc_pickupcost">—</div></div>
+        <div class="field" style="display:none;"><label>Total pick up cost</label><div class="readout mono" id="f_lc_pickupcost">—</div></div>
         <div class="field"><label>Customs clearance</label><input type="number" id="f_lc_customs" oninput="updateGP()"></div>
         <div class="field"><label>Terminal handling</label><input type="number" id="f_lc_terminal" oninput="updateGP()"></div>
         <div class="field"><label>Document</label><input type="number" id="f_lc_document" oninput="updateGP()"></div>
@@ -634,12 +635,13 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <div class="field"><label>Packing</label><input type="number" id="f_lc_packing" oninput="updateGP()"></div>
         <div class="field"><label>Other (THB)</label><input type="number" id="f_lc_other" oninput="updateGP()"></div>
         <div class="field"><label>Other remark</label><input type="text" id="f_lc_otherremark"></div>
-        <div class="field"><label>Total handling charge</label><div class="readout mono" id="f_lc_handlingcost">—</div></div>
-        <div class="field"><label>Total local charge cost</label><div class="readout mono" id="f_lc_totalcost">—</div></div>
+        <div class="field"><label>Total local handling charge</label><div class="readout mono" id="f_lc_handlingcost" style="background:#FBE8C7; color:#3A3A3A;">—</div></div>
+        <div class="field" style="display:none;"><label>Total local charge cost</label><div class="readout mono" id="f_lc_totalcost">—</div></div>
       </div>
 
       <div class="section-label finance-only">A.2.2 — Local Charge (Revenue)</div>
       <div class="grid finance-only" id="a2LocalChargeRev">
+        <div class="field"><label>Vendor name</label><input type="text" id="f_lcr_vendor"></div>
         <div class="field">
           <label>Truck type</label>
           <select id="f_lcr_trucktype" onchange="updateGP()">
@@ -653,7 +655,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         </div>
         <div class="field"><label>Truck usage</label><input type="number" id="f_lcr_truckusage" oninput="updateGP()" placeholder="qty"></div>
         <div class="field"><label>Selling rate per truck</label><input type="number" id="f_lcr_ratepertruck" oninput="updateGP()"></div>
-        <div class="field"><label>Total pick up revenue</label><div class="readout mono" id="f_lcr_pickuprev">—</div></div>
+        <div class="field" style="display:none;"><label>Total pick up revenue</label><div class="readout mono" id="f_lcr_pickuprev">—</div></div>
         <div class="field"><label>Customs clearance</label><input type="number" id="f_lcr_customs" oninput="updateGP()"></div>
         <div class="field"><label>Terminal handling</label><input type="number" id="f_lcr_terminal" oninput="updateGP()"></div>
         <div class="field"><label>Document</label><input type="number" id="f_lcr_document" oninput="updateGP()"></div>
@@ -661,20 +663,20 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <div class="field"><label>Packing</label><input type="number" id="f_lcr_packing" oninput="updateGP()"></div>
         <div class="field"><label>Other (THB)</label><input type="number" id="f_lcr_other" oninput="updateGP()"></div>
         <div class="field"><label>Other remark</label><input type="text" id="f_lcr_otherremark"></div>
-        <div class="field"><label>Total handling revenue</label><div class="readout mono" id="f_lcr_handlingrev">—</div></div>
-        <div class="field"><label>Total local charge revenue</label><div class="readout mono" id="f_lc_totalrev">—</div></div>
-        <div class="field"><label>Local charge GP</label><div class="readout mono" id="f_lc_gp">—</div></div>
+        <div class="field"><label>Total local handling revenue</label><div class="readout mono" id="f_lcr_handlingrev" style="background:#FBE8C7; color:#3A3A3A;">—</div></div>
+        <div class="field" style="display:none;"><label>Total local charge revenue</label><div class="readout mono" id="f_lc_totalrev">—</div></div>
+        <div class="field" style="display:none;"><label>Local charge GP</label><div class="readout mono" id="f_lc_gp">—</div></div>
       </div>
 
       <div class="section-label finance-only">A.3 — Freight</div>
       <div class="grid finance-only" id="a3Freight">
         <div class="field"><label>Chargeable weight (kg)</label><div class="readout mono" id="f_cr_chargeableweight">—</div></div>
         <div class="field"><label>Cost per KG</label><input type="number" id="f_costperkg" oninput="updateGP()"></div>
-        <div class="field"><label>Summary cost</label><div class="readout mono" id="f_summarycost">—</div></div>
+        <div class="field"><label>Total Freight Cost</label><div class="readout mono" id="f_summarycost" style="background:#FBE8C7; color:#3A3A3A;">—</div></div>
         <div class="field"><label>Selling per KG</label><input type="number" id="f_sellingperkg" oninput="updateGP()"></div>
-        <div class="field"><label>Summary rev</label><div class="readout mono" id="f_summaryrev">—</div></div>
-        <div class="field"><label>GP THB</label><div class="readout mono" id="f_gpamount">—</div></div>
-        <div class="field"><label>GP %</label><div class="readout mono" id="f_gppercent">—</div></div>
+        <div class="field"><label>Total Freight Revenue</label><div class="readout mono" id="f_summaryrev" style="background:#FBE8C7; color:#3A3A3A;">—</div></div>
+        <div class="field" style="display:none;"><label>GP THB</label><div class="readout mono" id="f_gpamount">—</div></div>
+        <div class="field" style="display:none;"><label>GP %</label><div class="readout mono" id="f_gppercent">—</div></div>
       </div>
 
       <div class="section-label finance-only">A.4.1 — Destination Charge (Cost)</div>
@@ -682,7 +684,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <div class="field"><label>Destination handling cost</label><input type="number" id="f_dc_handlingcost" oninput="updateGP()"></div>
         <div class="field"><label>Customs clearance cost</label><input type="number" id="f_dc_customscost" oninput="updateGP()"></div>
         <div class="field"><label>Delivery cost</label><input type="number" id="f_dc_deliverycost" oninput="updateGP()"></div>
-        <div class="field"><label>Total destination charge cost</label><div class="readout mono" id="f_dc_totalcost">—</div></div>
+        <div class="field"><label>Total destination charge cost</label><div class="readout mono" id="f_dc_totalcost" style="background:#FBE8C7; color:#3A3A3A;">—</div></div>
       </div>
 
       <div class="section-label finance-only">A.4.2 — Destination Charge (Revenue)</div>
@@ -690,16 +692,15 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <div class="field"><label>Destination handling revenue</label><input type="number" id="f_dcr_handlingrev" oninput="updateGP()"></div>
         <div class="field"><label>Customs clearance revenue</label><input type="number" id="f_dcr_customsrev" oninput="updateGP()"></div>
         <div class="field"><label>Delivery revenue</label><input type="number" id="f_dcr_deliveryrev" oninput="updateGP()"></div>
-        <div class="field"><label>Total destination charge revenue</label><div class="readout mono" id="f_dc_totalrev">—</div></div>
-        <div class="field"><label>Destination charge GP</label><div class="readout mono" id="f_dc_gp">—</div></div>
+        <div class="field"><label>Total destination charge revenue</label><div class="readout mono" id="f_dc_totalrev" style="background:#FBE8C7; color:#3A3A3A;">—</div></div>
       </div>
 
       <div class="section-label finance-only">Grand Total (A.2 + A.3 + A.4)</div>
       <div class="grid finance-only" id="grandTotalSection">
-        <div class="field"><label>Total cost</label><div class="readout mono" id="f_gt_totalcost">—</div></div>
-        <div class="field"><label>Total revenue</label><div class="readout mono" id="f_gt_totalrev">—</div></div>
-        <div class="field"><label>Total GP</label><div class="readout mono" id="f_gt_totalgp">—</div></div>
-        <div class="field"><label>Total GP %</label><div class="readout mono" id="f_gt_totalgppercent">—</div></div>
+        <div class="field"><label>Total cost</label><div class="readout mono" id="f_gt_totalcost" style="background:#FBE4D2; color:#8A4A1E; font-weight:700;">—</div></div>
+        <div class="field"><label>Total revenue</label><div class="readout mono" id="f_gt_totalrev" style="background:#D6E8F7; color:#1B4A6B; font-weight:700;">—</div></div>
+        <div class="field"><label>Total GP</label><div class="readout mono" id="f_gt_totalgp" style="background:#E2EFDA; color:#1F4A2E; font-weight:700;">—</div></div>
+        <div class="field"><label>Total GP %</label><div class="readout mono" id="f_gt_totalgppercent" style="background:#E2EFDA; color:#1F4A2E; font-weight:700;">—</div></div>
       </div>
 
       <div class="section-label finance-hide">Routing &amp; schedule</div>
@@ -941,9 +942,10 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <label><input type="radio" name="status" value="cancelled" onchange="updateStamp()"> Cancelled</label>
       </div>
       <div class="status-toggle" id="statusFinance">
-        <label><input type="radio" name="status" value="draft" checked onchange="updateStamp()"> Draft</label>
-        <label><input type="radio" name="status" value="confirmed" onchange="updateStamp()"> Confirmed</label>
-        <label><input type="radio" name="status" value="invoiced" onchange="updateStamp()"> Invoiced</label>
+        <label><input type="radio" name="status" value="freight-input" checked onchange="updateStamp()"> Freight Input</label>
+        <label><input type="radio" name="status" value="local-charge-input" onchange="updateStamp()"> Local Charge Input</label>
+        <label><input type="radio" name="status" value="reconcile" onchange="updateStamp()"> Reconcile</label>
+        <label><input type="radio" name="status" value="invoice-issued" onchange="updateStamp()"> Invoice Issued</label>
       </div>
       <div class="mono" style="font-size:11px; color:var(--steel);">saved: <span id="savedTime">—</span></div>
     </div>
@@ -993,7 +995,7 @@ function setType(type){
   document.body.classList.add('type-'+type);
   document.getElementById('sheetTitle').textContent = type==='inquiry' ? 'Inquiry' : (type==='finance' ? 'Cost & Revenue' : 'Booking');
   document.getElementById('dateLabel').textContent = type==='inquiry' ? 'Inquiry Date' : (type==='finance' ? 'Cost & Revenue Date' : 'Booking Date');
-  const defaultStatus = type==='inquiry' ? 'quotation-preparation' : (type==='finance' ? 'draft' : 'flight-booked');
+  const defaultStatus = type==='inquiry' ? 'quotation-preparation' : (type==='finance' ? 'freight-input' : 'flight-booked');
   const el = document.querySelector('input[name=status][value="'+defaultStatus+'"]');
   if(el) el.checked = true;
 }
@@ -1157,7 +1159,6 @@ function updateGP(){
   document.getElementById('f_dc_totalrev').textContent = dcRevHasData ? fmtMoney(dcRev) : '—';
 
   const dcGP = dcRev - dcCost;
-  document.getElementById('f_dc_gp').textContent = (dcCostHasData || dcRevHasData) ? fmtMoney(dcGP) : '—';
 
   // Grand total
   const totalCost = lcCost + frCost + dcCost;
@@ -1179,6 +1180,7 @@ function lookupMAWB(){
   if(!mawb){
     document.getElementById('f_cr_customer').textContent = '—';
     document.getElementById('f_cr_mode').textContent = '—';
+    document.getElementById('f_cr_cargoservice').textContent = '—';
     document.getElementById('f_cr_expimp').textContent = '—';
     document.getElementById('f_cr_origin').textContent = '—';
     document.getElementById('f_cr_dest').textContent = '—';
@@ -1196,6 +1198,7 @@ function lookupMAWB(){
       if(match){
         document.getElementById('f_cr_customer').textContent = match.customer || '—';
         document.getElementById('f_cr_mode').textContent = match.mode || '—';
+        document.getElementById('f_cr_cargoservice').textContent = match.cargoService || '—';
         document.getElementById('f_cr_expimp').textContent = match.expImp || '—';
         document.getElementById('f_cr_origin').textContent = match.origin || '—';
         document.getElementById('f_cr_dest').textContent = match.dest || '—';
@@ -1209,6 +1212,7 @@ function lookupMAWB(){
       }else{
         document.getElementById('f_cr_customer').textContent = '—';
         document.getElementById('f_cr_mode').textContent = '—';
+        document.getElementById('f_cr_cargoservice').textContent = '—';
         document.getElementById('f_cr_expimp').textContent = '—';
         document.getElementById('f_cr_origin').textContent = '—';
         document.getElementById('f_cr_dest').textContent = '—';
@@ -1297,6 +1301,7 @@ async function newSheet(type){
   document.getElementById('f_cr_mawb').value = '';
   document.getElementById('f_cr_customer').textContent = '—';
   document.getElementById('f_cr_mode').textContent = '—';
+  document.getElementById('f_cr_cargoservice').textContent = '—';
   document.getElementById('f_cr_expimp').textContent = '—';
   document.getElementById('f_cr_origin').textContent = '—';
   document.getElementById('f_cr_dest').textContent = '—';
@@ -1306,6 +1311,7 @@ async function newSheet(type){
   document.getElementById('f_costperkg').value = '';
   document.getElementById('f_sellingperkg').value = '';
   document.getElementById('f_lc_vendor').value = '';
+  document.getElementById('f_lcr_vendor').value = '';
   document.getElementById('f_lc_trucktype').value = '';
   document.getElementById('f_lc_ratepertruck').value = '';
   document.getElementById('f_lc_truckusage').value = '';
@@ -1350,7 +1356,7 @@ function gatherRecord(){
     type: currentType,
     date: document.getElementById('f_date').value,
     month: document.getElementById('f_month').textContent,
-    customer: document.getElementById('f_customer').value,
+    customer: currentType==='finance' ? (document.getElementById('f_cr_customer').textContent==='—' ? '' : document.getElementById('f_cr_customer').textContent) : document.getElementById('f_customer').value,
     remark: document.getElementById('f_remark').value,
     quotationRef: document.getElementById('f_quotationref').value,
     cargoService: document.getElementById('f_cargoservice').value,
@@ -1381,12 +1387,14 @@ function gatherRecord(){
     crMawb: document.getElementById('f_cr_mawb').value,
     crCustomer: document.getElementById('f_cr_customer').textContent,
     crMode: document.getElementById('f_cr_mode').textContent,
+    crCargoService: document.getElementById('f_cr_cargoservice').textContent,
     crExpImp: document.getElementById('f_cr_expimp').textContent,
     crOrigin: document.getElementById('f_cr_origin').textContent,
     crDest: document.getElementById('f_cr_dest').textContent,
     crEtd: document.getElementById('f_cr_etd').textContent,
     crChargeableWeight: document.getElementById('f_cr_chargeableweight').textContent,
     lcVendor: document.getElementById('f_lc_vendor').value,
+    lcrVendor: document.getElementById('f_lcr_vendor').value,
     lcTruckType: document.getElementById('f_lc_trucktype').value,
     lcRatePerTruck: document.getElementById('f_lc_ratepertruck').value,
     lcTruckUsage: document.getElementById('f_lc_truckusage').value,
@@ -1494,6 +1502,7 @@ function applyRecord(rec){
   document.getElementById('f_cr_mawb').value = rec.crMawb || rec.refJobNo || '';
   document.getElementById('f_cr_customer').textContent = rec.crCustomer || '—';
   document.getElementById('f_cr_mode').textContent = rec.crMode || '—';
+  document.getElementById('f_cr_cargoservice').textContent = rec.crCargoService || '—';
   document.getElementById('f_cr_expimp').textContent = rec.crExpImp || '—';
   document.getElementById('f_cr_origin').textContent = rec.crOrigin || '—';
   document.getElementById('f_cr_dest').textContent = rec.crDest || '—';
@@ -1501,6 +1510,7 @@ function applyRecord(rec){
   document.getElementById('f_cr_lookupstatus').textContent = (rec.crCustomer && rec.crCustomer!=='—') ? '✓ Matched' : '—';
   document.getElementById('f_cr_chargeableweight').textContent = rec.crChargeableWeight || '0';
   document.getElementById('f_lc_vendor').value = rec.lcVendor || '';
+  document.getElementById('f_lcr_vendor').value = rec.lcrVendor || '';
   document.getElementById('f_lc_trucktype').value = rec.lcTruckType || '';
   document.getElementById('f_lc_ratepertruck').value = rec.lcRatePerTruck || '';
   document.getElementById('f_lc_truckusage').value = rec.lcTruckUsage || '';
@@ -1534,7 +1544,7 @@ function applyRecord(rec){
   itemCounter = 0;
   (rec.items||[]).forEach(it=>addItemRow(it));
   if((rec.items||[]).length===0) addItemRow();
-  const fallbackStatus = (rec.type==='inquiry') ? 'quotation-preparation' : (rec.type==='finance' ? 'draft' : 'flight-booked');
+  const fallbackStatus = (rec.type==='inquiry') ? 'quotation-preparation' : (rec.type==='finance' ? 'freight-input' : 'flight-booked');
   const statusEl = document.querySelector('input[name=status][value="'+(rec.status||fallbackStatus)+'"]');
   if(statusEl) statusEl.checked = true;
   updateStamp();
@@ -1740,6 +1750,57 @@ let currentListPage = 1;
 let currentFilteredRecords = [];
 const LIST_PAGE_SIZE = 20;
 
+const STATUS_LABELS = {
+  'quotation-preparation':'Quotation prep', 'negotiation':'Negotiation', 'win':'Win', 'failed':'Failed',
+  'flight-booked':'Flight Booked', 'truck-booked':'Truck Booked', 'truck-booked-drafted':'Truck Booked (Drafted)', 'pod':'POD', 'cancelled':'Cancelled',
+  'freight-input':'Freight Input', 'local-charge-input':'Local Charge Input', 'reconcile':'Reconcile', 'invoice-issued':'Invoice Issued'
+};
+
+function renderStatusSummary(records){
+  const inquiryStatuses = ['quotation-preparation','negotiation','win','failed'];
+  const bookingStatuses = ['flight-booked','truck-booked','truck-booked-drafted','pod','cancelled'];
+  const financeStatuses = ['freight-input','local-charge-input','reconcile','invoice-issued'];
+
+  function countByStatus(type, statuses, keyField){
+    const counts = {};
+    statuses.forEach(s=>counts[s]=0);
+    records.forEach(r=>{
+      if(r.type!==type) return;
+      const key = r[keyField];
+      if(!key || !String(key).trim()) return;
+      if(counts.hasOwnProperty(r.status)) counts[r.status]++;
+    });
+    return counts;
+  }
+
+  const inqCounts = countByStatus('inquiry', inquiryStatuses, 'quotationRef');
+  const bkCounts = countByStatus('booking', bookingStatuses, 'mawb');
+  const finCounts = countByStatus('finance', financeStatuses, 'refJobNo');
+
+  function chipsHtml(counts, bgColor, textColor){
+    return Object.entries(counts).map(([status,count])=>
+      `<div style="background:${bgColor}; color:${textColor}; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap;">${STATUS_LABELS[status]||status}: ${count}</div>`
+    ).join('');
+  }
+
+  document.getElementById('statusSummary').innerHTML = `
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span style="font-size:11px; font-weight:700; color:#6B5A0E; text-transform:uppercase; min-width:90px;">Inquiry</span>
+        ${chipsHtml(inqCounts, '#F7E4A3', '#6B5A0E')}
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span style="font-size:11px; font-weight:700; color:#1B2A44; text-transform:uppercase; min-width:90px;">Booking</span>
+        ${chipsHtml(bkCounts, '#A8D8F0', '#1B2A44')}
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span style="font-size:11px; font-weight:700; color:#7A4A0E; text-transform:uppercase; min-width:90px;">Cost &amp; Revenue</span>
+        ${chipsHtml(finCounts, '#F0D19A', '#7A4A0E')}
+      </div>
+    </div>
+  `;
+}
+
 async function refreshList(){
   const body = document.getElementById('listBody');
   body.innerHTML = '<div class="empty">Loading...</div>';
@@ -1758,6 +1819,7 @@ async function refreshList(){
     document.getElementById('typeTabFinance').classList.remove('active');
   }
   allListRecords = await dataGetAll();
+  renderStatusSummary(allListRecords);
   renderListRows(allListRecords);
 }
 
@@ -1881,7 +1943,6 @@ function hideAllPanels(){
 function toggleList(){
   const panel = document.getElementById('listPanel');
   const showing = panel.style.display !== 'none';
-  if(!showing && !confirmDiscard()) return;
   hideAllPanels();
   if(showing){
     document.getElementById('sheetRoot').style.display = 'block';
@@ -1894,7 +1955,6 @@ function toggleList(){
 function toggleDailyDash(){
   const panel = document.getElementById('dailyDashPanel');
   const showing = panel.style.display !== 'none';
-  if(!showing && !confirmDiscard()) return;
   hideAllPanels();
   if(showing){
     document.getElementById('sheetRoot').style.display = 'block';
@@ -1907,7 +1967,6 @@ function toggleDailyDash(){
 function toggleMonthlyDash(){
   const panel = document.getElementById('monthlyDashPanel');
   const showing = panel.style.display !== 'none';
-  if(!showing && !confirmDiscard()) return;
   hideAllPanels();
   if(showing){
     document.getElementById('sheetRoot').style.display = 'block';
@@ -1920,7 +1979,6 @@ function toggleMonthlyDash(){
 function toggleRevDash(){
   const panel = document.getElementById('revDashPanel');
   const showing = panel.style.display !== 'none';
-  if(!showing && !confirmDiscard()) return;
   hideAllPanels();
   if(showing){
     document.getElementById('sheetRoot').style.display = 'block';
@@ -1963,8 +2021,8 @@ async function renderDashboard(){
 
   document.getElementById('metricCards').innerHTML = `
     <div class="metric m-navy"><div class="num">${fmtNum(total)}</div><div class="lbl">Total shipment (MTD, by ETD)</div></div>
-    <div class="metric m-gray"><div class="num">${fmtNum(totalBookingWeight)}</div><div class="lbl">Total booking weight (MTD, kg)</div></div>
-    <div class="metric m-orange"><div class="num">${fmtNum(totalWeight)}</div><div class="lbl">Total chargeable weight (MTD, kg)</div></div>
+    <div class="metric m-orange"><div class="num">${fmtNum(totalBookingWeight)}</div><div class="lbl">Total booking weight (MTD, kg)</div></div>
+    <div class="metric m-green"><div class="num">${fmtNum(totalWeight)}</div><div class="lbl">Total chargeable weight (MTD, kg)</div></div>
   `;
 
   function isThisMonth(dateStr){
@@ -2041,7 +2099,7 @@ const monthShortNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','
 async function renderMonthlyDashboard(){
   const idx = await dataGetAll();
   const picker = document.getElementById('monthlyYearPicker');
-  if(!picker.value){ picker.value = new Date().getFullYear(); }
+  if(!picker.value || parseInt(picker.value,10)<2020){ picker.value = new Date().getFullYear(); }
   const year = parseInt(picker.value, 10);
 
   function monthlyRows(records, cols){
@@ -2058,21 +2116,29 @@ async function renderMonthlyDashboard(){
     return byMonth;
   }
 
-  const airRecords = idx.filter(i=>i.type==='booking' && i.mode==='Air');
-  const airMonthly = monthlyRows(airRecords, ['weight']);
-  const airTotalCount = airMonthly.reduce((s,m)=>s+m.count,0);
-  const airTotalWeight = airMonthly.reduce((s,m)=>s+m.a,0);
-  document.getElementById('monthlyAirBody').innerHTML = monthShortNames.map((m,i)=>
-    `<tr><td>${m}</td><td>${fmtNum(airMonthly[i].count)}</td><td>${fmtNum(airMonthly[i].a)}</td></tr>`
-  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(airTotalCount)}</td><td>${fmtNum(airTotalWeight)}</td></tr>`;
+  const airFreightRecords = idx.filter(i=>i.type==='booking' && i.mode==='Air' && i.cargoService==='Freight Forwarding');
+  const airFreightMonthly = monthlyRows(airFreightRecords, ['weight']);
+  const afCount = airFreightMonthly.reduce((s,m)=>s+m.count,0);
+  const afWeight = airFreightMonthly.reduce((s,m)=>s+m.a,0);
+  document.getElementById('monthlyAirFreightBody').innerHTML = monthShortNames.map((m,i)=>
+    `<tr><td>${m}</td><td>${fmtNum(airFreightMonthly[i].count)}</td><td>${fmtNum(airFreightMonthly[i].a)}</td></tr>`
+  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(afCount)}</td><td>${fmtNum(afWeight)}</td></tr>`;
 
-  const seaRecords = idx.filter(i=>i.type==='booking' && i.mode==='Sea');
-  const seaMonthly = monthlyRows(seaRecords, ['containers']);
-  const seaTotalCount = seaMonthly.reduce((s,m)=>s+m.count,0);
-  const seaTotalContainers = seaMonthly.reduce((s,m)=>s+m.a,0);
-  document.getElementById('monthlySeaBody').innerHTML = monthShortNames.map((m,i)=>
-    `<tr><td>${m}</td><td>${fmtNum(seaMonthly[i].count)}</td><td>${fmtNum(seaMonthly[i].a)}</td></tr>`
-  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(seaTotalCount)}</td><td>${fmtNum(seaTotalContainers)}</td></tr>`;
+  const airExpressRecords = idx.filter(i=>i.type==='booking' && i.mode==='Air' && i.cargoService==='Express');
+  const airExpressMonthly = monthlyRows(airExpressRecords, ['weight']);
+  const aeCount = airExpressMonthly.reduce((s,m)=>s+m.count,0);
+  const aeWeight = airExpressMonthly.reduce((s,m)=>s+m.a,0);
+  document.getElementById('monthlyAirExpressBody').innerHTML = monthShortNames.map((m,i)=>
+    `<tr><td>${m}</td><td>${fmtNum(airExpressMonthly[i].count)}</td><td>${fmtNum(airExpressMonthly[i].a)}</td></tr>`
+  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(aeCount)}</td><td>${fmtNum(aeWeight)}</td></tr>`;
+
+  const seaFreightRecords = idx.filter(i=>i.type==='booking' && i.mode==='Sea' && i.cargoService==='Freight Forwarding');
+  const seaFreightMonthly = monthlyRows(seaFreightRecords, ['containers']);
+  const sfCount = seaFreightMonthly.reduce((s,m)=>s+m.count,0);
+  const sfContainers = seaFreightMonthly.reduce((s,m)=>s+m.a,0);
+  document.getElementById('monthlySeaFreightBody').innerHTML = monthShortNames.map((m,i)=>
+    `<tr><td>${m}</td><td>${fmtNum(seaFreightMonthly[i].count)}</td><td>${fmtNum(seaFreightMonthly[i].a)}</td></tr>`
+  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(sfCount)}</td><td>${fmtNum(sfContainers)}</td></tr>`;
 
   const inquiryStatuses = ['win','failed','negotiation','quotation-preparation'];
   const inquiryRecords = idx.filter(i=>i.type==='inquiry' && inquiryStatuses.includes(i.status));
@@ -2123,49 +2189,53 @@ async function renderMonthlyDashboard(){
     }
   }
 
-  renderVolTable('volHeaderRowAir', 'volByCustomerBodyAir', 'volYearAir', idx.filter(i=>i.type==='booking' && i.mode==='Air'), 'weight', 'kg');
-  renderVolTable('volHeaderRowSea', 'volByCustomerBodySea', 'volYearSea', idx.filter(i=>i.type==='booking' && i.mode==='Sea'), 'containers', 'container');
+  renderVolTable('volHeaderRowAirFreight', 'volByCustomerBodyAirFreight', 'volYearAirFreight', airFreightRecords, 'weight', 'kg');
+  renderVolTable('volHeaderRowAirExpress', 'volByCustomerBodyAirExpress', 'volYearAirExpress', airExpressRecords, 'weight', 'kg');
+  renderVolTable('volHeaderRowSeaFreight', 'volByCustomerBodySeaFreight', 'volYearSeaFreight', seaFreightRecords, 'containers', 'container');
 }
 
-async function renderRevDashboard(){
-  const idx = await dataGetAll();
-  const picker = document.getElementById('revDashMonthPicker');
-  const now = new Date();
-  if(!picker.value){ picker.value = now.getFullYear()+'-'+pad(now.getMonth()+1); }
-  const [pickYear, pickMonth] = picker.value.split('-').map(Number);
+const REV_MODE_CATS = [
+  {key:'airFreight', label:'Air Freight', mode:'Air', cargoService:'Freight Forwarding'},
+  {key:'airExpress', label:'Air Express', mode:'Air', cargoService:'Express'},
+  {key:'seaFreight', label:'Sea Freight', mode:'Sea', cargoService:'Freight Forwarding'}
+];
 
-  const todayKey = todayStr();
-  const financeRecords = idx.filter(i=>{
-    if(i.type!=='finance' || !i.date) return false;
-    return i.date.slice(0,7)===picker.value && i.date<=todayKey;
+function revFilterByCat(records, cat){
+  return records.filter(i=>i.crMode===cat.mode && i.crCargoService===cat.cargoService);
+}
+
+function revMonthlyTotals(records, year, valueField){
+  const totals = new Array(12).fill(0);
+  records.forEach(i=>{
+    if(!i.date) return;
+    const d = new Date(i.date+'T00:00:00');
+    if(d.getFullYear()!==year) return;
+    totals[d.getMonth()] += parseFloat(i[valueField])||0;
   });
+  return totals;
+}
 
-  const totalRev = financeRecords.reduce((s,i)=>s+(parseFloat(i.revAmount)||0),0);
-  const totalCost = financeRecords.reduce((s,i)=>s+(parseFloat(i.costAmount)||0),0);
-  const totalGP = totalRev - totalCost;
-  const gpPct = totalRev>0 ? (totalGP/totalRev*100) : 0;
+function buildSimpleModeTables(containerId, records, year, valueField, categories){
+  const html = categories.map(cat=>{
+    const catRecords = revFilterByCat(records, cat);
+    const totals = revMonthlyTotals(catRecords, year, valueField);
+    const grand = totals.reduce((s,v)=>s+v,0);
+    const rows = monthShortNames.map((m,i)=>`<tr><td>${m}</td><td>${fmtNum(totals[i])}</td></tr>`).join('');
+    return `<div style="margin-bottom:16px;">
+      <div style="font-size:11px; font-weight:700; color:var(--steel); margin-bottom:6px; text-transform:uppercase;">${cat.label}</div>
+      <table class="dash-table"><thead><tr><th>Month</th><th>THB</th></tr></thead><tbody>${rows}
+      <tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(grand)}</td></tr></tbody></table>
+    </div>`;
+  }).join('');
+  document.getElementById(containerId).innerHTML = html;
+}
 
-  document.getElementById('revMetricCards').innerHTML = `
-    <div class="metric m-navy"><div class="num">${fmtNum(totalRev)}</div><div class="lbl">Total revenue (MTD, THB)</div></div>
-    <div class="metric m-gray"><div class="num">${fmtNum(totalCost)}</div><div class="lbl">Total cost (MTD, THB)</div></div>
-    <div class="metric m-orange"><div class="num">${fmtNum(totalGP)}</div><div class="lbl">Total GP (MTD, THB)</div></div>
-    <div class="metric m-orange"><div class="num">${totalRev>0?gpPct.toFixed(1)+'%':'—'}</div><div class="lbl">GP %</div></div>
-  `;
-
-  const yearPicker = document.getElementById('revByCustYearPicker');
-  if(!yearPicker.value){ yearPicker.value = now.getFullYear(); }
-  const byCustYear = parseInt(yearPicker.value, 10);
-  document.getElementById('revByCustYear').textContent = byCustYear;
-  document.getElementById('costByCustYear').textContent = byCustYear;
-  document.getElementById('gpByCustYear').textContent = byCustYear;
-
-  const yearFinanceRecords = idx.filter(i=>i.type==='finance' && i.date && new Date(i.date+'T00:00:00').getFullYear()===byCustYear);
-
-  function renderByCustomerTable(headerRowId, bodyId, valueField){
-    document.getElementById(headerRowId).innerHTML = '<th>Customer</th>' + monthShortNames.map(m=>`<th>${m}</th>`).join('') + '<th>Total (THB)</th><th>Share %</th>';
+function buildByCustomerModeTables(containerId, records, year, valueField, categories){
+  const html = categories.map(cat=>{
+    const catRecords = revFilterByCat(records, cat).filter(i=>i.date && new Date(i.date+'T00:00:00').getFullYear()===year);
     const map = {};
     let grand = 0;
-    yearFinanceRecords.forEach(i=>{
+    catRecords.forEach(i=>{
       const d = new Date(i.date+'T00:00:00');
       const k = i.customer || i.refJobNo || '—';
       if(!map[k]) map[k] = new Array(12).fill(0);
@@ -2174,24 +2244,199 @@ async function renderRevDashboard(){
       grand += v;
     });
     const entries = Object.entries(map).sort((a,b)=>b[1].reduce((s,v)=>s+v,0)-a[1].reduce((s,v)=>s+v,0));
-    const body = document.getElementById(bodyId);
+    const headerCells = '<th>Customer</th>' + monthShortNames.map(m=>`<th>${m}</th>`).join('') + '<th>Total</th>';
+    let bodyHtml;
     if(entries.length===0){
-      body.innerHTML = `<tr><td colspan="15" class="empty">No Cost &amp; Revenue records for ${byCustYear}</td></tr>`;
+      bodyHtml = `<tr><td colspan="14" class="empty">No data</td></tr>`;
     }else{
-      body.innerHTML = entries.map(([customer,months])=>{
+      bodyHtml = entries.map(([customer,months])=>{
         const total = months.reduce((s,v)=>s+v,0);
-        const pct = grand>0 ? (total/grand*100) : 0;
-        return `<tr><td>${customer}</td>` + months.map(v=>`<td>${fmtNum(v)}</td>`).join('') + `<td>${fmtNum(total)}</td><td>${pct.toFixed(1)}%</td></tr>`;
+        return `<tr><td>${customer}</td>` + months.map(v=>`<td>${fmtNum(v)}</td>`).join('') + `<td>${fmtNum(total)}</td></tr>`;
       }).join('') + `<tr style="font-weight:500;"><td>Grand total</td>` + monthShortNames.map((_,mi)=>{
         const sum = entries.reduce((s,[,months])=>s+months[mi],0);
         return `<td>${fmtNum(sum)}</td>`;
-      }).join('') + `<td>${fmtNum(grand)}</td><td>100%</td></tr>`;
+      }).join('') + `<td>${fmtNum(grand)}</td></tr>`;
     }
-  }
+    return `<div style="margin-bottom:16px; overflow-x:auto;">
+      <div style="font-size:11px; font-weight:700; color:var(--steel); margin-bottom:6px; text-transform:uppercase;">${cat.label}</div>
+      <table class="dash-table" style="min-width:760px;"><thead><tr>${headerCells}</tr></thead><tbody>${bodyHtml}</tbody></table>
+    </div>`;
+  }).join('');
+  document.getElementById(containerId).innerHTML = html;
+}
 
-  renderByCustomerTable('revHeaderRowRevenue', 'revByCustomerBodyRevenue', 'revAmount');
-  renderByCustomerTable('revHeaderRowCost', 'revByCustomerBodyCost', 'costAmount');
-  renderByCustomerTable('revHeaderRowGP', 'revByCustomerBodyGP', 'gpAmount');
+function buildGPPercentModeTables(containerId, records, year, categories){
+  const html = categories.map(cat=>{
+    const catRecords = revFilterByCat(records, cat);
+    const revTotals = revMonthlyTotals(catRecords, year, 'revAmount');
+    const costTotals = revMonthlyTotals(catRecords, year, 'costAmount');
+    const rows = monthShortNames.map((m,i)=>{
+      const rev = revTotals[i], cost = costTotals[i];
+      const pct = rev>0 ? ((rev-cost)/rev*100) : null;
+      return `<tr><td>${m}</td><td>${pct===null?'—':pct.toFixed(1)+'%'}</td></tr>`;
+    }).join('');
+    const grandRev = revTotals.reduce((s,v)=>s+v,0), grandCost = costTotals.reduce((s,v)=>s+v,0);
+    const grandPct = grandRev>0 ? ((grandRev-grandCost)/grandRev*100) : null;
+    return `<div style="margin-bottom:16px;">
+      <div style="font-size:11px; font-weight:700; color:var(--steel); margin-bottom:6px; text-transform:uppercase;">${cat.label}</div>
+      <table class="dash-table"><thead><tr><th>Month</th><th>GP %</th></tr></thead><tbody>${rows}
+      <tr style="font-weight:500;"><td>Overall</td><td>${grandPct===null?'—':grandPct.toFixed(1)+'%'}</td></tr></tbody></table>
+    </div>`;
+  }).join('');
+  document.getElementById(containerId).innerHTML = html;
+}
+
+function buildMonthlyAllModesTable(containerId, records, year){
+  const revTotals = revMonthlyTotals(records, year, 'revAmount');
+  const costTotals = revMonthlyTotals(records, year, 'costAmount');
+  const rows = monthShortNames.map((m,i)=>{
+    const rev = revTotals[i], cost = costTotals[i], gp = rev-cost;
+    const pct = rev>0 ? (gp/rev*100) : null;
+    return `<tr><td>${m}</td><td>${fmtNum(rev)}</td><td>${fmtNum(cost)}</td><td>${fmtNum(gp)}</td><td>${pct===null?'—':pct.toFixed(1)+'%'}</td></tr>`;
+  }).join('');
+  const grandRev = revTotals.reduce((s,v)=>s+v,0), grandCost = costTotals.reduce((s,v)=>s+v,0), grandGP = grandRev-grandCost;
+  const grandPct = grandRev>0 ? (grandGP/grandRev*100) : null;
+  document.getElementById(containerId).innerHTML = `<table class="dash-table"><thead><tr><th>Month</th><th>Rev</th><th>Cost</th><th>GP (THB)</th><th>GP %</th></tr></thead><tbody>${rows}
+    <tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(grandRev)}</td><td>${fmtNum(grandCost)}</td><td>${fmtNum(grandGP)}</td><td>${grandPct===null?'—':grandPct.toFixed(1)+'%'}</td></tr></tbody></table>`;
+}
+
+function buildDestinationTable(containerId, records, year){
+  const yearRecords = records.filter(i=>i.date && new Date(i.date+'T00:00:00').getFullYear()===year);
+  const map = {};
+  yearRecords.forEach(i=>{
+    const k = i.crDest || '—';
+    if(!map[k]) map[k] = {rev:0, cost:0};
+    map[k].rev += parseFloat(i.revAmount)||0;
+    map[k].cost += parseFloat(i.costAmount)||0;
+  });
+  const entries = Object.entries(map).sort((a,b)=>b[1].rev-a[1].rev);
+  let bodyHtml;
+  if(entries.length===0){
+    bodyHtml = `<tr><td colspan="5" class="empty">No data for ${year}</td></tr>`;
+  }else{
+    let grandRev=0, grandCost=0;
+    bodyHtml = entries.map(([dest,v])=>{
+      const gp = v.rev-v.cost;
+      const pct = v.rev>0 ? (gp/v.rev*100) : null;
+      grandRev+=v.rev; grandCost+=v.cost;
+      return `<tr><td>${dest}</td><td>${fmtNum(v.rev)}</td><td>${fmtNum(v.cost)}</td><td>${fmtNum(gp)}</td><td>${pct===null?'—':pct.toFixed(1)+'%'}</td></tr>`;
+    }).join('');
+    const grandGP = grandRev-grandCost;
+    const grandPct = grandRev>0 ? (grandGP/grandRev*100) : null;
+    bodyHtml += `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(grandRev)}</td><td>${fmtNum(grandCost)}</td><td>${fmtNum(grandGP)}</td><td>${grandPct===null?'—':grandPct.toFixed(1)+'%'}</td></tr>`;
+  }
+  document.getElementById(containerId).innerHTML = `<table class="dash-table"><thead><tr><th>Destination</th><th>Rev</th><th>Cost</th><th>GP (THB)</th><th>GP %</th></tr></thead><tbody>${bodyHtml}</tbody></table>`;
+}
+
+function buildCustomerGPPercentTable(containerId, records, year){
+  const yearRecords = records.filter(i=>i.date && new Date(i.date+'T00:00:00').getFullYear()===year);
+  const map = {};
+  yearRecords.forEach(i=>{
+    const d = new Date(i.date+'T00:00:00');
+    const k = i.customer || i.refJobNo || '—';
+    if(!map[k]) map[k] = {rev:new Array(12).fill(0), cost:new Array(12).fill(0)};
+    map[k].rev[d.getMonth()] += parseFloat(i.revAmount)||0;
+    map[k].cost[d.getMonth()] += parseFloat(i.costAmount)||0;
+  });
+  const entries = Object.entries(map).sort((a,b)=>b[1].rev.reduce((s,v)=>s+v,0)-a[1].rev.reduce((s,v)=>s+v,0));
+  const headerCells = '<th>Customer</th>' + monthShortNames.map(m=>`<th>${m}</th>`).join('') + '<th>Overall</th>';
+  let bodyHtml;
+  if(entries.length===0){
+    bodyHtml = `<tr><td colspan="14" class="empty">No data for ${year}</td></tr>`;
+  }else{
+    bodyHtml = entries.map(([customer,v])=>{
+      const cells = v.rev.map((rev,mi)=>{
+        const cost = v.cost[mi], gp = rev-cost;
+        const pct = rev>0 ? (gp/rev*100) : null;
+        return `<td>${pct===null?'—':pct.toFixed(1)+'%'}</td>`;
+      }).join('');
+      const totalRev = v.rev.reduce((s,x)=>s+x,0), totalCost = v.cost.reduce((s,x)=>s+x,0);
+      const overallPct = totalRev>0 ? ((totalRev-totalCost)/totalRev*100) : null;
+      return `<tr><td>${customer}</td>${cells}<td>${overallPct===null?'—':overallPct.toFixed(1)+'%'}</td></tr>`;
+    }).join('');
+  }
+  document.getElementById(containerId).innerHTML = `<div style="overflow-x:auto;"><table class="dash-table" style="min-width:760px;"><thead><tr>${headerCells}</tr></thead><tbody>${bodyHtml}</tbody></table></div>`;
+}
+
+function buildCombinedModeTables(containerId, records, year, categories){
+  const html = categories.map(cat=>{
+    const catRecords = revFilterByCat(records, cat);
+    const revTotals = revMonthlyTotals(catRecords, year, 'revAmount');
+    const costTotals = revMonthlyTotals(catRecords, year, 'costAmount');
+    const rows = monthShortNames.map((m,i)=>{
+      const rev = revTotals[i], cost = costTotals[i], gp = rev-cost;
+      const pct = rev>0 ? (gp/rev*100) : null;
+      return `<tr><td>${m}</td><td>${fmtNum(rev)}</td><td>${fmtNum(cost)}</td><td>${fmtNum(gp)}</td><td>${pct===null?'—':pct.toFixed(1)+'%'}</td></tr>`;
+    }).join('');
+    const grandRev = revTotals.reduce((s,v)=>s+v,0), grandCost = costTotals.reduce((s,v)=>s+v,0), grandGP = grandRev-grandCost;
+    const grandPct = grandRev>0 ? (grandGP/grandRev*100) : null;
+    return `<div style="margin-bottom:16px;">
+      <div style="font-size:11px; font-weight:700; color:var(--steel); margin-bottom:6px; text-transform:uppercase;">${cat.label}</div>
+      <table class="dash-table"><thead><tr><th>Month</th><th>Rev</th><th>Cost</th><th>GP (THB)</th><th>GP %</th></tr></thead><tbody>${rows}
+      <tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(grandRev)}</td><td>${fmtNum(grandCost)}</td><td>${fmtNum(grandGP)}</td><td>${grandPct===null?'—':grandPct.toFixed(1)+'%'}</td></tr></tbody></table>
+    </div>`;
+  }).join('');
+  document.getElementById(containerId).innerHTML = html;
+}
+
+function buildCustomerOnlyTable(containerId, records, year, valueField){
+  const yearRecords = records.filter(i=>i.date && new Date(i.date+'T00:00:00').getFullYear()===year);
+  const map = {};
+  let grand = 0;
+  yearRecords.forEach(i=>{
+    const d = new Date(i.date+'T00:00:00');
+    const k = i.customer || i.refJobNo || '—';
+    if(!map[k]) map[k] = new Array(12).fill(0);
+    const v = parseFloat(i[valueField])||0;
+    map[k][d.getMonth()] += v;
+    grand += v;
+  });
+  const entries = Object.entries(map).sort((a,b)=>b[1].reduce((s,v)=>s+v,0)-a[1].reduce((s,v)=>s+v,0));
+  const headerCells = '<th>Customer</th>' + monthShortNames.map(m=>`<th>${m}</th>`).join('') + '<th>Total</th>';
+  let bodyHtml;
+  if(entries.length===0){
+    bodyHtml = `<tr><td colspan="14" class="empty">No data for ${year}</td></tr>`;
+  }else{
+    bodyHtml = entries.map(([customer,months])=>{
+      const total = months.reduce((s,v)=>s+v,0);
+      return `<tr><td>${customer}</td>` + months.map(v=>`<td>${fmtNum(v)}</td>`).join('') + `<td>${fmtNum(total)}</td></tr>`;
+    }).join('') + `<tr style="font-weight:500;"><td>Grand total</td>` + monthShortNames.map((_,mi)=>{
+      const sum = entries.reduce((s,[,months])=>s+months[mi],0);
+      return `<td>${fmtNum(sum)}</td>`;
+    }).join('') + `<td>${fmtNum(grand)}</td></tr>`;
+  }
+  document.getElementById(containerId).innerHTML = `<div style="overflow-x:auto;"><table class="dash-table" style="min-width:760px;"><thead><tr>${headerCells}</tr></thead><tbody>${bodyHtml}</tbody></table></div>`;
+}
+
+async function renderRevDashboard(){
+  const idx = await dataGetAll();
+  const yearPicker = document.getElementById('revYearPicker');
+  const now = new Date();
+  if(!yearPicker.value || parseInt(yearPicker.value,10)<2020){ yearPicker.value = now.getFullYear(); }
+  const year = parseInt(yearPicker.value, 10);
+
+  const financeRecords = idx.filter(i=>i.type==='finance' && i.date);
+
+  const todayKey = todayStr();
+  const mtdRecords = financeRecords.filter(i=>i.date.slice(0,7)===todayKey.slice(0,7));
+  const mtdRev = mtdRecords.reduce((s,i)=>s+(parseFloat(i.revAmount)||0),0);
+  const mtdCost = mtdRecords.reduce((s,i)=>s+(parseFloat(i.costAmount)||0),0);
+  const mtdGP = mtdRev - mtdCost;
+  const mtdGPPct = mtdRev>0 ? (mtdGP/mtdRev*100) : null;
+  document.getElementById('revMetricCards').innerHTML = `
+    <div class="metric m-sky"><div class="num">${fmtNum(mtdRev)}</div><div class="lbl">Total revenue (MTD, THB)</div></div>
+    <div class="metric m-orange"><div class="num">${fmtNum(mtdCost)}</div><div class="lbl">Total cost (MTD, THB)</div></div>
+    <div class="metric m-green"><div class="num">${fmtNum(mtdGP)}</div><div class="lbl">Total GP (MTD, THB)</div></div>
+    <div class="metric m-green"><div class="num">${mtdGPPct===null?'—':mtdGPPct.toFixed(1)+'%'}</div><div class="lbl">GP % (MTD)</div></div>
+  `;
+
+  buildMonthlyAllModesTable('c1Container', financeRecords, year);
+  buildCombinedModeTables('c2Container', financeRecords, year, REV_MODE_CATS);
+  buildDestinationTable('c9Container', financeRecords, year);
+  buildCustomerOnlyTable('c3Container', financeRecords, year, 'revAmount');
+  buildCustomerOnlyTable('c5Container', financeRecords, year, 'costAmount');
+  buildCustomerOnlyTable('c8Container', financeRecords, year, 'gpAmount');
+  buildCustomerGPPercentTable('c10Container', financeRecords, year);
 }
 
 function loadFromDash(jobNo){
@@ -2263,7 +2508,7 @@ const csvTemplateColsCR = [
 
 function downloadCRCSVTemplate(){
   const sampleRow = [
-    '','2026-07-08','057-4969 2672','','draft',
+    '','2026-07-08','057-4969 2672','','freight-input',
     '8.5','12',
     'NP, FM','6W','1','5000','750','','200','1200','','','',
     '6W','1','6500','900','','250','1400','','','',
@@ -2386,6 +2631,7 @@ function importCRCSV(file){
         const match = mawb ? allBookings.find(r=>r.type==='booking' && r.mawb && r.mawb.trim()===mawb) : null;
         const crCustomer = match ? (match.customer||'—') : '—';
         const crMode = match ? (match.mode||'—') : '—';
+        const crCargoService = match ? (match.cargoService||'—') : '—';
         const crExpImp = match ? (match.expImp||'—') : '—';
         const crOrigin = match ? (match.origin||'—') : '—';
         const crDest = match ? (match.dest||'—') : '—';
@@ -2418,8 +2664,8 @@ function importCRCSV(file){
 
         const rec = {
           jobNo, type:'finance', date:dateStr, month, customer:crCustomer!=='—'?crCustomer:'',
-          status:obj.status||'draft', savedAt:new Date().toISOString(),
-          refJobNo:mawb, crMawb:mawb, crCustomer, crMode, crExpImp, crOrigin, crDest, crEtd, crChargeableWeight,
+          status:obj.status||'freight-input', savedAt:new Date().toISOString(),
+          refJobNo:mawb, crMawb:mawb, crCustomer, crMode, crCargoService, crExpImp, crOrigin, crDest, crEtd, crChargeableWeight,
           costPerKg:obj.costPerKg||'', sellingPerKg:obj.sellingPerKg||'',
           lcVendor:obj.lcVendor||'', lcTruckType:obj.lcTruckType||'', lcTruckUsage:obj.lcTruckUsage||'', lcRatePerTruck:obj.lcRatePerTruck||'',
           lcCustoms:obj.lcCustoms||'', lcTerminal:obj.lcTerminal||'', lcDocument:obj.lcDocument||'', lcAirlinesOther:obj.lcAirlinesOther||'',
