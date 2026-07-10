@@ -947,10 +947,10 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <label><input type="radio" name="status" value="cancelled" onchange="updateStamp()"> Cancelled</label>
       </div>
       <div class="status-toggle" id="statusFinance">
-        <label><input type="radio" name="status" value="freight-input" checked onchange="updateStamp()"> Freight Input</label>
-        <label><input type="radio" name="status" value="local-charge-input" onchange="updateStamp()"> Local Charge Input</label>
-        <label><input type="radio" name="status" value="reconcile" onchange="updateStamp()"> Reconcile</label>
-        <label><input type="radio" name="status" value="invoice-issued" onchange="updateStamp()"> Invoice Issued</label>
+        <label><input type="radio" name="crstatus" value="freight-input" checked onchange="updateStamp()"> Freight Input</label>
+        <label><input type="radio" name="crstatus" value="local-charge-input" onchange="updateStamp()"> Local Charge Input</label>
+        <label><input type="radio" name="crstatus" value="reconcile" onchange="updateStamp()"> Reconcile</label>
+        <label><input type="radio" name="crstatus" value="invoice-issued" onchange="updateStamp()"> Invoice Issued</label>
       </div>
       <div class="mono" style="font-size:11px; color:var(--steel);">saved: <span id="savedTime">—</span></div>
     </div>
@@ -1184,6 +1184,7 @@ function lookupMAWB(){
   const mawb = document.getElementById('f_cr_mawb').value.trim();
   const statusEl = document.getElementById('f_cr_lookupstatus');
   if(!mawb){
+    window.crMergeTarget = null;
     document.getElementById('f_cr_customer').textContent = '—';
     document.getElementById('f_cr_mode').textContent = '—';
     document.getElementById('f_cr_cargoservice').textContent = '—';
@@ -1202,6 +1203,7 @@ function lookupMAWB(){
       const all = await dataGetAll();
       const match = all.find(r=>r.type==='booking' && r.mawb && r.mawb.trim()===mawb);
       if(match){
+        window.crMergeTarget = match;
         document.getElementById('f_cr_customer').textContent = match.customer || '—';
         document.getElementById('f_cr_mode').textContent = match.mode || '—';
         document.getElementById('f_cr_cargoservice').textContent = match.cargoService || '—';
@@ -1210,12 +1212,40 @@ function lookupMAWB(){
         document.getElementById('f_cr_dest').textContent = match.dest || '—';
         document.getElementById('f_cr_etd').textContent = match.etd || '—';
         document.getElementById('f_cr_chargeableweight').textContent = String(match.weight || 0);
-        statusEl.textContent = '✓ Matched '+match.jobNo;
+        statusEl.textContent = '✓ Will save into Booking '+match.jobNo;
         if(match.customer){
           const custSelect = document.getElementById('f_customer');
           if([...custSelect.options].some(o=>o.value===match.customer)) custSelect.value = match.customer;
         }
+        // If this Booking already has Cost & Revenue data attached (from a previous save),
+        // pull the editable A.2–A.4 fields back into the form so the user is editing the
+        // existing numbers, not starting from blank.
+        if(match.revAmount || match.costAmount){
+          const crFieldIds = ['f_costperkg','f_sellingperkg','f_lc_vendor','f_lc_trucktype','f_lc_truckusage',
+            'f_lc_ratepertruck','f_lc_customs','f_lc_terminal','f_lc_document','f_lc_airlinesother','f_lc_packing',
+            'f_lc_other','f_lc_otherremark','f_lcr_vendor','f_lcr_trucktype','f_lcr_truckusage','f_lcr_ratepertruck',
+            'f_lcr_customs','f_lcr_terminal','f_lcr_document','f_lcr_airlinesother','f_lcr_packing','f_lcr_other',
+            'f_lcr_otherremark','f_dc_handlingcost','f_dc_customscost','f_dc_deliverycost','f_dcr_handlingrev',
+            'f_dcr_customsrev','f_dcr_deliveryrev'];
+          const recFieldMap = {f_costperkg:'costPerKg', f_sellingperkg:'sellingPerKg', f_lc_vendor:'lcVendor',
+            f_lc_trucktype:'lcTruckType', f_lc_truckusage:'lcTruckUsage', f_lc_ratepertruck:'lcRatePerTruck',
+            f_lc_customs:'lcCustoms', f_lc_terminal:'lcTerminal', f_lc_document:'lcDocument',
+            f_lc_airlinesother:'lcAirlinesOther', f_lc_packing:'lcPacking', f_lc_other:'lcOther',
+            f_lc_otherremark:'lcOtherRemark', f_lcr_vendor:'lcrVendor', f_lcr_trucktype:'lcrTruckType',
+            f_lcr_truckusage:'lcrTruckUsage', f_lcr_ratepertruck:'lcrRatePerTruck', f_lcr_customs:'lcrCustoms',
+            f_lcr_terminal:'lcrTerminal', f_lcr_document:'lcrDocument', f_lcr_airlinesother:'lcrAirlinesOther',
+            f_lcr_packing:'lcrPacking', f_lcr_other:'lcrOther', f_lcr_otherremark:'lcrOtherRemark',
+            f_dc_handlingcost:'dcHandlingCost', f_dc_customscost:'dcCustomsCost', f_dc_deliverycost:'dcDeliveryCost',
+            f_dcr_handlingrev:'dcHandlingRev', f_dcr_customsrev:'dcCustomsRev', f_dcr_deliveryrev:'dcDeliveryRev'};
+          crFieldIds.forEach(id=>{
+            const el = document.getElementById(id);
+            const key = recFieldMap[id];
+            if(el && match[key]!==undefined && match[key]!==''){ el.value = match[key]; }
+          });
+          document.querySelectorAll('input[name=crstatus]').forEach(r=>{ r.checked = (r.value===(match.crStatus||'freight-input')); });
+        }
       }else{
+        window.crMergeTarget = null;
         document.getElementById('f_cr_customer').textContent = '—';
         document.getElementById('f_cr_mode').textContent = '—';
         document.getElementById('f_cr_cargoservice').textContent = '—';
@@ -1224,7 +1254,7 @@ function lookupMAWB(){
         document.getElementById('f_cr_dest').textContent = '—';
         document.getElementById('f_cr_etd').textContent = '—';
         document.getElementById('f_cr_chargeableweight').textContent = '0';
-        statusEl.textContent = '✗ No matching booking found';
+        statusEl.textContent = '✗ No matching booking — will save as a standalone record';
       }
       updateGP();
     }catch(e){
@@ -1268,7 +1298,8 @@ function collectItems(){
 }
 
 function updateStamp(){
-  const status = document.querySelector('input[name=status]:checked').value;
+  const sel = currentType==='finance' ? document.querySelector('input[name=crstatus]:checked') : document.querySelector('input[name=status]:checked');
+  const status = sel ? sel.value : '';
   const stamp = document.getElementById('statusStamp');
   stamp.textContent = status.replace('-',' ');
   stamp.className = 'stamp ' + status;
@@ -1276,6 +1307,7 @@ function updateStamp(){
 
 async function newSheet(type){
   type = type || currentType || 'booking';
+  window.crMergeTarget = null;
   hideAllPanels();
   document.getElementById('sheetRoot').style.display = 'block';
   setType(type);
@@ -1357,9 +1389,9 @@ async function newSheet(type){
 
 function gatherRecord(){
   const items = collectItems();
-  return {
-    jobNo: currentJobNo,
-    type: currentType,
+  const rec = {
+    jobNo: (currentType==='finance' && window.crMergeTarget) ? window.crMergeTarget.jobNo : currentJobNo,
+    type: (currentType==='finance' && window.crMergeTarget) ? 'booking' : currentType,
     date: document.getElementById('f_date').value,
     month: document.getElementById('f_month').textContent,
     customer: currentType==='finance' ? (document.getElementById('f_cr_customer').textContent==='—' ? '' : document.getElementById('f_cr_customer').textContent) : document.getElementById('f_customer').value,
@@ -1473,9 +1505,28 @@ function gatherRecord(){
       const totalRev = lcRev + (w*s) + dcRev;
       return totalRev>0 ? ((totalRev-totalCost)/totalRev*100) : 0;
     })(),
-    status: document.querySelector('input[name=status]:checked').value,
+    ...(currentType==='finance' && window.crMergeTarget ? {} : {
+      status: currentType==='finance'
+        ? (document.querySelector('input[name=crstatus]:checked') ? document.querySelector('input[name=crstatus]:checked').value : 'freight-input')
+        : document.querySelector('input[name=status]:checked').value
+    }),
+    ...(currentType==='finance' ? {
+      crStatus: document.querySelector('input[name=crstatus]:checked') ? document.querySelector('input[name=crstatus]:checked').value : 'freight-input'
+    } : {}),
     savedAt: new Date().toISOString()
   };
+
+  // When Cost & Revenue is being merged into an existing Booking row, this form never
+  // touched the Booking's own fields (mode, route, weights, etc) — they must NOT be
+  // overwritten with blanks. Strip them so the backend's merge-write preserves the
+  // Booking's current values untouched.
+  if(currentType==='finance' && window.crMergeTarget){
+    const bookingOnlyFields = ['cargoService','mode','expImp','service','origin','dest','route',
+      'carrier','coloader','etd','eta','transit','containers','items','vendorName','truckType',
+      'totalTruck','driverName','licensePlate','pickupDate','mawb','bookingWeight','chargeableWeight'];
+    bookingOnlyFields.forEach(f => delete rec[f]);
+  }
+  return rec;
 }
 
 function applyRecord(rec){
@@ -1845,8 +1896,8 @@ function renderListPage(){
       <div style="display:flex; align-items:center; gap:10px;">
         <input type="checkbox" class="row-checkbox" data-jobno="${i.jobNo}" onclick="event.stopPropagation();" onchange="if(this.checked){selectedJobNos.add('${i.jobNo}');}else{selectedJobNos.delete('${i.jobNo}');} updateSelectedCount();">
         <div>
-          <span class="mono">${(i.type==='finance' ? (i.crMawb||i.refJobNo) : i.mawb) || i.jobNo}</span>
-          <span class="meta"> — ${i.type==='inquiry'?'Inquiry':(i.type==='finance'?'Cost & Revenue':'Booking')} · ${i.customer||''} · ${i.route||''} · ${i.date||''}</span>
+          <span class="mono">${(i.crMawb||i.mawb) || i.jobNo}</span>
+          <span class="meta"> — ${i.type==='inquiry'?'Inquiry':(i.revAmount||i.costAmount?'Booking + Cost & Revenue':(i.type==='finance'?'Cost & Revenue':'Booking'))} · ${i.customer||''} · ${i.route||''} · ${i.date||''}</span>
         </div>
       </div>
       <span class="badge">${i.status}</span>
@@ -1899,7 +1950,9 @@ function applyListFilters(){
   currentListPage = 1;
   let filtered = allListRecords;
   if(listTypeFilter){
-    filtered = filtered.filter(i=>i.type===listTypeFilter);
+    filtered = listTypeFilter==='finance'
+      ? filtered.filter(i=>i.type==='finance' || i.revAmount || i.costAmount)
+      : filtered.filter(i=>i.type===listTypeFilter);
   }
   if(query){
     filtered = filtered.filter(i=>
@@ -2082,7 +2135,7 @@ async function renderDashboard(){
     return row('MTD', i=>isThisMonth(i.etd) && i.etd<=todayKey) +
       row('Today', i=>i.etd===todayKey) +
       row('Tomorrow', i=>i.etd===tmrKey) +
-      row('Planned this month', i=>isThisMonth(i.etd) && i.etd>todayKey) +
+      row('Planned this month', i=>isThisMonth(i.etd) && i.etd>tmrKey) +
       row('Planned next month', i=>isNextMonth(i.etd));
   }
 
@@ -2419,7 +2472,7 @@ async function renderRevDashboard(){
   if(!yearPicker.value || parseInt(yearPicker.value,10)<2020){ yearPicker.value = now.getFullYear(); }
   const year = parseInt(yearPicker.value, 10);
 
-  const financeRecords = idx.filter(i=>i.type==='finance' && i.date);
+  const financeRecords = idx.filter(i=>(i.type==='finance' || i.revAmount || i.costAmount) && i.date);
 
   const todayKey = todayStr();
   const mtdRecords = financeRecords.filter(i=>i.date.slice(0,7)===todayKey.slice(0,7));
