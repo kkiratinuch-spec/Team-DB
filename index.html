@@ -2029,8 +2029,8 @@ async function renderDashboard(){
 
   document.getElementById('metricCards').innerHTML = `
     <div class="metric m-navy"><div class="num">${fmtNum(total)}</div><div class="lbl">Total shipment (MTD, by ETD)</div></div>
-    <div class="metric m-orange"><div class="num">${fmtNum(totalBookingWeight,2)}</div><div class="lbl">Total booking weight (MTD, kg)</div></div>
-    <div class="metric m-green"><div class="num">${fmtNum(totalWeight,2)}</div><div class="lbl">Total chargeable weight (MTD, kg)</div></div>
+    <div class="metric m-orange"><div class="num">${fmtNum(totalBookingWeight)}</div><div class="lbl">Total booking weight (MTD, kg)</div></div>
+    <div class="metric m-green"><div class="num">${fmtNum(totalWeight)}</div><div class="lbl">Total chargeable weight (MTD, kg)</div></div>
   `;
 
   function isThisMonth(dateStr){
@@ -2082,7 +2082,7 @@ async function renderDashboard(){
       }
       const bookingWeight = matches.reduce((sum,i)=>sum+(parseFloat(i.bookingWeight)||0),0);
       const chargeableWeight = matches.reduce((sum,i)=>sum+(parseFloat(i.weight)||0),0);
-      return `<tr><td>${label}</td><td>${fmtNum(shipments)}</td><td>${fmtNum(bookingWeight,2)}</td><td>${fmtNum(chargeableWeight,2)}</td></tr>`;
+      return `<tr><td>${label}</td><td>${fmtNum(shipments)}</td><td>${fmtNum(bookingWeight)}</td><td>${fmtNum(chargeableWeight)}</td></tr>`;
     }
     return row('MTD', i=>isThisMonth(i.etd) && i.etd<=todayKey) +
       row('Today', i=>i.etd===todayKey) +
@@ -2129,16 +2129,16 @@ async function renderMonthlyDashboard(){
   const afCount = airFreightMonthly.reduce((s,m)=>s+m.count,0);
   const afWeight = airFreightMonthly.reduce((s,m)=>s+m.a,0);
   document.getElementById('monthlyAirFreightBody').innerHTML = monthShortNames.map((m,i)=>
-    `<tr><td>${m}</td><td>${fmtNum(airFreightMonthly[i].count)}</td><td>${fmtNum(airFreightMonthly[i].a,2)}</td></tr>`
-  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(afCount)}</td><td>${fmtNum(afWeight,2)}</td></tr>`;
+    `<tr><td>${m}</td><td>${fmtNum(airFreightMonthly[i].count)}</td><td>${fmtNum(airFreightMonthly[i].a)}</td></tr>`
+  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(afCount)}</td><td>${fmtNum(afWeight)}</td></tr>`;
 
   const airExpressRecords = idx.filter(i=>i.type==='booking' && i.mode==='Air' && i.cargoService==='Express');
   const airExpressMonthly = monthlyRows(airExpressRecords, ['weight']);
   const aeCount = airExpressMonthly.reduce((s,m)=>s+m.count,0);
   const aeWeight = airExpressMonthly.reduce((s,m)=>s+m.a,0);
   document.getElementById('monthlyAirExpressBody').innerHTML = monthShortNames.map((m,i)=>
-    `<tr><td>${m}</td><td>${fmtNum(airExpressMonthly[i].count)}</td><td>${fmtNum(airExpressMonthly[i].a,2)}</td></tr>`
-  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(aeCount)}</td><td>${fmtNum(aeWeight,2)}</td></tr>`;
+    `<tr><td>${m}</td><td>${fmtNum(airExpressMonthly[i].count)}</td><td>${fmtNum(airExpressMonthly[i].a)}</td></tr>`
+  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(aeCount)}</td><td>${fmtNum(aeWeight)}</td></tr>`;
 
   const seaFreightRecords = idx.filter(i=>i.type==='booking' && i.mode==='Sea' && i.cargoService==='Freight Forwarding');
   const seaFreightMonthly = monthlyRows(seaFreightRecords, ['containers']);
@@ -2167,7 +2167,7 @@ async function renderMonthlyDashboard(){
   ).join('');
 
   function renderVolTable(headerRowId, bodyId, yearSpanId, records, valueField, unitLabel){
-    const dec = unitLabel==='kg' ? 2 : 0;
+    const dec = 0;
     document.getElementById(yearSpanId).textContent = year;
     document.getElementById(headerRowId).innerHTML = '<th>Customer</th>' + monthShortNames.map(m=>`<th>${m}</th>`).join('') + `<th>Total (${unitLabel})</th><th>Vol %</th>`;
 
