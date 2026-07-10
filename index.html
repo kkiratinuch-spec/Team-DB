@@ -1506,15 +1506,10 @@ function applyRecord(rec){
   document.getElementById('f_pickupdate').value = rec.pickupDate || '';
   document.getElementById('f_notes').value = rec.notes || '';
   document.getElementById('f_cr_mawb').value = rec.crMawb || rec.refJobNo || '';
-  document.getElementById('f_cr_customer').textContent = rec.crCustomer || '—';
-  document.getElementById('f_cr_mode').textContent = rec.crMode || '—';
-  document.getElementById('f_cr_cargoservice').textContent = rec.crCargoService || '—';
-  document.getElementById('f_cr_expimp').textContent = rec.crExpImp || '—';
-  document.getElementById('f_cr_origin').textContent = rec.crOrigin || '—';
-  document.getElementById('f_cr_dest').textContent = rec.crDest || '—';
-  document.getElementById('f_cr_etd').textContent = rec.crEtd || '—';
-  document.getElementById('f_cr_lookupstatus').textContent = (rec.crCustomer && rec.crCustomer!=='—') ? '✓ Matched' : '—';
-  document.getElementById('f_cr_chargeableweight').textContent = rec.crChargeableWeight || '0';
+  document.getElementById('f_cr_lookupstatus').textContent = 'Refreshing…';
+  // Re-run live MAWB lookup instead of trusting the saved snapshot, so any edits made
+  // to the Booking's weight/customer/etc after this C&R record was last saved are picked up.
+  lookupMAWB();
   document.getElementById('f_lc_vendor').value = rec.lcVendor || '';
   document.getElementById('f_lcr_vendor').value = rec.lcrVendor || '';
   document.getElementById('f_lc_trucktype').value = rec.lcTruckType || '';
@@ -1851,7 +1846,7 @@ function renderListPage(){
         <input type="checkbox" class="row-checkbox" data-jobno="${i.jobNo}" onclick="event.stopPropagation();" onchange="if(this.checked){selectedJobNos.add('${i.jobNo}');}else{selectedJobNos.delete('${i.jobNo}');} updateSelectedCount();">
         <div>
           <span class="mono">${(i.type==='finance' ? (i.crMawb||i.refJobNo) : i.mawb) || i.jobNo}</span>
-          <span class="meta"> — ${i.type==='inquiry'?'Inquiry':(i.type==='finance'?'Cost & Revenue':'Booking')} · ${i.customer||''} · ${i.route||''} · ${i.date||''} · Job No ${i.jobNo}</span>
+          <span class="meta"> — ${i.type==='inquiry'?'Inquiry':(i.type==='finance'?'Cost & Revenue':'Booking')} · ${i.customer||''} · ${i.route||''} · ${i.date||''}</span>
         </div>
       </div>
       <span class="badge">${i.status}</span>
