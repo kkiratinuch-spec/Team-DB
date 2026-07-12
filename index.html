@@ -611,58 +611,26 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <div class="field"><label>Lookup status</label><div class="readout mono" id="f_cr_lookupstatus">—</div></div>
       </div>
 
-      <div class="section-label finance-only">A.2.1 — Local Charge (Cost)</div>
+      <div class="section-label finance-only">A.2.1 — Local Charge (Cost) — up to 4 vendors</div>
+      <div class="finance-only" style="overflow-x:auto; margin-bottom:14px;">
+        <table class="dash-table" style="min-width:900px;">
+<thead><tr><th>Vendor</th><th>Truck Type</th><th>Usage</th><th>Rate/Truck</th><th>Customs</th><th>Terminal</th><th>Document</th><th>Airlines Other</th><th>Packing</th><th>Other</th><th>Remark</th></tr></thead><tbody><tr><td><input type="text" id="f_lc_vendor1" style="width:100px;" oninput="document.getElementById('f_lcr_vendor1').value=this.value;"></td><td><select id="f_lc_trucktype1" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_lc_truckusage1" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_ratepertruck1" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_customs1" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_terminal1" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_document1" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_airlinesother1" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_packing1" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_other1" style="width:70px;" oninput="updateGP()"></td><td><input type="text" id="f_lc_otherremark1" style="width:90px;"></td></tr><tr><td><input type="text" id="f_lc_vendor2" style="width:100px;" oninput="document.getElementById('f_lcr_vendor2').value=this.value;"></td><td><select id="f_lc_trucktype2" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_lc_truckusage2" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_ratepertruck2" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_customs2" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_terminal2" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_document2" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_airlinesother2" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_packing2" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_other2" style="width:70px;" oninput="updateGP()"></td><td><input type="text" id="f_lc_otherremark2" style="width:90px;"></td></tr><tr><td><input type="text" id="f_lc_vendor3" style="width:100px;" oninput="document.getElementById('f_lcr_vendor3').value=this.value;"></td><td><select id="f_lc_trucktype3" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_lc_truckusage3" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_ratepertruck3" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_customs3" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_terminal3" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_document3" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_airlinesother3" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_packing3" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_other3" style="width:70px;" oninput="updateGP()"></td><td><input type="text" id="f_lc_otherremark3" style="width:90px;"></td></tr><tr><td><input type="text" id="f_lc_vendor4" style="width:100px;" oninput="document.getElementById('f_lcr_vendor4').value=this.value;"></td><td><select id="f_lc_trucktype4" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_lc_truckusage4" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_ratepertruck4" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_customs4" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_terminal4" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_document4" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_airlinesother4" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_packing4" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lc_other4" style="width:70px;" oninput="updateGP()"></td><td><input type="text" id="f_lc_otherremark4" style="width:90px;"></td></tr></tbody>
+        </table>
+      </div>
       <div class="grid finance-only" id="a2LocalChargeCost">
-        <div class="field"><label>Vendor name</label><input type="text" id="f_lc_vendor" oninput="document.getElementById('f_lcr_vendor').value=this.value;"></div>
-        <div class="field">
-          <label>Truck type</label>
-          <select id="f_lc_trucktype" onchange="updateGP()">
-            <option value="">—</option>
-            <option>4W</option>
-            <option>6W</option>
-            <option>10W</option>
-            <option>20"</option>
-            <option>40"</option>
-          </select>
-        </div>
-        <div class="field"><label>Truck usage</label><input type="number" id="f_lc_truckusage" oninput="updateGP()" placeholder="qty"></div>
-        <div class="field"><label>Rate per truck</label><input type="number" id="f_lc_ratepertruck" oninput="updateGP()"></div>
-        <div class="field"><label>Total Truck Cost</label><div class="readout mono" id="f_lc_pickupcost">—</div></div>
-        <div class="field"><label>Customs clearance</label><input type="number" id="f_lc_customs" oninput="updateGP()"></div>
-        <div class="field"><label>Terminal handling</label><input type="number" id="f_lc_terminal" oninput="updateGP()"></div>
-        <div class="field"><label>Document</label><input type="number" id="f_lc_document" oninput="updateGP()"></div>
-        <div class="field"><label>Airlines other charges</label><input type="number" id="f_lc_airlinesother" oninput="updateGP()"></div>
-        <div class="field"><label>Packing</label><input type="number" id="f_lc_packing" oninput="updateGP()"></div>
-        <div class="field"><label>Other (THB)</label><input type="number" id="f_lc_other" oninput="updateGP()"></div>
-        <div class="field"><label>Other remark</label><input type="text" id="f_lc_otherremark"></div>
+        <div class="field"><label>Total Truck Cost (all vendors)</label><div class="readout mono" id="f_lc_pickupcost">—</div></div>
         <div class="field"><label>Total local handling charge</label><div class="readout mono" id="f_lc_handlingcost" style="background:#FBE8C7; color:#3A3A3A;">—</div></div>
         <div class="field" style="display:none;"><label>Total local charge cost</label><div class="readout mono" id="f_lc_totalcost">—</div></div>
       </div>
 
-      <div class="section-label finance-only">A.2.2 — Local Charge (Revenue)</div>
+      <div class="section-label finance-only">A.2.2 — Local Charge (Revenue) — up to 4 vendors</div>
+      <div class="finance-only" style="overflow-x:auto; margin-bottom:14px;">
+        <table class="dash-table" style="min-width:900px;">
+<thead><tr><th>Vendor</th><th>Truck Type</th><th>Usage</th><th>Rate/Truck</th><th>Customs</th><th>Terminal</th><th>Document</th><th>Airlines Other</th><th>Packing</th><th>Other</th><th>Remark</th></tr></thead><tbody><tr><td><input type="text" id="f_lcr_vendor1" style="width:100px;" oninput=""></td><td><select id="f_lcr_trucktype1" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_lcr_truckusage1" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_ratepertruck1" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_customs1" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_terminal1" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_document1" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_airlinesother1" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_packing1" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_other1" style="width:70px;" oninput="updateGP()"></td><td><input type="text" id="f_lcr_otherremark1" style="width:90px;"></td></tr><tr><td><input type="text" id="f_lcr_vendor2" style="width:100px;" oninput=""></td><td><select id="f_lcr_trucktype2" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_lcr_truckusage2" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_ratepertruck2" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_customs2" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_terminal2" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_document2" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_airlinesother2" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_packing2" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_other2" style="width:70px;" oninput="updateGP()"></td><td><input type="text" id="f_lcr_otherremark2" style="width:90px;"></td></tr><tr><td><input type="text" id="f_lcr_vendor3" style="width:100px;" oninput=""></td><td><select id="f_lcr_trucktype3" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_lcr_truckusage3" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_ratepertruck3" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_customs3" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_terminal3" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_document3" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_airlinesother3" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_packing3" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_other3" style="width:70px;" oninput="updateGP()"></td><td><input type="text" id="f_lcr_otherremark3" style="width:90px;"></td></tr><tr><td><input type="text" id="f_lcr_vendor4" style="width:100px;" oninput=""></td><td><select id="f_lcr_trucktype4" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_lcr_truckusage4" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_ratepertruck4" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_customs4" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_terminal4" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_document4" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_airlinesother4" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_packing4" style="width:70px;" oninput="updateGP()"></td><td><input type="number" id="f_lcr_other4" style="width:70px;" oninput="updateGP()"></td><td><input type="text" id="f_lcr_otherremark4" style="width:90px;"></td></tr></tbody>
+        </table>
+      </div>
       <div class="grid finance-only" id="a2LocalChargeRev">
-        <div class="field"><label>Vendor name</label><input type="text" id="f_lcr_vendor"></div>
-        <div class="field">
-          <label>Truck type</label>
-          <select id="f_lcr_trucktype" onchange="updateGP()">
-            <option value="">—</option>
-            <option>4W</option>
-            <option>6W</option>
-            <option>10W</option>
-            <option>20"</option>
-            <option>40"</option>
-          </select>
-        </div>
-        <div class="field"><label>Truck usage</label><input type="number" id="f_lcr_truckusage" oninput="updateGP()" placeholder="qty"></div>
-        <div class="field"><label>Selling rate per truck</label><input type="number" id="f_lcr_ratepertruck" oninput="updateGP()"></div>
-        <div class="field"><label>Total Truck Revenue</label><div class="readout mono" id="f_lcr_pickuprev">—</div></div>
-        <div class="field"><label>Customs clearance</label><input type="number" id="f_lcr_customs" oninput="updateGP()"></div>
-        <div class="field"><label>Terminal handling</label><input type="number" id="f_lcr_terminal" oninput="updateGP()"></div>
-        <div class="field"><label>Document</label><input type="number" id="f_lcr_document" oninput="updateGP()"></div>
-        <div class="field"><label>Airlines other charges</label><input type="number" id="f_lcr_airlinesother" oninput="updateGP()"></div>
-        <div class="field"><label>Packing</label><input type="number" id="f_lcr_packing" oninput="updateGP()"></div>
-        <div class="field"><label>Other (THB)</label><input type="number" id="f_lcr_other" oninput="updateGP()"></div>
-        <div class="field"><label>Other remark</label><input type="text" id="f_lcr_otherremark"></div>
+        <div class="field"><label>Total Truck Revenue (all vendors)</label><div class="readout mono" id="f_lcr_pickuprev">—</div></div>
         <div class="field"><label>Total local handling revenue</label><div class="readout mono" id="f_lcr_handlingrev" style="background:#FBE8C7; color:#3A3A3A;">—</div></div>
         <div class="field" style="display:none;"><label>Total local charge revenue</label><div class="readout mono" id="f_lc_totalrev">—</div></div>
         <div class="field" style="display:none;"><label>Local charge GP</label><div class="readout mono" id="f_lc_gp">—</div></div>
@@ -684,28 +652,24 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <div class="field" style="display:none;"><label>GP %</label><div class="readout mono" id="f_gppercent">—</div></div>
       </div>
 
-      <div class="section-label finance-only">A.4.1 — Destination Charge (Cost)</div>
+      <div class="section-label finance-only">A.4.1 — Destination Charge (Cost) — up to 4 vendors</div>
+      <div class="finance-only" style="overflow-x:auto; margin-bottom:14px;">
+        <table class="dash-table" style="min-width:760px;">
+<thead><tr><th>Vendor</th><th>Truck Type</th><th>Usage</th><th>Rate/Truck</th><th>Handling</th><th>Customs</th><th>Delivery</th></tr></thead><tbody><tr><td><input type="text" id="f_dc_vendor1" style="width:100px;" oninput="document.getElementById('f_dcr_vendor1').value=this.value;"></td><td><select id="f_dc_trucktype1" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dc_truckusage1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_ratepertruck1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_handling1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_customs1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_delivery1" style="width:75px;" oninput="updateGP()"></td></tr><tr><td><input type="text" id="f_dc_vendor2" style="width:100px;" oninput="document.getElementById('f_dcr_vendor2').value=this.value;"></td><td><select id="f_dc_trucktype2" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dc_truckusage2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_ratepertruck2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_handling2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_customs2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_delivery2" style="width:75px;" oninput="updateGP()"></td></tr><tr><td><input type="text" id="f_dc_vendor3" style="width:100px;" oninput="document.getElementById('f_dcr_vendor3').value=this.value;"></td><td><select id="f_dc_trucktype3" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dc_truckusage3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_ratepertruck3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_handling3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_customs3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_delivery3" style="width:75px;" oninput="updateGP()"></td></tr><tr><td><input type="text" id="f_dc_vendor4" style="width:100px;" oninput="document.getElementById('f_dcr_vendor4').value=this.value;"></td><td><select id="f_dc_trucktype4" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dc_truckusage4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_ratepertruck4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_handling4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_customs4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_delivery4" style="width:75px;" oninput="updateGP()"></td></tr></tbody>
+        </table>
+      </div>
       <div class="grid finance-only" id="a4DestChargeCost">
-        <div class="field"><label>Destination handling cost</label><input type="number" id="f_dc_handlingcost" oninput="updateGP()"></div>
-        <div class="field"><label>Customs clearance cost</label><input type="number" id="f_dc_customscost" oninput="updateGP()"></div>
-        <div class="field"><label>Delivery cost</label><input type="number" id="f_dc_deliverycost" oninput="updateGP()"></div>
         <div class="field"><label>Total destination charge cost</label><div class="readout mono" id="f_dc_totalcost" style="background:#FBE8C7; color:#3A3A3A;">—</div></div>
       </div>
 
-      <div class="section-label finance-only">A.4.2 — Destination Charge (Revenue)</div>
-      <div class="grid finance-only" id="a4DestChargeRev">
-        <div class="field"><label>Destination handling revenue</label><input type="number" id="f_dcr_handlingrev" oninput="updateGP()"></div>
-        <div class="field"><label>Customs clearance revenue</label><input type="number" id="f_dcr_customsrev" oninput="updateGP()"></div>
-        <div class="field"><label>Delivery revenue</label><input type="number" id="f_dcr_deliveryrev" oninput="updateGP()"></div>
-        <div class="field"><label>Total destination charge revenue</label><div class="readout mono" id="f_dc_totalrev" style="background:#FBE8C7; color:#3A3A3A;">—</div></div>
+      <div class="section-label finance-only">A.4.2 — Destination Charge (Revenue) — up to 4 vendors</div>
+      <div class="finance-only" style="overflow-x:auto; margin-bottom:14px;">
+        <table class="dash-table" style="min-width:760px;">
+<thead><tr><th>Vendor</th><th>Truck Type</th><th>Usage</th><th>Rate/Truck</th><th>Handling</th><th>Customs</th><th>Delivery</th></tr></thead><tbody><tr><td><input type="text" id="f_dcr_vendor1" style="width:100px;" oninput=""></td><td><select id="f_dcr_trucktype1" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dcr_truckusage1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_ratepertruck1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_handling1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_customs1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_delivery1" style="width:75px;" oninput="updateGP()"></td></tr><tr><td><input type="text" id="f_dcr_vendor2" style="width:100px;" oninput=""></td><td><select id="f_dcr_trucktype2" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dcr_truckusage2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_ratepertruck2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_handling2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_customs2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_delivery2" style="width:75px;" oninput="updateGP()"></td></tr><tr><td><input type="text" id="f_dcr_vendor3" style="width:100px;" oninput=""></td><td><select id="f_dcr_trucktype3" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dcr_truckusage3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_ratepertruck3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_handling3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_customs3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_delivery3" style="width:75px;" oninput="updateGP()"></td></tr><tr><td><input type="text" id="f_dcr_vendor4" style="width:100px;" oninput=""></td><td><select id="f_dcr_trucktype4" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dcr_truckusage4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_ratepertruck4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_handling4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_customs4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_delivery4" style="width:75px;" oninput="updateGP()"></td></tr></tbody>
+        </table>
       </div>
-
-      <div class="section-label finance-only">Grand Total (A.2 + A.3 + A.4)</div>
-      <div class="grid finance-only" id="grandTotalSection">
-        <div class="field"><label>Total cost</label><div class="readout mono" id="f_gt_totalcost" style="background:#FBE4D2; color:#8A4A1E; font-weight:700;">—</div></div>
-        <div class="field"><label>Total revenue</label><div class="readout mono" id="f_gt_totalrev" style="background:#D6E8F7; color:#1B4A6B; font-weight:700;">—</div></div>
-        <div class="field"><label>Total GP</label><div class="readout mono" id="f_gt_totalgp" style="background:#E2EFDA; color:#1F4A2E; font-weight:700;">—</div></div>
-        <div class="field"><label>Total GP %</label><div class="readout mono" id="f_gt_totalgppercent" style="background:#E2EFDA; color:#1F4A2E; font-weight:700;">—</div></div>
+      <div class="grid finance-only" id="a4DestChargeRev">
+        <div class="field"><label>Total destination charge revenue</label><div class="readout mono" id="f_dc_totalrev" style="background:#FBE8C7; color:#3A3A3A;">—</div></div>
       </div>
 
       <div class="section-label finance-hide">Routing &amp; schedule</div>
@@ -1096,34 +1060,40 @@ function fmtMoney(n){
 }
 
 function updateGP(){
-  // A.2.1 — Local Charge (Cost)
-  const lcRatePerTruck = parseFloat(document.getElementById('f_lc_ratepertruck').value) || 0;
-  const lcTruckUsage = parseFloat(document.getElementById('f_lc_truckusage').value) || 0;
-  const lcPickup = lcRatePerTruck * lcTruckUsage;
-  const lcCustoms = parseFloat(document.getElementById('f_lc_customs').value) || 0;
-  const lcTerminal = parseFloat(document.getElementById('f_lc_terminal').value) || 0;
-  const lcDocument = parseFloat(document.getElementById('f_lc_document').value) || 0;
-  const lcAirlinesOther = parseFloat(document.getElementById('f_lc_airlinesother').value) || 0;
-  const lcPacking = parseFloat(document.getElementById('f_lc_packing').value) || 0;
-  const lcOther = parseFloat(document.getElementById('f_lc_other').value) || 0;
-  const lcHandling = lcPickup + lcCustoms + lcTerminal + lcDocument + lcAirlinesOther + lcPacking + lcOther;
+  // A.2.1 — Local Charge (Cost) — sum across up to 4 vendors
+  let lcPickup = 0, lcHandlingSum = 0;
+  for(let vi=1; vi<=4; vi++){
+    const rate = parseFloat(document.getElementById('f_lc_ratepertruck'+vi).value) || 0;
+    const usage = parseFloat(document.getElementById('f_lc_truckusage'+vi).value) || 0;
+    lcPickup += rate * usage;
+    lcHandlingSum += (parseFloat(document.getElementById('f_lc_customs'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_lc_terminal'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_lc_document'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_lc_airlinesother'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_lc_packing'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_lc_other'+vi).value) || 0);
+  }
+  const lcHandling = lcPickup + lcHandlingSum;
   const lcCost = lcHandling;
   const lcCostHasData = lcCost>0;
   document.getElementById('f_lc_pickupcost').textContent = lcCostHasData ? fmtMoney(lcPickup) : '—';
   document.getElementById('f_lc_handlingcost').textContent = lcCostHasData ? fmtMoney(lcHandling) : '—';
   document.getElementById('f_lc_totalcost').textContent = lcCostHasData ? fmtMoney(lcCost) : '—';
 
-  // A.2.2 — Local Charge (Revenue)
-  const lcrRatePerTruck = parseFloat(document.getElementById('f_lcr_ratepertruck').value) || 0;
-  const lcrTruckUsage = parseFloat(document.getElementById('f_lcr_truckusage').value) || 0;
-  const lcrPickup = lcrRatePerTruck * lcrTruckUsage;
-  const lcrCustoms = parseFloat(document.getElementById('f_lcr_customs').value) || 0;
-  const lcrTerminal = parseFloat(document.getElementById('f_lcr_terminal').value) || 0;
-  const lcrDocument = parseFloat(document.getElementById('f_lcr_document').value) || 0;
-  const lcrAirlinesOther = parseFloat(document.getElementById('f_lcr_airlinesother').value) || 0;
-  const lcrPacking = parseFloat(document.getElementById('f_lcr_packing').value) || 0;
-  const lcrOther = parseFloat(document.getElementById('f_lcr_other').value) || 0;
-  const lcHandlingRev = lcrPickup + lcrCustoms + lcrTerminal + lcrDocument + lcrAirlinesOther + lcrPacking + lcrOther;
+  // A.2.2 — Local Charge (Revenue) — sum across up to 4 vendors
+  let lcrPickup = 0, lcHandlingRevSum = 0;
+  for(let vi=1; vi<=4; vi++){
+    const rate = parseFloat(document.getElementById('f_lcr_ratepertruck'+vi).value) || 0;
+    const usage = parseFloat(document.getElementById('f_lcr_truckusage'+vi).value) || 0;
+    lcrPickup += rate * usage;
+    lcHandlingRevSum += (parseFloat(document.getElementById('f_lcr_customs'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_lcr_terminal'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_lcr_document'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_lcr_airlinesother'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_lcr_packing'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_lcr_other'+vi).value) || 0);
+  }
+  const lcHandlingRev = lcrPickup + lcHandlingRevSum;
   const lcRev = lcHandlingRev;
   const lcRevHasData = lcRev>0;
   document.getElementById('f_lcr_pickuprev').textContent = lcRevHasData ? fmtMoney(lcrPickup) : '—';
@@ -1148,19 +1118,29 @@ function updateGP(){
   document.getElementById('f_gpamount').textContent = frHasData ? fmtMoney(frGP) : '—';
   document.getElementById('f_gppercent').textContent = frHasData && frRev>0 ? frGPPct.toFixed(1)+'%' : '—';
 
-  // A.4.1 — Destination Charge (Cost)
-  const dcHandling = parseFloat(document.getElementById('f_dc_handlingcost').value) || 0;
-  const dcCustoms = parseFloat(document.getElementById('f_dc_customscost').value) || 0;
-  const dcDelivery = parseFloat(document.getElementById('f_dc_deliverycost').value) || 0;
-  const dcCost = dcHandling + dcCustoms + dcDelivery;
+  // A.4.1 — Destination Charge (Cost) — sum across up to 4 vendors
+  let dcCost = 0;
+  for(let vi=1; vi<=4; vi++){
+    const rate = parseFloat(document.getElementById('f_dc_ratepertruck'+vi).value) || 0;
+    const usage = parseFloat(document.getElementById('f_dc_truckusage'+vi).value) || 0;
+    dcCost += (rate * usage)
+      + (parseFloat(document.getElementById('f_dc_handling'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_dc_customs'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_dc_delivery'+vi).value) || 0);
+  }
   const dcCostHasData = dcCost>0;
   document.getElementById('f_dc_totalcost').textContent = dcCostHasData ? fmtMoney(dcCost) : '—';
 
-  // A.4.2 — Destination Charge (Revenue)
-  const dcrHandling = parseFloat(document.getElementById('f_dcr_handlingrev').value) || 0;
-  const dcrCustoms = parseFloat(document.getElementById('f_dcr_customsrev').value) || 0;
-  const dcrDelivery = parseFloat(document.getElementById('f_dcr_deliveryrev').value) || 0;
-  const dcRev = dcrHandling + dcrCustoms + dcrDelivery;
+  // A.4.2 — Destination Charge (Revenue) — sum across up to 4 vendors
+  let dcRev = 0;
+  for(let vi=1; vi<=4; vi++){
+    const rate = parseFloat(document.getElementById('f_dcr_ratepertruck'+vi).value) || 0;
+    const usage = parseFloat(document.getElementById('f_dcr_truckusage'+vi).value) || 0;
+    dcRev += (rate * usage)
+      + (parseFloat(document.getElementById('f_dcr_handling'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_dcr_customs'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_dcr_delivery'+vi).value) || 0);
+  }
   const dcRevHasData = dcRev>0;
   document.getElementById('f_dc_totalrev').textContent = dcRevHasData ? fmtMoney(dcRev) : '—';
 
@@ -1221,26 +1201,33 @@ function lookupMAWB(){
         // pull the editable A.2–A.4 fields back into the form so the user is editing the
         // existing numbers, not starting from blank.
         if(match.revAmount || match.costAmount){
-          const crFieldIds = ['f_costperkg','f_sellingperkg','f_lc_vendor','f_lc_trucktype','f_lc_truckusage',
-            'f_lc_ratepertruck','f_lc_customs','f_lc_terminal','f_lc_document','f_lc_airlinesother','f_lc_packing',
-            'f_lc_other','f_lc_otherremark','f_lcr_vendor','f_lcr_trucktype','f_lcr_truckusage','f_lcr_ratepertruck',
-            'f_lcr_customs','f_lcr_terminal','f_lcr_document','f_lcr_airlinesother','f_lcr_packing','f_lcr_other',
-            'f_lcr_otherremark','f_dc_handlingcost','f_dc_customscost','f_dc_deliverycost','f_dcr_handlingrev',
-            'f_dcr_customsrev','f_dcr_deliveryrev'];
-          const recFieldMap = {f_costperkg:'costPerKg', f_sellingperkg:'sellingPerKg', f_lc_vendor:'lcVendor',
-            f_lc_trucktype:'lcTruckType', f_lc_truckusage:'lcTruckUsage', f_lc_ratepertruck:'lcRatePerTruck',
-            f_lc_customs:'lcCustoms', f_lc_terminal:'lcTerminal', f_lc_document:'lcDocument',
-            f_lc_airlinesother:'lcAirlinesOther', f_lc_packing:'lcPacking', f_lc_other:'lcOther',
-            f_lc_otherremark:'lcOtherRemark', f_lcr_vendor:'lcrVendor', f_lcr_trucktype:'lcrTruckType',
-            f_lcr_truckusage:'lcrTruckUsage', f_lcr_ratepertruck:'lcrRatePerTruck', f_lcr_customs:'lcrCustoms',
-            f_lcr_terminal:'lcrTerminal', f_lcr_document:'lcrDocument', f_lcr_airlinesother:'lcrAirlinesOther',
-            f_lcr_packing:'lcrPacking', f_lcr_other:'lcrOther', f_lcr_otherremark:'lcrOtherRemark',
-            f_dc_handlingcost:'dcHandlingCost', f_dc_customscost:'dcCustomsCost', f_dc_deliverycost:'dcDeliveryCost',
-            f_dcr_handlingrev:'dcHandlingRev', f_dcr_customsrev:'dcCustomsRev', f_dcr_deliveryrev:'dcDeliveryRev'};
-          crFieldIds.forEach(id=>{
+          const simpleFieldMap = {f_costperkg:'costPerKg', f_sellingperkg:'sellingPerKg'};
+          Object.keys(simpleFieldMap).forEach(id=>{
             const el = document.getElementById(id);
-            const key = recFieldMap[id];
+            const key = simpleFieldMap[id];
             if(el && match[key]!==undefined && match[key]!==''){ el.value = match[key]; }
+          });
+          const vendorFields = {vendor:'Vendor', trucktype:'TruckType', truckusage:'TruckUsage',
+            ratepertruck:'RatePerTruck', customs:'Customs', terminal:'Terminal', document:'Document',
+            airlinesother:'AirlinesOther', packing:'Packing', other:'Other', otherremark:'OtherRemark'};
+          ['lc','lcr'].forEach(prefix=>{
+            Object.keys(vendorFields).forEach(f_=>{
+              for(let vi=1; vi<=4; vi++){
+                const el = document.getElementById('f_'+prefix+'_'+f_+vi);
+                const key = prefix+vendorFields[f_]+vi;
+                if(el && match[key]!==undefined && match[key]!==''){ el.value = match[key]; }
+              }
+            });
+          });
+          const dcFields = {vendor:'Vendor', trucktype:'TruckType', truckusage:'TruckUsage', ratepertruck:'RatePerTruck', handling:'Handling', customs:'Customs', delivery:'Delivery'};
+          ['dc','dcr'].forEach(prefix=>{
+            Object.keys(dcFields).forEach(f_=>{
+              for(let vi=1; vi<=4; vi++){
+                const el = document.getElementById('f_'+prefix+'_'+f_+vi);
+                const key = prefix+dcFields[f_]+vi;
+                if(el && match[key]!==undefined && match[key]!==''){ el.value = match[key]; }
+              }
+            });
           });
           document.querySelectorAll('input[name=crstatus]').forEach(r=>{ r.checked = (r.value===(match.crStatus||'freight-input')); });
         }
@@ -1348,34 +1335,150 @@ async function newSheet(type){
   document.getElementById('f_cr_chargeableweight').textContent = '0';
   document.getElementById('f_costperkg').value = '';
   document.getElementById('f_sellingperkg').value = '';
-  document.getElementById('f_lc_vendor').value = '';
-  document.getElementById('f_lcr_vendor').value = '';
-  document.getElementById('f_lc_trucktype').value = '';
-  document.getElementById('f_lc_ratepertruck').value = '';
-  document.getElementById('f_lc_truckusage').value = '';
-  document.getElementById('f_lc_customs').value = '';
-  document.getElementById('f_lc_terminal').value = '';
-  document.getElementById('f_lc_document').value = '';
-  document.getElementById('f_lc_airlinesother').value = '';
-  document.getElementById('f_lc_packing').value = '';
-  document.getElementById('f_lc_other').value = '';
-  document.getElementById('f_lc_otherremark').value = '';
-  document.getElementById('f_lcr_trucktype').value = '';
-  document.getElementById('f_lcr_truckusage').value = '';
-  document.getElementById('f_lcr_ratepertruck').value = '';
-  document.getElementById('f_lcr_customs').value = '';
-  document.getElementById('f_lcr_terminal').value = '';
-  document.getElementById('f_lcr_document').value = '';
-  document.getElementById('f_lcr_airlinesother').value = '';
-  document.getElementById('f_lcr_packing').value = '';
-  document.getElementById('f_lcr_other').value = '';
-  document.getElementById('f_lcr_otherremark').value = '';
-  document.getElementById('f_dc_handlingcost').value = '';
-  document.getElementById('f_dc_customscost').value = '';
-  document.getElementById('f_dc_deliverycost').value = '';
-  document.getElementById('f_dcr_handlingrev').value = '';
-  document.getElementById('f_dcr_customsrev').value = '';
-  document.getElementById('f_dcr_deliveryrev').value = '';
+  document.getElementById('f_lc_vendor1').value = '';
+  document.getElementById('f_lc_vendor2').value = '';
+  document.getElementById('f_lc_vendor3').value = '';
+  document.getElementById('f_lc_vendor4').value = '';
+  document.getElementById('f_lc_trucktype1').value = '';
+  document.getElementById('f_lc_trucktype2').value = '';
+  document.getElementById('f_lc_trucktype3').value = '';
+  document.getElementById('f_lc_trucktype4').value = '';
+  document.getElementById('f_lc_truckusage1').value = '';
+  document.getElementById('f_lc_truckusage2').value = '';
+  document.getElementById('f_lc_truckusage3').value = '';
+  document.getElementById('f_lc_truckusage4').value = '';
+  document.getElementById('f_lc_ratepertruck1').value = '';
+  document.getElementById('f_lc_ratepertruck2').value = '';
+  document.getElementById('f_lc_ratepertruck3').value = '';
+  document.getElementById('f_lc_ratepertruck4').value = '';
+  document.getElementById('f_lc_customs1').value = '';
+  document.getElementById('f_lc_customs2').value = '';
+  document.getElementById('f_lc_customs3').value = '';
+  document.getElementById('f_lc_customs4').value = '';
+  document.getElementById('f_lc_terminal1').value = '';
+  document.getElementById('f_lc_terminal2').value = '';
+  document.getElementById('f_lc_terminal3').value = '';
+  document.getElementById('f_lc_terminal4').value = '';
+  document.getElementById('f_lc_document1').value = '';
+  document.getElementById('f_lc_document2').value = '';
+  document.getElementById('f_lc_document3').value = '';
+  document.getElementById('f_lc_document4').value = '';
+  document.getElementById('f_lc_airlinesother1').value = '';
+  document.getElementById('f_lc_airlinesother2').value = '';
+  document.getElementById('f_lc_airlinesother3').value = '';
+  document.getElementById('f_lc_airlinesother4').value = '';
+  document.getElementById('f_lc_packing1').value = '';
+  document.getElementById('f_lc_packing2').value = '';
+  document.getElementById('f_lc_packing3').value = '';
+  document.getElementById('f_lc_packing4').value = '';
+  document.getElementById('f_lc_other1').value = '';
+  document.getElementById('f_lc_other2').value = '';
+  document.getElementById('f_lc_other3').value = '';
+  document.getElementById('f_lc_other4').value = '';
+  document.getElementById('f_lc_otherremark1').value = '';
+  document.getElementById('f_lc_otherremark2').value = '';
+  document.getElementById('f_lc_otherremark3').value = '';
+  document.getElementById('f_lc_otherremark4').value = '';
+  document.getElementById('f_lcr_vendor1').value = '';
+  document.getElementById('f_lcr_vendor2').value = '';
+  document.getElementById('f_lcr_vendor3').value = '';
+  document.getElementById('f_lcr_vendor4').value = '';
+  document.getElementById('f_lcr_trucktype1').value = '';
+  document.getElementById('f_lcr_trucktype2').value = '';
+  document.getElementById('f_lcr_trucktype3').value = '';
+  document.getElementById('f_lcr_trucktype4').value = '';
+  document.getElementById('f_lcr_truckusage1').value = '';
+  document.getElementById('f_lcr_truckusage2').value = '';
+  document.getElementById('f_lcr_truckusage3').value = '';
+  document.getElementById('f_lcr_truckusage4').value = '';
+  document.getElementById('f_lcr_ratepertruck1').value = '';
+  document.getElementById('f_lcr_ratepertruck2').value = '';
+  document.getElementById('f_lcr_ratepertruck3').value = '';
+  document.getElementById('f_lcr_ratepertruck4').value = '';
+  document.getElementById('f_lcr_customs1').value = '';
+  document.getElementById('f_lcr_customs2').value = '';
+  document.getElementById('f_lcr_customs3').value = '';
+  document.getElementById('f_lcr_customs4').value = '';
+  document.getElementById('f_lcr_terminal1').value = '';
+  document.getElementById('f_lcr_terminal2').value = '';
+  document.getElementById('f_lcr_terminal3').value = '';
+  document.getElementById('f_lcr_terminal4').value = '';
+  document.getElementById('f_lcr_document1').value = '';
+  document.getElementById('f_lcr_document2').value = '';
+  document.getElementById('f_lcr_document3').value = '';
+  document.getElementById('f_lcr_document4').value = '';
+  document.getElementById('f_lcr_airlinesother1').value = '';
+  document.getElementById('f_lcr_airlinesother2').value = '';
+  document.getElementById('f_lcr_airlinesother3').value = '';
+  document.getElementById('f_lcr_airlinesother4').value = '';
+  document.getElementById('f_lcr_packing1').value = '';
+  document.getElementById('f_lcr_packing2').value = '';
+  document.getElementById('f_lcr_packing3').value = '';
+  document.getElementById('f_lcr_packing4').value = '';
+  document.getElementById('f_lcr_other1').value = '';
+  document.getElementById('f_lcr_other2').value = '';
+  document.getElementById('f_lcr_other3').value = '';
+  document.getElementById('f_lcr_other4').value = '';
+  document.getElementById('f_lcr_otherremark1').value = '';
+  document.getElementById('f_lcr_otherremark2').value = '';
+  document.getElementById('f_lcr_otherremark3').value = '';
+  document.getElementById('f_lcr_otherremark4').value = '';
+  document.getElementById('f_dc_vendor1').value = '';
+  document.getElementById('f_dc_vendor2').value = '';
+  document.getElementById('f_dc_vendor3').value = '';
+  document.getElementById('f_dc_vendor4').value = '';
+  document.getElementById('f_dc_trucktype1').value = '';
+  document.getElementById('f_dc_trucktype2').value = '';
+  document.getElementById('f_dc_trucktype3').value = '';
+  document.getElementById('f_dc_trucktype4').value = '';
+  document.getElementById('f_dc_truckusage1').value = '';
+  document.getElementById('f_dc_truckusage2').value = '';
+  document.getElementById('f_dc_truckusage3').value = '';
+  document.getElementById('f_dc_truckusage4').value = '';
+  document.getElementById('f_dc_ratepertruck1').value = '';
+  document.getElementById('f_dc_ratepertruck2').value = '';
+  document.getElementById('f_dc_ratepertruck3').value = '';
+  document.getElementById('f_dc_ratepertruck4').value = '';
+  document.getElementById('f_dc_handling1').value = '';
+  document.getElementById('f_dc_handling2').value = '';
+  document.getElementById('f_dc_handling3').value = '';
+  document.getElementById('f_dc_handling4').value = '';
+  document.getElementById('f_dc_customs1').value = '';
+  document.getElementById('f_dc_customs2').value = '';
+  document.getElementById('f_dc_customs3').value = '';
+  document.getElementById('f_dc_customs4').value = '';
+  document.getElementById('f_dc_delivery1').value = '';
+  document.getElementById('f_dc_delivery2').value = '';
+  document.getElementById('f_dc_delivery3').value = '';
+  document.getElementById('f_dc_delivery4').value = '';
+  document.getElementById('f_dcr_vendor1').value = '';
+  document.getElementById('f_dcr_vendor2').value = '';
+  document.getElementById('f_dcr_vendor3').value = '';
+  document.getElementById('f_dcr_vendor4').value = '';
+  document.getElementById('f_dcr_trucktype1').value = '';
+  document.getElementById('f_dcr_trucktype2').value = '';
+  document.getElementById('f_dcr_trucktype3').value = '';
+  document.getElementById('f_dcr_trucktype4').value = '';
+  document.getElementById('f_dcr_truckusage1').value = '';
+  document.getElementById('f_dcr_truckusage2').value = '';
+  document.getElementById('f_dcr_truckusage3').value = '';
+  document.getElementById('f_dcr_truckusage4').value = '';
+  document.getElementById('f_dcr_ratepertruck1').value = '';
+  document.getElementById('f_dcr_ratepertruck2').value = '';
+  document.getElementById('f_dcr_ratepertruck3').value = '';
+  document.getElementById('f_dcr_ratepertruck4').value = '';
+  document.getElementById('f_dcr_handling1').value = '';
+  document.getElementById('f_dcr_handling2').value = '';
+  document.getElementById('f_dcr_handling3').value = '';
+  document.getElementById('f_dcr_handling4').value = '';
+  document.getElementById('f_dcr_customs1').value = '';
+  document.getElementById('f_dcr_customs2').value = '';
+  document.getElementById('f_dcr_customs3').value = '';
+  document.getElementById('f_dcr_customs4').value = '';
+  document.getElementById('f_dcr_delivery1').value = '';
+  document.getElementById('f_dcr_delivery2').value = '';
+  document.getElementById('f_dcr_delivery3').value = '';
+  document.getElementById('f_dcr_delivery4').value = '';
   updateGP();
   document.getElementById('itemsBody').innerHTML = '';
   itemCounter = 0;
@@ -1431,36 +1534,152 @@ function gatherRecord(){
     crDest: document.getElementById('f_cr_dest').textContent,
     crEtd: document.getElementById('f_cr_etd').textContent,
     crChargeableWeight: document.getElementById('f_cr_chargeableweight').textContent,
-    lcVendor: document.getElementById('f_lc_vendor').value,
-    lcrVendor: document.getElementById('f_lcr_vendor').value,
-    lcTruckType: document.getElementById('f_lc_trucktype').value,
-    lcRatePerTruck: document.getElementById('f_lc_ratepertruck').value,
-    lcTruckUsage: document.getElementById('f_lc_truckusage').value,
-    lcCustoms: document.getElementById('f_lc_customs').value,
-    lcTerminal: document.getElementById('f_lc_terminal').value,
-    lcDocument: document.getElementById('f_lc_document').value,
-    lcAirlinesOther: document.getElementById('f_lc_airlinesother').value,
-    lcPacking: document.getElementById('f_lc_packing').value,
-    lcOther: document.getElementById('f_lc_other').value,
-    lcOtherRemark: document.getElementById('f_lc_otherremark').value,
-    lcrTruckType: document.getElementById('f_lcr_trucktype').value,
-    lcrTruckUsage: document.getElementById('f_lcr_truckusage').value,
-    lcrRatePerTruck: document.getElementById('f_lcr_ratepertruck').value,
-    lcrCustoms: document.getElementById('f_lcr_customs').value,
-    lcrTerminal: document.getElementById('f_lcr_terminal').value,
-    lcrDocument: document.getElementById('f_lcr_document').value,
-    lcrAirlinesOther: document.getElementById('f_lcr_airlinesother').value,
-    lcrPacking: document.getElementById('f_lcr_packing').value,
-    lcrOther: document.getElementById('f_lcr_other').value,
-    lcrOtherRemark: document.getElementById('f_lcr_otherremark').value,
+    lcVendor1: document.getElementById('f_lc_vendor1').value,
+    lcVendor2: document.getElementById('f_lc_vendor2').value,
+    lcVendor3: document.getElementById('f_lc_vendor3').value,
+    lcVendor4: document.getElementById('f_lc_vendor4').value,
+    lcTruckType1: document.getElementById('f_lc_trucktype1').value,
+    lcTruckType2: document.getElementById('f_lc_trucktype2').value,
+    lcTruckType3: document.getElementById('f_lc_trucktype3').value,
+    lcTruckType4: document.getElementById('f_lc_trucktype4').value,
+    lcTruckUsage1: document.getElementById('f_lc_truckusage1').value,
+    lcTruckUsage2: document.getElementById('f_lc_truckusage2').value,
+    lcTruckUsage3: document.getElementById('f_lc_truckusage3').value,
+    lcTruckUsage4: document.getElementById('f_lc_truckusage4').value,
+    lcRatePerTruck1: document.getElementById('f_lc_ratepertruck1').value,
+    lcRatePerTruck2: document.getElementById('f_lc_ratepertruck2').value,
+    lcRatePerTruck3: document.getElementById('f_lc_ratepertruck3').value,
+    lcRatePerTruck4: document.getElementById('f_lc_ratepertruck4').value,
+    lcCustoms1: document.getElementById('f_lc_customs1').value,
+    lcCustoms2: document.getElementById('f_lc_customs2').value,
+    lcCustoms3: document.getElementById('f_lc_customs3').value,
+    lcCustoms4: document.getElementById('f_lc_customs4').value,
+    lcTerminal1: document.getElementById('f_lc_terminal1').value,
+    lcTerminal2: document.getElementById('f_lc_terminal2').value,
+    lcTerminal3: document.getElementById('f_lc_terminal3').value,
+    lcTerminal4: document.getElementById('f_lc_terminal4').value,
+    lcDocument1: document.getElementById('f_lc_document1').value,
+    lcDocument2: document.getElementById('f_lc_document2').value,
+    lcDocument3: document.getElementById('f_lc_document3').value,
+    lcDocument4: document.getElementById('f_lc_document4').value,
+    lcAirlinesOther1: document.getElementById('f_lc_airlinesother1').value,
+    lcAirlinesOther2: document.getElementById('f_lc_airlinesother2').value,
+    lcAirlinesOther3: document.getElementById('f_lc_airlinesother3').value,
+    lcAirlinesOther4: document.getElementById('f_lc_airlinesother4').value,
+    lcPacking1: document.getElementById('f_lc_packing1').value,
+    lcPacking2: document.getElementById('f_lc_packing2').value,
+    lcPacking3: document.getElementById('f_lc_packing3').value,
+    lcPacking4: document.getElementById('f_lc_packing4').value,
+    lcOther1: document.getElementById('f_lc_other1').value,
+    lcOther2: document.getElementById('f_lc_other2').value,
+    lcOther3: document.getElementById('f_lc_other3').value,
+    lcOther4: document.getElementById('f_lc_other4').value,
+    lcOtherRemark1: document.getElementById('f_lc_otherremark1').value,
+    lcOtherRemark2: document.getElementById('f_lc_otherremark2').value,
+    lcOtherRemark3: document.getElementById('f_lc_otherremark3').value,
+    lcOtherRemark4: document.getElementById('f_lc_otherremark4').value,
+    lcrVendor1: document.getElementById('f_lcr_vendor1').value,
+    lcrVendor2: document.getElementById('f_lcr_vendor2').value,
+    lcrVendor3: document.getElementById('f_lcr_vendor3').value,
+    lcrVendor4: document.getElementById('f_lcr_vendor4').value,
+    lcrTruckType1: document.getElementById('f_lcr_trucktype1').value,
+    lcrTruckType2: document.getElementById('f_lcr_trucktype2').value,
+    lcrTruckType3: document.getElementById('f_lcr_trucktype3').value,
+    lcrTruckType4: document.getElementById('f_lcr_trucktype4').value,
+    lcrTruckUsage1: document.getElementById('f_lcr_truckusage1').value,
+    lcrTruckUsage2: document.getElementById('f_lcr_truckusage2').value,
+    lcrTruckUsage3: document.getElementById('f_lcr_truckusage3').value,
+    lcrTruckUsage4: document.getElementById('f_lcr_truckusage4').value,
+    lcrRatePerTruck1: document.getElementById('f_lcr_ratepertruck1').value,
+    lcrRatePerTruck2: document.getElementById('f_lcr_ratepertruck2').value,
+    lcrRatePerTruck3: document.getElementById('f_lcr_ratepertruck3').value,
+    lcrRatePerTruck4: document.getElementById('f_lcr_ratepertruck4').value,
+    lcrCustoms1: document.getElementById('f_lcr_customs1').value,
+    lcrCustoms2: document.getElementById('f_lcr_customs2').value,
+    lcrCustoms3: document.getElementById('f_lcr_customs3').value,
+    lcrCustoms4: document.getElementById('f_lcr_customs4').value,
+    lcrTerminal1: document.getElementById('f_lcr_terminal1').value,
+    lcrTerminal2: document.getElementById('f_lcr_terminal2').value,
+    lcrTerminal3: document.getElementById('f_lcr_terminal3').value,
+    lcrTerminal4: document.getElementById('f_lcr_terminal4').value,
+    lcrDocument1: document.getElementById('f_lcr_document1').value,
+    lcrDocument2: document.getElementById('f_lcr_document2').value,
+    lcrDocument3: document.getElementById('f_lcr_document3').value,
+    lcrDocument4: document.getElementById('f_lcr_document4').value,
+    lcrAirlinesOther1: document.getElementById('f_lcr_airlinesother1').value,
+    lcrAirlinesOther2: document.getElementById('f_lcr_airlinesother2').value,
+    lcrAirlinesOther3: document.getElementById('f_lcr_airlinesother3').value,
+    lcrAirlinesOther4: document.getElementById('f_lcr_airlinesother4').value,
+    lcrPacking1: document.getElementById('f_lcr_packing1').value,
+    lcrPacking2: document.getElementById('f_lcr_packing2').value,
+    lcrPacking3: document.getElementById('f_lcr_packing3').value,
+    lcrPacking4: document.getElementById('f_lcr_packing4').value,
+    lcrOther1: document.getElementById('f_lcr_other1').value,
+    lcrOther2: document.getElementById('f_lcr_other2').value,
+    lcrOther3: document.getElementById('f_lcr_other3').value,
+    lcrOther4: document.getElementById('f_lcr_other4').value,
+    lcrOtherRemark1: document.getElementById('f_lcr_otherremark1').value,
+    lcrOtherRemark2: document.getElementById('f_lcr_otherremark2').value,
+    lcrOtherRemark3: document.getElementById('f_lcr_otherremark3').value,
+    lcrOtherRemark4: document.getElementById('f_lcr_otherremark4').value,
     costPerKg: document.getElementById('f_costperkg').value,
     sellingPerKg: document.getElementById('f_sellingperkg').value,
-    dcHandlingCost: document.getElementById('f_dc_handlingcost').value,
-    dcCustomsCost: document.getElementById('f_dc_customscost').value,
-    dcDeliveryCost: document.getElementById('f_dc_deliverycost').value,
-    dcHandlingRev: document.getElementById('f_dcr_handlingrev').value,
-    dcCustomsRev: document.getElementById('f_dcr_customsrev').value,
-    dcDeliveryRev: document.getElementById('f_dcr_deliveryrev').value,
+    dcVendor1: document.getElementById('f_dc_vendor1').value,
+    dcVendor2: document.getElementById('f_dc_vendor2').value,
+    dcVendor3: document.getElementById('f_dc_vendor3').value,
+    dcVendor4: document.getElementById('f_dc_vendor4').value,
+    dcTruckType1: document.getElementById('f_dc_trucktype1').value,
+    dcTruckType2: document.getElementById('f_dc_trucktype2').value,
+    dcTruckType3: document.getElementById('f_dc_trucktype3').value,
+    dcTruckType4: document.getElementById('f_dc_trucktype4').value,
+    dcTruckUsage1: document.getElementById('f_dc_truckusage1').value,
+    dcTruckUsage2: document.getElementById('f_dc_truckusage2').value,
+    dcTruckUsage3: document.getElementById('f_dc_truckusage3').value,
+    dcTruckUsage4: document.getElementById('f_dc_truckusage4').value,
+    dcRatePerTruck1: document.getElementById('f_dc_ratepertruck1').value,
+    dcRatePerTruck2: document.getElementById('f_dc_ratepertruck2').value,
+    dcRatePerTruck3: document.getElementById('f_dc_ratepertruck3').value,
+    dcRatePerTruck4: document.getElementById('f_dc_ratepertruck4').value,
+    dcHandling1: document.getElementById('f_dc_handling1').value,
+    dcHandling2: document.getElementById('f_dc_handling2').value,
+    dcHandling3: document.getElementById('f_dc_handling3').value,
+    dcHandling4: document.getElementById('f_dc_handling4').value,
+    dcCustoms1: document.getElementById('f_dc_customs1').value,
+    dcCustoms2: document.getElementById('f_dc_customs2').value,
+    dcCustoms3: document.getElementById('f_dc_customs3').value,
+    dcCustoms4: document.getElementById('f_dc_customs4').value,
+    dcDelivery1: document.getElementById('f_dc_delivery1').value,
+    dcDelivery2: document.getElementById('f_dc_delivery2').value,
+    dcDelivery3: document.getElementById('f_dc_delivery3').value,
+    dcDelivery4: document.getElementById('f_dc_delivery4').value,
+    dcrVendor1: document.getElementById('f_dcr_vendor1').value,
+    dcrVendor2: document.getElementById('f_dcr_vendor2').value,
+    dcrVendor3: document.getElementById('f_dcr_vendor3').value,
+    dcrVendor4: document.getElementById('f_dcr_vendor4').value,
+    dcrTruckType1: document.getElementById('f_dcr_trucktype1').value,
+    dcrTruckType2: document.getElementById('f_dcr_trucktype2').value,
+    dcrTruckType3: document.getElementById('f_dcr_trucktype3').value,
+    dcrTruckType4: document.getElementById('f_dcr_trucktype4').value,
+    dcrTruckUsage1: document.getElementById('f_dcr_truckusage1').value,
+    dcrTruckUsage2: document.getElementById('f_dcr_truckusage2').value,
+    dcrTruckUsage3: document.getElementById('f_dcr_truckusage3').value,
+    dcrTruckUsage4: document.getElementById('f_dcr_truckusage4').value,
+    dcrRatePerTruck1: document.getElementById('f_dcr_ratepertruck1').value,
+    dcrRatePerTruck2: document.getElementById('f_dcr_ratepertruck2').value,
+    dcrRatePerTruck3: document.getElementById('f_dcr_ratepertruck3').value,
+    dcrRatePerTruck4: document.getElementById('f_dcr_ratepertruck4').value,
+    dcrHandling1: document.getElementById('f_dcr_handling1').value,
+    dcrHandling2: document.getElementById('f_dcr_handling2').value,
+    dcrHandling3: document.getElementById('f_dcr_handling3').value,
+    dcrHandling4: document.getElementById('f_dcr_handling4').value,
+    dcrCustoms1: document.getElementById('f_dcr_customs1').value,
+    dcrCustoms2: document.getElementById('f_dcr_customs2').value,
+    dcrCustoms3: document.getElementById('f_dcr_customs3').value,
+    dcrCustoms4: document.getElementById('f_dcr_customs4').value,
+    dcrDelivery1: document.getElementById('f_dcr_delivery1').value,
+    dcrDelivery2: document.getElementById('f_dcr_delivery2').value,
+    dcrDelivery3: document.getElementById('f_dcr_delivery3').value,
+    dcrDelivery4: document.getElementById('f_dcr_delivery4').value,
     lcCostAmount: parseFloat(document.getElementById('f_lc_totalcost').textContent.replace(/,/g,''))||0,
     lcRevAmount: parseFloat(document.getElementById('f_lc_totalrev').textContent.replace(/,/g,''))||0,
     frCostAmount: parseFloat(document.getElementById('f_summarycost').textContent.replace(/,/g,''))||0,
@@ -1478,7 +1697,7 @@ function gatherRecord(){
       const lcCost = parseFloat(document.getElementById('f_lc_totalcost').textContent.replace(/,/g,''))||0;
       const w = parseFloat(document.getElementById('f_cr_chargeableweight').textContent)||0;
       const c = parseFloat(document.getElementById('f_costperkg').value)||0;
-      const dcCost = (parseFloat(document.getElementById('f_dc_handlingcost').value)||0) + (parseFloat(document.getElementById('f_dc_customscost').value)||0) + (parseFloat(document.getElementById('f_dc_deliverycost').value)||0);
+      const dcCost = [1,2,3,4].reduce((s,vi)=>s+((parseFloat(document.getElementById('f_dc_ratepertruck'+vi).value)||0)*(parseFloat(document.getElementById('f_dc_truckusage'+vi).value)||0))+(parseFloat(document.getElementById('f_dc_handling'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_customs'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_delivery'+vi).value)||0),0);
       return lcCost + (w*c) + dcCost;
     })(),
     gpAmount: (function(){
@@ -1487,7 +1706,7 @@ function gatherRecord(){
       const w = parseFloat(document.getElementById('f_cr_chargeableweight').textContent)||0;
       const s = parseFloat(document.getElementById('f_sellingperkg').value)||0;
       const c = parseFloat(document.getElementById('f_costperkg').value)||0;
-      const dcCost = (parseFloat(document.getElementById('f_dc_handlingcost').value)||0) + (parseFloat(document.getElementById('f_dc_customscost').value)||0) + (parseFloat(document.getElementById('f_dc_deliverycost').value)||0);
+      const dcCost = [1,2,3,4].reduce((s,vi)=>s+((parseFloat(document.getElementById('f_dc_ratepertruck'+vi).value)||0)*(parseFloat(document.getElementById('f_dc_truckusage'+vi).value)||0))+(parseFloat(document.getElementById('f_dc_handling'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_customs'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_delivery'+vi).value)||0),0);
       const dcRev = parseFloat(document.getElementById('f_dc_totalrev').textContent.replace(/,/g,''))||0;
       const totalCost = lcCost + (w*c) + dcCost;
       const totalRev = lcRev + (w*s) + dcRev;
@@ -1499,7 +1718,7 @@ function gatherRecord(){
       const w = parseFloat(document.getElementById('f_cr_chargeableweight').textContent)||0;
       const s = parseFloat(document.getElementById('f_sellingperkg').value)||0;
       const c = parseFloat(document.getElementById('f_costperkg').value)||0;
-      const dcCost = (parseFloat(document.getElementById('f_dc_handlingcost').value)||0) + (parseFloat(document.getElementById('f_dc_customscost').value)||0) + (parseFloat(document.getElementById('f_dc_deliverycost').value)||0);
+      const dcCost = [1,2,3,4].reduce((s,vi)=>s+((parseFloat(document.getElementById('f_dc_ratepertruck'+vi).value)||0)*(parseFloat(document.getElementById('f_dc_truckusage'+vi).value)||0))+(parseFloat(document.getElementById('f_dc_handling'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_customs'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_delivery'+vi).value)||0),0);
       const dcRev = parseFloat(document.getElementById('f_dc_totalrev').textContent.replace(/,/g,''))||0;
       const totalCost = lcCost + (w*c) + dcCost;
       const totalRev = lcRev + (w*s) + dcRev;
@@ -1561,36 +1780,152 @@ function applyRecord(rec){
   // Re-run live MAWB lookup instead of trusting the saved snapshot, so any edits made
   // to the Booking's weight/customer/etc after this C&R record was last saved are picked up.
   lookupMAWB();
-  document.getElementById('f_lc_vendor').value = rec.lcVendor || '';
-  document.getElementById('f_lcr_vendor').value = rec.lcrVendor || '';
-  document.getElementById('f_lc_trucktype').value = rec.lcTruckType || '';
-  document.getElementById('f_lc_ratepertruck').value = rec.lcRatePerTruck || '';
-  document.getElementById('f_lc_truckusage').value = rec.lcTruckUsage || '';
-  document.getElementById('f_lc_customs').value = rec.lcCustoms || '';
-  document.getElementById('f_lc_terminal').value = rec.lcTerminal || '';
-  document.getElementById('f_lc_document').value = rec.lcDocument || '';
-  document.getElementById('f_lc_airlinesother').value = rec.lcAirlinesOther || '';
-  document.getElementById('f_lc_packing').value = rec.lcPacking || '';
-  document.getElementById('f_lc_other').value = rec.lcOther || '';
-  document.getElementById('f_lc_otherremark').value = rec.lcOtherRemark || '';
-  document.getElementById('f_lcr_trucktype').value = rec.lcrTruckType || '';
-  document.getElementById('f_lcr_truckusage').value = rec.lcrTruckUsage || '';
-  document.getElementById('f_lcr_ratepertruck').value = rec.lcrRatePerTruck || '';
-  document.getElementById('f_lcr_customs').value = rec.lcrCustoms || '';
-  document.getElementById('f_lcr_terminal').value = rec.lcrTerminal || '';
-  document.getElementById('f_lcr_document').value = rec.lcrDocument || '';
-  document.getElementById('f_lcr_airlinesother').value = rec.lcrAirlinesOther || '';
-  document.getElementById('f_lcr_packing').value = rec.lcrPacking || '';
-  document.getElementById('f_lcr_other').value = rec.lcrOther || '';
-  document.getElementById('f_lcr_otherremark').value = rec.lcrOtherRemark || '';
+  document.getElementById('f_lc_vendor1').value = rec.lcVendor1 || '';
+  document.getElementById('f_lc_vendor2').value = rec.lcVendor2 || '';
+  document.getElementById('f_lc_vendor3').value = rec.lcVendor3 || '';
+  document.getElementById('f_lc_vendor4').value = rec.lcVendor4 || '';
+  document.getElementById('f_lc_trucktype1').value = rec.lcTruckType1 || '';
+  document.getElementById('f_lc_trucktype2').value = rec.lcTruckType2 || '';
+  document.getElementById('f_lc_trucktype3').value = rec.lcTruckType3 || '';
+  document.getElementById('f_lc_trucktype4').value = rec.lcTruckType4 || '';
+  document.getElementById('f_lc_truckusage1').value = rec.lcTruckUsage1 || '';
+  document.getElementById('f_lc_truckusage2').value = rec.lcTruckUsage2 || '';
+  document.getElementById('f_lc_truckusage3').value = rec.lcTruckUsage3 || '';
+  document.getElementById('f_lc_truckusage4').value = rec.lcTruckUsage4 || '';
+  document.getElementById('f_lc_ratepertruck1').value = rec.lcRatePerTruck1 || '';
+  document.getElementById('f_lc_ratepertruck2').value = rec.lcRatePerTruck2 || '';
+  document.getElementById('f_lc_ratepertruck3').value = rec.lcRatePerTruck3 || '';
+  document.getElementById('f_lc_ratepertruck4').value = rec.lcRatePerTruck4 || '';
+  document.getElementById('f_lc_customs1').value = rec.lcCustoms1 || '';
+  document.getElementById('f_lc_customs2').value = rec.lcCustoms2 || '';
+  document.getElementById('f_lc_customs3').value = rec.lcCustoms3 || '';
+  document.getElementById('f_lc_customs4').value = rec.lcCustoms4 || '';
+  document.getElementById('f_lc_terminal1').value = rec.lcTerminal1 || '';
+  document.getElementById('f_lc_terminal2').value = rec.lcTerminal2 || '';
+  document.getElementById('f_lc_terminal3').value = rec.lcTerminal3 || '';
+  document.getElementById('f_lc_terminal4').value = rec.lcTerminal4 || '';
+  document.getElementById('f_lc_document1').value = rec.lcDocument1 || '';
+  document.getElementById('f_lc_document2').value = rec.lcDocument2 || '';
+  document.getElementById('f_lc_document3').value = rec.lcDocument3 || '';
+  document.getElementById('f_lc_document4').value = rec.lcDocument4 || '';
+  document.getElementById('f_lc_airlinesother1').value = rec.lcAirlinesOther1 || '';
+  document.getElementById('f_lc_airlinesother2').value = rec.lcAirlinesOther2 || '';
+  document.getElementById('f_lc_airlinesother3').value = rec.lcAirlinesOther3 || '';
+  document.getElementById('f_lc_airlinesother4').value = rec.lcAirlinesOther4 || '';
+  document.getElementById('f_lc_packing1').value = rec.lcPacking1 || '';
+  document.getElementById('f_lc_packing2').value = rec.lcPacking2 || '';
+  document.getElementById('f_lc_packing3').value = rec.lcPacking3 || '';
+  document.getElementById('f_lc_packing4').value = rec.lcPacking4 || '';
+  document.getElementById('f_lc_other1').value = rec.lcOther1 || '';
+  document.getElementById('f_lc_other2').value = rec.lcOther2 || '';
+  document.getElementById('f_lc_other3').value = rec.lcOther3 || '';
+  document.getElementById('f_lc_other4').value = rec.lcOther4 || '';
+  document.getElementById('f_lc_otherremark1').value = rec.lcOtherRemark1 || '';
+  document.getElementById('f_lc_otherremark2').value = rec.lcOtherRemark2 || '';
+  document.getElementById('f_lc_otherremark3').value = rec.lcOtherRemark3 || '';
+  document.getElementById('f_lc_otherremark4').value = rec.lcOtherRemark4 || '';
+  document.getElementById('f_lcr_vendor1').value = rec.lcrVendor1 || '';
+  document.getElementById('f_lcr_vendor2').value = rec.lcrVendor2 || '';
+  document.getElementById('f_lcr_vendor3').value = rec.lcrVendor3 || '';
+  document.getElementById('f_lcr_vendor4').value = rec.lcrVendor4 || '';
+  document.getElementById('f_lcr_trucktype1').value = rec.lcrTruckType1 || '';
+  document.getElementById('f_lcr_trucktype2').value = rec.lcrTruckType2 || '';
+  document.getElementById('f_lcr_trucktype3').value = rec.lcrTruckType3 || '';
+  document.getElementById('f_lcr_trucktype4').value = rec.lcrTruckType4 || '';
+  document.getElementById('f_lcr_truckusage1').value = rec.lcrTruckUsage1 || '';
+  document.getElementById('f_lcr_truckusage2').value = rec.lcrTruckUsage2 || '';
+  document.getElementById('f_lcr_truckusage3').value = rec.lcrTruckUsage3 || '';
+  document.getElementById('f_lcr_truckusage4').value = rec.lcrTruckUsage4 || '';
+  document.getElementById('f_lcr_ratepertruck1').value = rec.lcrRatePerTruck1 || '';
+  document.getElementById('f_lcr_ratepertruck2').value = rec.lcrRatePerTruck2 || '';
+  document.getElementById('f_lcr_ratepertruck3').value = rec.lcrRatePerTruck3 || '';
+  document.getElementById('f_lcr_ratepertruck4').value = rec.lcrRatePerTruck4 || '';
+  document.getElementById('f_lcr_customs1').value = rec.lcrCustoms1 || '';
+  document.getElementById('f_lcr_customs2').value = rec.lcrCustoms2 || '';
+  document.getElementById('f_lcr_customs3').value = rec.lcrCustoms3 || '';
+  document.getElementById('f_lcr_customs4').value = rec.lcrCustoms4 || '';
+  document.getElementById('f_lcr_terminal1').value = rec.lcrTerminal1 || '';
+  document.getElementById('f_lcr_terminal2').value = rec.lcrTerminal2 || '';
+  document.getElementById('f_lcr_terminal3').value = rec.lcrTerminal3 || '';
+  document.getElementById('f_lcr_terminal4').value = rec.lcrTerminal4 || '';
+  document.getElementById('f_lcr_document1').value = rec.lcrDocument1 || '';
+  document.getElementById('f_lcr_document2').value = rec.lcrDocument2 || '';
+  document.getElementById('f_lcr_document3').value = rec.lcrDocument3 || '';
+  document.getElementById('f_lcr_document4').value = rec.lcrDocument4 || '';
+  document.getElementById('f_lcr_airlinesother1').value = rec.lcrAirlinesOther1 || '';
+  document.getElementById('f_lcr_airlinesother2').value = rec.lcrAirlinesOther2 || '';
+  document.getElementById('f_lcr_airlinesother3').value = rec.lcrAirlinesOther3 || '';
+  document.getElementById('f_lcr_airlinesother4').value = rec.lcrAirlinesOther4 || '';
+  document.getElementById('f_lcr_packing1').value = rec.lcrPacking1 || '';
+  document.getElementById('f_lcr_packing2').value = rec.lcrPacking2 || '';
+  document.getElementById('f_lcr_packing3').value = rec.lcrPacking3 || '';
+  document.getElementById('f_lcr_packing4').value = rec.lcrPacking4 || '';
+  document.getElementById('f_lcr_other1').value = rec.lcrOther1 || '';
+  document.getElementById('f_lcr_other2').value = rec.lcrOther2 || '';
+  document.getElementById('f_lcr_other3').value = rec.lcrOther3 || '';
+  document.getElementById('f_lcr_other4').value = rec.lcrOther4 || '';
+  document.getElementById('f_lcr_otherremark1').value = rec.lcrOtherRemark1 || '';
+  document.getElementById('f_lcr_otherremark2').value = rec.lcrOtherRemark2 || '';
+  document.getElementById('f_lcr_otherremark3').value = rec.lcrOtherRemark3 || '';
+  document.getElementById('f_lcr_otherremark4').value = rec.lcrOtherRemark4 || '';
   document.getElementById('f_costperkg').value = rec.costPerKg || '';
   document.getElementById('f_sellingperkg').value = rec.sellingPerKg || '';
-  document.getElementById('f_dc_handlingcost').value = rec.dcHandlingCost || '';
-  document.getElementById('f_dc_customscost').value = rec.dcCustomsCost || '';
-  document.getElementById('f_dc_deliverycost').value = rec.dcDeliveryCost || '';
-  document.getElementById('f_dcr_handlingrev').value = rec.dcHandlingRev || '';
-  document.getElementById('f_dcr_customsrev').value = rec.dcCustomsRev || '';
-  document.getElementById('f_dcr_deliveryrev').value = rec.dcDeliveryRev || '';
+  document.getElementById('f_dc_vendor1').value = rec.dcVendor1 || '';
+  document.getElementById('f_dc_vendor2').value = rec.dcVendor2 || '';
+  document.getElementById('f_dc_vendor3').value = rec.dcVendor3 || '';
+  document.getElementById('f_dc_vendor4').value = rec.dcVendor4 || '';
+  document.getElementById('f_dc_trucktype1').value = rec.dcTruckType1 || '';
+  document.getElementById('f_dc_trucktype2').value = rec.dcTruckType2 || '';
+  document.getElementById('f_dc_trucktype3').value = rec.dcTruckType3 || '';
+  document.getElementById('f_dc_trucktype4').value = rec.dcTruckType4 || '';
+  document.getElementById('f_dc_truckusage1').value = rec.dcTruckUsage1 || '';
+  document.getElementById('f_dc_truckusage2').value = rec.dcTruckUsage2 || '';
+  document.getElementById('f_dc_truckusage3').value = rec.dcTruckUsage3 || '';
+  document.getElementById('f_dc_truckusage4').value = rec.dcTruckUsage4 || '';
+  document.getElementById('f_dc_ratepertruck1').value = rec.dcRatePerTruck1 || '';
+  document.getElementById('f_dc_ratepertruck2').value = rec.dcRatePerTruck2 || '';
+  document.getElementById('f_dc_ratepertruck3').value = rec.dcRatePerTruck3 || '';
+  document.getElementById('f_dc_ratepertruck4').value = rec.dcRatePerTruck4 || '';
+  document.getElementById('f_dc_handling1').value = rec.dcHandling1 || '';
+  document.getElementById('f_dc_handling2').value = rec.dcHandling2 || '';
+  document.getElementById('f_dc_handling3').value = rec.dcHandling3 || '';
+  document.getElementById('f_dc_handling4').value = rec.dcHandling4 || '';
+  document.getElementById('f_dc_customs1').value = rec.dcCustoms1 || '';
+  document.getElementById('f_dc_customs2').value = rec.dcCustoms2 || '';
+  document.getElementById('f_dc_customs3').value = rec.dcCustoms3 || '';
+  document.getElementById('f_dc_customs4').value = rec.dcCustoms4 || '';
+  document.getElementById('f_dc_delivery1').value = rec.dcDelivery1 || '';
+  document.getElementById('f_dc_delivery2').value = rec.dcDelivery2 || '';
+  document.getElementById('f_dc_delivery3').value = rec.dcDelivery3 || '';
+  document.getElementById('f_dc_delivery4').value = rec.dcDelivery4 || '';
+  document.getElementById('f_dcr_vendor1').value = rec.dcrVendor1 || '';
+  document.getElementById('f_dcr_vendor2').value = rec.dcrVendor2 || '';
+  document.getElementById('f_dcr_vendor3').value = rec.dcrVendor3 || '';
+  document.getElementById('f_dcr_vendor4').value = rec.dcrVendor4 || '';
+  document.getElementById('f_dcr_trucktype1').value = rec.dcrTruckType1 || '';
+  document.getElementById('f_dcr_trucktype2').value = rec.dcrTruckType2 || '';
+  document.getElementById('f_dcr_trucktype3').value = rec.dcrTruckType3 || '';
+  document.getElementById('f_dcr_trucktype4').value = rec.dcrTruckType4 || '';
+  document.getElementById('f_dcr_truckusage1').value = rec.dcrTruckUsage1 || '';
+  document.getElementById('f_dcr_truckusage2').value = rec.dcrTruckUsage2 || '';
+  document.getElementById('f_dcr_truckusage3').value = rec.dcrTruckUsage3 || '';
+  document.getElementById('f_dcr_truckusage4').value = rec.dcrTruckUsage4 || '';
+  document.getElementById('f_dcr_ratepertruck1').value = rec.dcrRatePerTruck1 || '';
+  document.getElementById('f_dcr_ratepertruck2').value = rec.dcrRatePerTruck2 || '';
+  document.getElementById('f_dcr_ratepertruck3').value = rec.dcrRatePerTruck3 || '';
+  document.getElementById('f_dcr_ratepertruck4').value = rec.dcrRatePerTruck4 || '';
+  document.getElementById('f_dcr_handling1').value = rec.dcrHandling1 || '';
+  document.getElementById('f_dcr_handling2').value = rec.dcrHandling2 || '';
+  document.getElementById('f_dcr_handling3').value = rec.dcrHandling3 || '';
+  document.getElementById('f_dcr_handling4').value = rec.dcrHandling4 || '';
+  document.getElementById('f_dcr_customs1').value = rec.dcrCustoms1 || '';
+  document.getElementById('f_dcr_customs2').value = rec.dcrCustoms2 || '';
+  document.getElementById('f_dcr_customs3').value = rec.dcrCustoms3 || '';
+  document.getElementById('f_dcr_customs4').value = rec.dcrCustoms4 || '';
+  document.getElementById('f_dcr_delivery1').value = rec.dcrDelivery1 || '';
+  document.getElementById('f_dcr_delivery2').value = rec.dcrDelivery2 || '';
+  document.getElementById('f_dcr_delivery3').value = rec.dcrDelivery3 || '';
+  document.getElementById('f_dcr_delivery4').value = rec.dcrDelivery4 || '';
   updateGP();
   document.getElementById('itemsBody').innerHTML = '';
   itemCounter = 0;
@@ -2562,8 +2897,8 @@ function downloadCSVTemplate(){
 const csvTemplateColsCR = [
   'jobNo','date','mawb','notes','status',
   'costPerKg','sellingPerKg',
-  'lcVendor','lcTruckType','lcTruckUsage','lcRatePerTruck','lcCustoms','lcTerminal','lcDocument','lcAirlinesOther','lcPacking','lcOther','lcOtherRemark',
-  'lcrTruckType','lcrTruckUsage','lcrRatePerTruck','lcrCustoms','lcrTerminal','lcrDocument','lcrAirlinesOther','lcrPacking','lcrOther','lcrOtherRemark',
+  'lcVendor1','lcTruckType1','lcTruckUsage1','lcRatePerTruck1','lcCustoms1','lcTerminal1','lcDocument1','lcAirlinesOther1','lcPacking1','lcOther1','lcOtherRemark1',
+  'lcrTruckType1','lcrTruckUsage1','lcrRatePerTruck1','lcrCustoms1','lcrTerminal1','lcrDocument1','lcrAirlinesOther1','lcrPacking1','lcrOther1','lcrOtherRemark1',
   'dcHandlingCost','dcCustomsCost','dcDeliveryCost',
   'dcHandlingRev','dcCustomsRev','dcDeliveryRev'
 ];
@@ -2700,16 +3035,16 @@ function importCRCSV(file){
         const crEtd = match ? (match.etd||'—') : '—';
         const crChargeableWeight = match ? String(match.weight||0) : '0';
 
-        const truck4wOr6w = parseFloat(obj.lcRatePerTruck)||0;
-        const lcTruckUsage = parseFloat(obj.lcTruckUsage)||0;
+        const truck4wOr6w = parseFloat(obj.lcRatePerTruck1)||0;
+        const lcTruckUsage = parseFloat(obj.lcTruckUsage1)||0;
         const lcPickup = truck4wOr6w * lcTruckUsage;
-        const lcHandling = (parseFloat(obj.lcCustoms)||0)+(parseFloat(obj.lcTerminal)||0)+(parseFloat(obj.lcDocument)||0)+(parseFloat(obj.lcAirlinesOther)||0)+(parseFloat(obj.lcPacking)||0)+(parseFloat(obj.lcOther)||0);
+        const lcHandling = (parseFloat(obj.lcCustoms1)||0)+(parseFloat(obj.lcTerminal1)||0)+(parseFloat(obj.lcDocument1)||0)+(parseFloat(obj.lcAirlinesOther1)||0)+(parseFloat(obj.lcPacking1)||0)+(parseFloat(obj.lcOther1)||0);
         const lcCostAmount = lcPickup + lcHandling;
 
-        const lcrRate = parseFloat(obj.lcrRatePerTruck)||0;
-        const lcrTruckUsage = parseFloat(obj.lcrTruckUsage)||0;
+        const lcrRate = parseFloat(obj.lcrRatePerTruck1)||0;
+        const lcrTruckUsage = parseFloat(obj.lcrTruckUsage1)||0;
         const lcrPickup = lcrRate * lcrTruckUsage;
-        const lcrHandling = (parseFloat(obj.lcrCustoms)||0)+(parseFloat(obj.lcrTerminal)||0)+(parseFloat(obj.lcrDocument)||0)+(parseFloat(obj.lcrAirlinesOther)||0)+(parseFloat(obj.lcrPacking)||0)+(parseFloat(obj.lcrOther)||0);
+        const lcrHandling = (parseFloat(obj.lcrCustoms1)||0)+(parseFloat(obj.lcrTerminal1)||0)+(parseFloat(obj.lcrDocument1)||0)+(parseFloat(obj.lcrAirlinesOther1)||0)+(parseFloat(obj.lcrPacking1)||0)+(parseFloat(obj.lcrOther1)||0);
         const lcRevAmount = lcrPickup + lcrHandling;
 
         const w = parseFloat(crChargeableWeight)||0;
@@ -2729,12 +3064,12 @@ function importCRCSV(file){
           status:(obj.status||'freight-input').toLowerCase(), savedAt:new Date().toISOString(),
           refJobNo:mawb, crMawb:mawb, crCustomer, crMode, crCargoService, crExpImp, crOrigin, crDest, crEtd, crChargeableWeight,
           costPerKg:obj.costPerKg||'', sellingPerKg:obj.sellingPerKg||'',
-          lcVendor:obj.lcVendor||'', lcTruckType:obj.lcTruckType||'', lcTruckUsage:obj.lcTruckUsage||'', lcRatePerTruck:obj.lcRatePerTruck||'',
-          lcCustoms:obj.lcCustoms||'', lcTerminal:obj.lcTerminal||'', lcDocument:obj.lcDocument||'', lcAirlinesOther:obj.lcAirlinesOther||'',
-          lcPacking:obj.lcPacking||'', lcOther:obj.lcOther||'', lcOtherRemark:obj.lcOtherRemark||'',
-          lcrTruckType:obj.lcrTruckType||'', lcrTruckUsage:obj.lcrTruckUsage||'', lcrRatePerTruck:obj.lcrRatePerTruck||'',
-          lcrCustoms:obj.lcrCustoms||'', lcrTerminal:obj.lcrTerminal||'', lcrDocument:obj.lcrDocument||'', lcrAirlinesOther:obj.lcrAirlinesOther||'',
-          lcrPacking:obj.lcrPacking||'', lcrOther:obj.lcrOther||'', lcrOtherRemark:obj.lcrOtherRemark||'',
+          lcVendor1:obj.lcVendor1||'', lcTruckType1:obj.lcTruckType1||'', lcTruckUsage1:obj.lcTruckUsage1||'', lcRatePerTruck1:obj.lcRatePerTruck1||'',
+          lcCustoms1:obj.lcCustoms1||'', lcTerminal1:obj.lcTerminal1||'', lcDocument1:obj.lcDocument1||'', lcAirlinesOther1:obj.lcAirlinesOther1||'',
+          lcPacking1:obj.lcPacking1||'', lcOther1:obj.lcOther1||'', lcOtherRemark1:obj.lcOtherRemark1||'',
+          lcrTruckType1:obj.lcrTruckType1||'', lcrTruckUsage1:obj.lcrTruckUsage1||'', lcrRatePerTruck1:obj.lcrRatePerTruck1||'',
+          lcrCustoms1:obj.lcrCustoms1||'', lcrTerminal1:obj.lcrTerminal1||'', lcrDocument1:obj.lcrDocument1||'', lcrAirlinesOther1:obj.lcrAirlinesOther1||'',
+          lcrPacking1:obj.lcrPacking1||'', lcrOther1:obj.lcrOther1||'', lcrOtherRemark1:obj.lcrOtherRemark1||'',
           dcHandlingCost:obj.dcHandlingCost||'', dcCustomsCost:obj.dcCustomsCost||'', dcDeliveryCost:obj.dcDeliveryCost||'',
           dcHandlingRev:obj.dcHandlingRev||'', dcCustomsRev:obj.dcCustomsRev||'', dcDeliveryRev:obj.dcDeliveryRev||'',
           lcCostAmount:round2(lcCostAmount), lcRevAmount:round2(lcRevAmount),
