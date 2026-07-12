@@ -244,7 +244,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
 .bar-row .bar-fill.c-green{background:var(--green);}
 .bar-row .bar-num{width:28px; text-align:right; font-family:'IBM Plex Mono',monospace; color:var(--steel); flex-shrink:0;}
 .dash-table{width:100%; border-collapse:collapse; font-size:13px;}
-.dash-table th{text-align:left; font-size:11px; text-transform:uppercase; color:#3A3A3A; background:#EDEDED; border-bottom:1px solid var(--navy); padding:6px 8px;}
+.dash-table th{text-align:left; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; color:#3A3A3A; background:#EDEDED; border-bottom:1px solid var(--navy); padding:6px 8px;}
 .dash-table td{padding:7px 8px; border-bottom:1px solid var(--line);}
 .dash-table tr:hover{background:var(--gray-tint); cursor:pointer;}
 
@@ -281,7 +281,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     <div class="toolbar-left">
       <button class="btn-dash-daily" onclick="toggleDailyDash()" id="dailyDashBtn">Daily Dashboard</button>
       <button class="btn-dash-monthly" onclick="toggleMonthlyDash()" id="monthlyDashBtn">Monthly Dashboard</button>
-      <button class="btn-dash-rev" id="revDashBtn" onclick="toggleRevDash()">Rev Dashboard</button>
+      <button class="btn-dash-rev" id="revDashBtn" onclick="toggleRevDash()">Revenue Dashboard</button>
       <button class="btn-dash-pod" id="podCrDashBtn" onclick="togglePodCrDash()">Billing Monitoring Dashboard</button>
       <button class="btn-inquiry" onclick="if(confirmDiscard()) newSheet('inquiry')">+ New Inquiry</button>
       <button class="btn-booking" onclick="if(confirmDiscard()) newSheet('booking')">+ New Booking</button>
@@ -295,9 +295,6 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <button onclick="downloadCSVTemplate()">Download CSV template</button>
       <button class="accent" onclick="document.getElementById('importCsvFile').click()">Batch upload (CSV)</button>
       <input type="file" id="importCsvFile" accept=".csv" style="display:none" onchange="importCSV(this.files[0])">
-      <button onclick="downloadCRCSVTemplate()">Download C&amp;R CSV template</button>
-      <button class="btn-finance" onclick="document.getElementById('importCRCsvFile').click()">Batch upload C&amp;R (CSV)</button>
-      <input type="file" id="importCRCsvFile" accept=".csv" style="display:none" onchange="importCRCSV(this.files[0])">
     </div>
   </div>
 
@@ -453,7 +450,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     <div class="bar-section">
       <h3>B.2 — Total Shipment (all modes, by MAWB)</h3>
       <table class="dash-table">
-        <thead><tr><th>Month</th><th>Total Shipment</th><th>Total Chargeable Weight</th></tr></thead>
+        <thead><tr><th>Month</th><th>Total Shipment</th><th>Total Chargeable Weight</th><th>Total Container</th></tr></thead>
         <tbody id="monthlyTotalShipmentBody"></tbody>
       </table>
     </div>
@@ -544,13 +541,13 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     <div class="bar-section">
       <h3>D.1 MONTHLY SUMMARY</h3>
       <table class="dash-table">
-        <thead><tr><th>Month</th><th>Total MAWB</th><th>Total POD</th><th>Cost &amp; Rev Input Completed</th><th>Send Invoice to Customer (Reconcile)</th><th>INV Issued</th></tr></thead>
+        <thead><tr><th>Month</th><th>Total MAWB</th><th>Total POD</th><th>Total Cancelled</th><th>Cost &amp; Rev Input Completed</th><th>Send Billing to customer (Reconcile)</th><th>INV Issued</th></tr></thead>
         <tbody id="billingMonthlyBody"></tbody>
       </table>
     </div>
 
     <div class="bar-section">
-      <h3>D.2 Details by filter</h3>
+      <h3>D.2 Breakdown by Status</h3>
       <div style="display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
         <label style="font-size:12px; color:var(--steel);">Month<br>
           <select id="billingFilterMonth" onchange="renderBillingDetail()" style="margin-top:2px;">
@@ -562,7 +559,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
             <option value="not-pod">Not POD yet</option>
             <option value="total-pod">Total POD</option>
             <option value="cost-rev-completed">Cost &amp; Rev Input Completed</option>
-            <option value="reconcile">Send Invoice to Customer (Reconcile)</option>
+            <option value="reconcile">Send Billing to customer (Reconcile)</option>
             <option value="invoice-issued">INV Issued</option>
           </select>
         </label>
@@ -2441,7 +2438,7 @@ async function renderPodCrDashboard(){
   if(!yearPicker.value || parseInt(yearPicker.value,10)<2020){ yearPicker.value = now.getFullYear(); }
   const year = parseInt(yearPicker.value, 10);
 
-  const monthly = Array.from({length:12}, ()=>({total:0, pod:0, completed:0, reconcile:0, invoiced:0}));
+  const monthly = Array.from({length:12}, ()=>({total:0, pod:0, cancelled:0, completed:0, reconcile:0, invoiced:0}));
   idx.forEach(i=>{
     if(i.type!=='booking' || !i.etd) return;
     const d = new Date(i.etd+'T00:00:00');
@@ -2455,12 +2452,14 @@ async function renderPodCrDashboard(){
       if(BILLING_COMPLETED_UP.includes(cr)) monthly[m].completed++;
       if(BILLING_RECONCILE_UP.includes(cr)) monthly[m].reconcile++;
       if(cr==='invoice-issued') monthly[m].invoiced++;
+    }else if(st==='cancelled'){
+      monthly[m].cancelled++;
     }
   });
 
   document.getElementById('billingMonthlyBody').innerHTML = monthShortNames.map((m,i)=>
-    `<tr><td>${m}</td><td>${fmtNum(monthly[i].total)}</td><td>${fmtNum(monthly[i].pod)}</td><td>${fmtNum(monthly[i].completed)}</td><td>${fmtNum(monthly[i].reconcile)}</td><td>${fmtNum(monthly[i].invoiced)}</td></tr>`
-  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.total,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.pod,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.completed,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.reconcile,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.invoiced,0))}</td></tr>`;
+    `<tr><td>${m}</td><td>${fmtNum(monthly[i].total)}</td><td>${fmtNum(monthly[i].pod)}</td><td>${fmtNum(monthly[i].cancelled)}</td><td>${fmtNum(monthly[i].completed)}</td><td>${fmtNum(monthly[i].reconcile)}</td><td>${fmtNum(monthly[i].invoiced)}</td></tr>`
+  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.total,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.pod,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.cancelled,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.completed,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.reconcile,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.invoiced,0))}</td></tr>`;
 
   const monthSelect = document.getElementById('billingFilterMonth');
   if(monthSelect.options.length<=1){
@@ -2788,6 +2787,7 @@ async function renderMonthlyDashboard(){
 
   const shipmentByMonth = new Array(12).fill(0);
   const chargeableWeightByMonth = new Array(12).fill(0);
+  const containerByMonth = new Array(12).fill(0);
   idx.filter(i=>i.type==='booking' && i.mawb).forEach(i=>{
     if(!i.etd) return;
     const d = new Date(i.etd+'T00:00:00');
@@ -2795,10 +2795,11 @@ async function renderMonthlyDashboard(){
     const m = d.getMonth();
     shipmentByMonth[m]++;
     chargeableWeightByMonth[m] += parseFloat(i.weight)||0;
+    if(i.mode==='Sea') containerByMonth[m] += parseFloat(i.containers)||0;
   });
   document.getElementById('monthlyTotalShipmentBody').innerHTML = monthShortNames.map((m,i)=>
-    `<tr><td>${m}</td><td>${fmtNum(shipmentByMonth[i])}</td><td>${fmtNum(chargeableWeightByMonth[i])}</td></tr>`
-  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(shipmentByMonth.reduce((s,v)=>s+v,0))}</td><td>${fmtNum(chargeableWeightByMonth.reduce((s,v)=>s+v,0))}</td></tr>`;
+    `<tr><td>${m}</td><td>${fmtNum(shipmentByMonth[i])}</td><td>${fmtNum(chargeableWeightByMonth[i])}</td><td>${fmtNum(containerByMonth[i])}</td></tr>`
+  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(shipmentByMonth.reduce((s,v)=>s+v,0))}</td><td>${fmtNum(chargeableWeightByMonth.reduce((s,v)=>s+v,0))}</td><td>${fmtNum(containerByMonth.reduce((s,v)=>s+v,0))}</td></tr>`;
 
   function renderVolTable(headerRowId, bodyId, yearSpanId, records, valueField, unitLabel){
     const dec = 0;
@@ -3116,73 +3117,69 @@ function csvEscape(val){
 async function exportCSV(){
   const records = await dataGetAll();
   if(records.length===0){ alert('No job sheets to export yet.'); return; }
-  const cols = ['jobNo','type','date','month','customer','cargoService','mode','expImp','service','origin','dest','route','carrier','coloader','etd','eta','transit','containers','vendorName','truckType','totalTruck','driverName','licensePlate','pickupDate','mawb','itemsSummary','totalBookingWeight','totalChargeableWeight','notes','status','savedAt'];
+  const cols = ['jobNo','type','date','month','customer','cargoService','mode','expImp','service','origin','dest','route','carrier','coloader','etd','eta','transit','containers','itemsJSON','vendorName','truckType','totalTruck','driverName','licensePlate','pickupDate','mawb','notes','status','savedAt','bookingWeight','chargeableWeight','remark','quotationRef','crStatus','refJobNo','lcCostAmount','lcRevAmount','frCostAmount','frRevAmount','dcCostAmount','dcRevAmount','revAmount','costAmount','gpAmount','gpPercent','crMawb','crCustomer','crMode','crCargoService','crExpImp','crOrigin','crDest','crEtd','crChargeableWeight','costPerKg','sellingPerKg','lcVendor1','lcVendor2','lcVendor3','lcVendor4','lcTruckType1','lcTruckType2','lcTruckType3','lcTruckType4','lcTruckUsage1','lcTruckUsage2','lcTruckUsage3','lcTruckUsage4','lcRatePerTruck1','lcRatePerTruck2','lcRatePerTruck3','lcRatePerTruck4','lcCustoms1','lcCustoms2','lcCustoms3','lcCustoms4','lcTerminal1','lcTerminal2','lcTerminal3','lcTerminal4','lcDocument1','lcDocument2','lcDocument3','lcDocument4','lcAirlinesOther1','lcAirlinesOther2','lcAirlinesOther3','lcAirlinesOther4','lcPacking1','lcPacking2','lcPacking3','lcPacking4','lcOther1','lcOther2','lcOther3','lcOther4','lcOtherRemark1','lcOtherRemark2','lcOtherRemark3','lcOtherRemark4','lcrVendor1','lcrVendor2','lcrVendor3','lcrVendor4','lcrTruckType1','lcrTruckType2','lcrTruckType3','lcrTruckType4','lcrTruckUsage1','lcrTruckUsage2','lcrTruckUsage3','lcrTruckUsage4','lcrRatePerTruck1','lcrRatePerTruck2','lcrRatePerTruck3','lcrRatePerTruck4','lcrCustoms1','lcrCustoms2','lcrCustoms3','lcrCustoms4','lcrTerminal1','lcrTerminal2','lcrTerminal3','lcrTerminal4','lcrDocument1','lcrDocument2','lcrDocument3','lcrDocument4','lcrAirlinesOther1','lcrAirlinesOther2','lcrAirlinesOther3','lcrAirlinesOther4','lcrPacking1','lcrPacking2','lcrPacking3','lcrPacking4','lcrOther1','lcrOther2','lcrOther3','lcrOther4','lcrOtherRemark1','lcrOtherRemark2','lcrOtherRemark3','lcrOtherRemark4','dcVendor1','dcVendor2','dcVendor3','dcVendor4','dcTruckType1','dcTruckType2','dcTruckType3','dcTruckType4','dcTruckUsage1','dcTruckUsage2','dcTruckUsage3','dcTruckUsage4','dcRatePerTruck1','dcRatePerTruck2','dcRatePerTruck3','dcRatePerTruck4','dcHandling1','dcHandling2','dcHandling3','dcHandling4','dcCustoms1','dcCustoms2','dcCustoms3','dcCustoms4','dcDelivery1','dcDelivery2','dcDelivery3','dcDelivery4','dcrVendor1','dcrVendor2','dcrVendor3','dcrVendor4','dcrTruckType1','dcrTruckType2','dcrTruckType3','dcrTruckType4','dcrTruckUsage1','dcrTruckUsage2','dcrTruckUsage3','dcrTruckUsage4','dcrRatePerTruck1','dcrRatePerTruck2','dcrRatePerTruck3','dcrRatePerTruck4','dcrHandling1','dcrHandling2','dcrHandling3','dcrHandling4','dcrCustoms1','dcrCustoms2','dcrCustoms3','dcrCustoms4','dcrDelivery1','dcrDelivery2','dcrDelivery3','dcrDelivery4','dcRemark1','dcRemark2','dcRemark3','dcRemark4','dcrRemark1','dcrRemark2','dcrRemark3','dcrRemark4'];
   const header = cols.join(',');
   const rows = records.map(r=>{
-    const itemsSummary = (r.items||[]).map(it=>{
-      if(r.mode==='Sea') return `${it.product||''} (${it.container||0} container x${it.pieces||1})`;
-      return `${it.product||''} (${itemWeight(it)}kg x${it.pieces||1})`;
-    }).join(' | ');
-    const totalBookingWeight = (r.items||[]).reduce((sum,it)=>sum+(parseFloat(it.bookingWeight)||0),0);
-    const totalChargeableWeight = (r.items||[]).reduce((sum,it)=>sum+itemWeight(it),0);
-    const rowObj = Object.assign({}, r, {itemsSummary, totalBookingWeight, totalChargeableWeight});
-    return cols.map(c=>csvEscape(rowObj[c])).join(',');
+    return cols.map(c=>csvEscape(r[c])).join(',');
   });
   const csv = [header].concat(rows).join('\n');
   downloadFile('job-sheets-'+todayStr()+'.csv', csv, 'text/csv');
 }
 
-const csvTemplateCols = ['type','jobNo','date','customer','cargoService','mode','expImp','service','origin','dest','etd','eta','product','bookingWeight','chargeableWeight','container','pieces','remarks','vendorName','truckType','totalTruck','driverName','licensePlate','pickupDate','mawb','notes','status'];
-
-function downloadCSVTemplate(){
-  const sampleRow = ['booking','','2026-07-10','Nanyang','Freight Forwarding','Air','Export','P2P','BKK','BNE','2026-07-10','2026-07-11','Garment','2000','2050','','1','','ABC Trucking','6-wheel','1','Somchai','1กก-1234','','','flight-booked'];
-  const csv = csvTemplateCols.join(',') + '\n' + sampleRow.map(csvEscape).join(',');
-  downloadFile('job-sheet-import-template.csv', csv, 'text/csv');
-}
-
-const csvTemplateColsCR = [
-  'jobNo','date','mawb','notes','status',
-  'costPerKg','sellingPerKg',
-  'lcVendor1','lcTruckType1','lcTruckUsage1','lcRatePerTruck1','lcCustoms1','lcTerminal1','lcDocument1','lcAirlinesOther1','lcPacking1','lcOther1','lcOtherRemark1',
-  'lcrTruckType1','lcrTruckUsage1','lcrRatePerTruck1','lcrCustoms1','lcrTerminal1','lcrDocument1','lcrAirlinesOther1','lcrPacking1','lcrOther1','lcrOtherRemark1',
-  'dcHandlingCost','dcCustomsCost','dcDeliveryCost',
-  'dcHandlingRev','dcCustomsRev','dcDeliveryRev'
+const csvTemplateCols = [
+  'type','mawb','date','customer','cargoService','mode','expImp','service',
+  'origin','dest','etd','eta','product','bookingWeight','chargeableWeight','container',
+  'pieces','remarks','vendorName','truckType','totalTruck','driverName','licensePlate','pickupDate',
+  'notes','status','crstatus','costPerKg','sellingPerKg','lcVendor1','lcVendor2','lcVendor3',
+  'lcVendor4','lcTruckType1','lcTruckType2','lcTruckType3','lcTruckType4','lcTruckUsage1','lcTruckUsage2','lcTruckUsage3',
+  'lcTruckUsage4','lcRatePerTruck1','lcRatePerTruck2','lcRatePerTruck3','lcRatePerTruck4','lcCustoms1','lcCustoms2','lcCustoms3',
+  'lcCustoms4','lcTerminal1','lcTerminal2','lcTerminal3','lcTerminal4','lcDocument1','lcDocument2','lcDocument3',
+  'lcDocument4','lcAirlinesOther1','lcAirlinesOther2','lcAirlinesOther3','lcAirlinesOther4','lcPacking1','lcPacking2','lcPacking3',
+  'lcPacking4','lcOther1','lcOther2','lcOther3','lcOther4','lcOtherRemark1','lcOtherRemark2','lcOtherRemark3',
+  'lcOtherRemark4','lcrVendor1','lcrVendor2','lcrVendor3','lcrVendor4','lcrTruckType1','lcrTruckType2','lcrTruckType3',
+  'lcrTruckType4','lcrTruckUsage1','lcrTruckUsage2','lcrTruckUsage3','lcrTruckUsage4','lcrRatePerTruck1','lcrRatePerTruck2','lcrRatePerTruck3',
+  'lcrRatePerTruck4','lcrCustoms1','lcrCustoms2','lcrCustoms3','lcrCustoms4','lcrTerminal1','lcrTerminal2','lcrTerminal3',
+  'lcrTerminal4','lcrDocument1','lcrDocument2','lcrDocument3','lcrDocument4','lcrAirlinesOther1','lcrAirlinesOther2','lcrAirlinesOther3',
+  'lcrAirlinesOther4','lcrPacking1','lcrPacking2','lcrPacking3','lcrPacking4','lcrOther1','lcrOther2','lcrOther3',
+  'lcrOther4','lcrOtherRemark1','lcrOtherRemark2','lcrOtherRemark3','lcrOtherRemark4','dcVendor1','dcVendor2','dcVendor3',
+  'dcVendor4','dcTruckType1','dcTruckType2','dcTruckType3','dcTruckType4','dcTruckUsage1','dcTruckUsage2','dcTruckUsage3',
+  'dcTruckUsage4','dcRatePerTruck1','dcRatePerTruck2','dcRatePerTruck3','dcRatePerTruck4','dcHandling1','dcHandling2','dcHandling3',
+  'dcHandling4','dcCustoms1','dcCustoms2','dcCustoms3','dcCustoms4','dcDelivery1','dcDelivery2','dcDelivery3',
+  'dcDelivery4','dcRemark1','dcRemark2','dcRemark3','dcRemark4','dcrVendor1','dcrVendor2','dcrVendor3',
+  'dcrVendor4','dcrTruckType1','dcrTruckType2','dcrTruckType3','dcrTruckType4','dcrTruckUsage1','dcrTruckUsage2','dcrTruckUsage3',
+  'dcrTruckUsage4','dcrRatePerTruck1','dcrRatePerTruck2','dcrRatePerTruck3','dcrRatePerTruck4','dcrHandling1','dcrHandling2','dcrHandling3',
+  'dcrHandling4','dcrCustoms1','dcrCustoms2','dcrCustoms3','dcrCustoms4','dcrDelivery1','dcrDelivery2','dcrDelivery3',
+  'dcrDelivery4','dcrRemark1','dcrRemark2','dcrRemark3','dcrRemark4'
 ];
 
-function downloadCRCSVTemplate(){
-  const sampleRow = [
-    '','2026-07-08','057-4969 2672','','freight-input',
-    '8.5','12',
-    'NP, FM','6W','1','5000','750','','200','1200','','','',
-    '6W','1','6500','900','','250','1400','','','',
-    '500','300','400',
-    '800','450','600'
+function downloadCSVTemplate(){
+const sampleRow = [
+    'booking','057-4969 2672','2026-07-08','EOPTOLINK','Freight Forwarding','Air','Export','P2P',
+    'BKK','ORD','2026-07-08','2026-07-09','Optical modules','4998','4998','',
+    '12','','','','','','','',
+    '','pod','cost-rev-input-completed','8.5','12','NP, FM','','',
+    '','6W','','','','1','','',
+    '','5000','','','','750','','',
+    '','','','','','200','','',
+    '','1200','','','','','','',
+    '','','','','','','','',
+    '','NP, FM','','','','6W','','',
+    '','1','','','','6500','','',
+    '','900','','','','','','',
+    '','250','','','','1400','','',
+    '','','','','','','','',
+    '','','','','','Bangkok Cartage','','',
+    '','4W','','','','1','','',
+    '','','','','','500','','',
+    '','300','','','','400','','',
+    '','','','','','Bangkok Cartage','','',
+    '','4W','','','','1','','',
+    '','','','','','800','','',
+    '','450','','','','600','','',
+    '','','','',''
   ];
-  const csv = csvTemplateColsCR.join(',') + '\n' + sampleRow.map(csvEscape).join(',');
-  downloadFile('job-sheet-cr-import-template.csv', csv, 'text/csv');
-}
-
-function parseCSV(text){
-  const rows = [];
-  let row = [], field = '', inQuotes = false;
-  for(let i=0; i<text.length; i++){
-    const c = text[i];
-    if(inQuotes){
-      if(c==='"'){
-        if(text[i+1]==='"'){ field+='"'; i++; } else { inQuotes = false; }
-      } else field += c;
-    }else{
-      if(c==='"') inQuotes = true;
-      else if(c===','){ row.push(field); field=''; }
-      else if(c==='\n' || c==='\r'){
-        if(c==='\r' && text[i+1]==='\n') i++;
-        row.push(field); field='';
-        rows.push(row); row=[];
-      } else field += c;
-    }
-  }
-  if(field.length>0 || row.length>0){ row.push(field); rows.push(row); }
-  return rows.filter(r=>r.length>1 || r[0]!=='');
+  const csv = csvTemplateCols.join(',') + '\n' + sampleRow.map(csvEscape).join(',');
+  downloadFile('job-sheet-import-template.csv', csv, 'text/csv');
 }
 
 function importCSV(file){
@@ -3194,143 +3191,135 @@ function importCSV(file){
       if(rows.length<2){ alert('No data rows found in this file.'); return; }
       const header = rows[0].map(h=>h.trim());
       const dataRows = rows.slice(1);
-      if(!confirm('Import '+dataRows.length+' job sheet row(s) from this CSV?')) return;
+      if(!confirm('Import '+dataRows.length+' row(s) from this CSV?\n\nRows whose MAWB already exists will be MERGED into that Booking (existing data preserved, only provided fields updated).\nRows with a new MAWB will CREATE a new Booking.')) return;
 
-      let count = 0;
+      const allBookings = await dataGetAll();
+      const lcFields = ['Vendor','TruckType','TruckUsage','RatePerTruck','Customs','Terminal','Document','AirlinesOther','Packing','Other','OtherRemark'];
+      const dcFields = ['Vendor','TruckType','TruckUsage','RatePerTruck','Handling','Customs','Delivery','Remark'];
+
+      let createdCount = 0, updatedCount = 0;
       for(const cols of dataRows){
         const obj = {};
         header.forEach((h,i)=>{ obj[h] = cols[i]!==undefined ? cols[i] : ''; });
-        if(!obj.customer && !obj.date) continue;
+        if(!obj.customer && !obj.date && !obj.mawb) continue;
 
         const type = (obj.type||'booking').trim().toLowerCase()==='inquiry' ? 'inquiry' : 'booking';
-        const jobNo = obj.jobNo && obj.jobNo.trim() ? obj.jobNo.trim() : await genJobNo(type);
-        const origin = obj.origin||'', dest = obj.dest||'';
-        const route = (origin||dest) ? (origin||'?')+'-'+(dest||'?') : '';
+        const mawb = (obj.mawb||'').trim();
+        const existing = mawb ? allBookings.find(r=>r.type==='booking' && r.mawb && r.mawb.trim()===mawb) : null;
 
         const dDate = parseFlexibleDate(obj.date);
-        const dateStr = dDate ? formatDateStr(dDate) : '';
-        const month = dDate ? monthNames[dDate.getMonth()]+'-'+dDate.getFullYear().toString().slice(2) : '';
-
+        const dateStr = dDate ? formatDateStr(dDate) : (existing ? existing.date : '');
         const dEtd = parseFlexibleDate(obj.etd);
-        const etdStr = dEtd ? formatDateStr(dEtd) : '';
+        const etdStr = dEtd ? formatDateStr(dEtd) : (existing ? existing.etd : '');
         const dEta = parseFlexibleDate(obj.eta);
-        const etaStr = dEta ? formatDateStr(dEta) : '';
+        const etaStr = dEta ? formatDateStr(dEta) : (existing ? existing.eta : '');
         const dPickup = parseFlexibleDate(obj.pickupDate);
         const pickupStr = dPickup ? formatDateStr(dPickup) : '';
 
-        const transit = (dEtd && dEta) ? Math.round((dEta-dEtd)/86400000) : '';
+        let rec;
+        if(existing){
+          rec = { jobNo: existing.jobNo, type: 'booking' };
+          if(obj.date) rec.date = dateStr;
+          if(obj.customer) rec.customer = obj.customer;
+          if(obj.cargoService) rec.cargoService = normalizeCargoService(obj.cargoService);
+          if(obj.mode) rec.mode = normalizeMode(obj.mode);
+          if(obj.expImp) rec.expImp = normalizeExpImp(obj.expImp);
+          if(obj.service) rec.service = obj.service;
+          if(obj.origin) rec.origin = obj.origin;
+          if(obj.dest) rec.dest = obj.dest;
+          if(obj.origin || obj.dest) rec.route = (obj.origin||existing.origin||'?')+'-'+(obj.dest||existing.dest||'?');
+          if(obj.etd) rec.etd = etdStr;
+          if(obj.eta) rec.eta = etaStr;
+          if(obj.bookingWeight || obj.chargeableWeight || obj.product){
+            rec.items = [{product:obj.product||'', bookingWeight:cleanNumStr(obj.bookingWeight), chargeableWeight:cleanNumStr(obj.chargeableWeight), container:cleanNumStr(obj.container), pieces:cleanNumStr(obj.pieces)||1, remarks:obj.remarks||''}];
+            rec.bookingWeight = cleanNumStr(obj.bookingWeight);
+            rec.chargeableWeight = cleanNumStr(obj.chargeableWeight);
+          }
+          if(obj.container) rec.containers = cleanNumStr(obj.container);
+          if(obj.vendorName) rec.vendorName = obj.vendorName;
+          if(obj.truckType) rec.truckType = obj.truckType;
+          if(obj.totalTruck) rec.totalTruck = cleanNumStr(obj.totalTruck);
+          if(obj.driverName) rec.driverName = obj.driverName;
+          if(obj.licensePlate) rec.licensePlate = obj.licensePlate;
+          if(obj.pickupDate) rec.pickupDate = pickupStr;
+          if(obj.notes) rec.notes = obj.notes;
+          if(obj.status) rec.status = obj.status.toLowerCase();
+          updatedCount++;
+        }else{
+          const jobNo = await genJobNo(type);
+          const origin = obj.origin||'', dest = obj.dest||'';
+          const route = (origin||dest) ? (origin||'?')+'-'+(dest||'?') : '';
+          const transit = (dEtd && dEta) ? Math.round((dEta-dEtd)/86400000) : '';
+          rec = {
+            jobNo, type, date:dateStr, month: dDate ? monthNames[dDate.getMonth()]+'-'+dDate.getFullYear().toString().slice(2) : '',
+            customer:obj.customer||'', cargoService:normalizeCargoService(obj.cargoService), mode:normalizeMode(obj.mode),
+            expImp:normalizeExpImp(obj.expImp), service:obj.service||'', origin, dest, route, carrier:'', coloader:'',
+            etd:etdStr, eta:etaStr, transit, containers:cleanNumStr(obj.container),
+            items:[{product:obj.product||'', bookingWeight:cleanNumStr(obj.bookingWeight), chargeableWeight:cleanNumStr(obj.chargeableWeight), container:cleanNumStr(obj.container), pieces:cleanNumStr(obj.pieces)||1, remarks:obj.remarks||''}],
+            bookingWeight:cleanNumStr(obj.bookingWeight), chargeableWeight:cleanNumStr(obj.chargeableWeight),
+            vendorName:obj.vendorName||'', truckType:obj.truckType||'', totalTruck:cleanNumStr(obj.totalTruck),
+            driverName:obj.driverName||'', licensePlate:obj.licensePlate||'', pickupDate:pickupStr,
+            mawb, notes:obj.notes||'',
+            status:(obj.status||(type==='inquiry'?'quotation-preparation':'flight-booked')).toLowerCase()
+          };
+          createdCount++;
+        }
 
-        const rec = {
-          jobNo, type, date:dateStr, month, customer:obj.customer||'',
-          cargoService:normalizeCargoService(obj.cargoService), mode:normalizeMode(obj.mode), expImp:normalizeExpImp(obj.expImp),
-          service:obj.service||'', origin, dest, route, carrier:'', coloader:'',
-          etd:etdStr, eta:etaStr, transit, containers:cleanNumStr(obj.containers),
-          items:[{product:obj.product||'', bookingWeight:cleanNumStr(obj.bookingWeight), chargeableWeight:cleanNumStr(obj.chargeableWeight), container:cleanNumStr(obj.container), pieces:cleanNumStr(obj.pieces)||1, remarks:obj.remarks||''}],
-          bookingWeight:cleanNumStr(obj.bookingWeight), chargeableWeight:cleanNumStr(obj.chargeableWeight),
-          vendorName:obj.vendorName||'', truckType:obj.truckType||'', totalTruck:cleanNumStr(obj.totalTruck),
-          driverName:obj.driverName||'', licensePlate:obj.licensePlate||'', pickupDate:pickupStr,
-          mawb:obj.mawb||'',
-          notes:obj.notes||'',
-          status:(obj.status||(type==='inquiry'?'quotation-preparation':'flight-booked')).toLowerCase(),
-          savedAt:new Date().toISOString()
-        };
-        try{ await dataSave(rec); count++; }catch(err){ console.error(err); }
+        rec.savedAt = new Date().toISOString();
+
+        const hasCrData = obj.crstatus || obj.costPerKg || obj.sellingPerKg || lcFields.some(f_=>obj['lc'+f_+'1']) || dcFields.some(f_=>obj['dc'+f_+'1']);
+        if(type==='booking' && mawb && hasCrData){
+          const crCustomer = existing ? (existing.customer||'') : (rec.customer||'');
+          const crMode = existing ? (existing.mode||'') : (rec.mode||'');
+          const crCargoService = existing ? (existing.cargoService||'') : (rec.cargoService||'');
+          const crExpImp = existing ? (existing.expImp||'') : (rec.expImp||'');
+          const crOrigin = existing ? (existing.origin||'') : (rec.origin||'');
+          const crDest = existing ? (existing.dest||'') : (rec.dest||'');
+          const crEtd = existing ? (existing.etd||'') : (rec.etd||'');
+          const w = existing ? (parseFloat(existing.weight)||0) : (parseFloat(rec.chargeableWeight)||0);
+
+          rec.crStatus = (obj.crstatus||'freight-input').toLowerCase();
+          rec.refJobNo = mawb; rec.crMawb = mawb;
+          rec.crCustomer = crCustomer; rec.crMode = crMode; rec.crCargoService = crCargoService;
+          rec.crExpImp = crExpImp; rec.crOrigin = crOrigin; rec.crDest = crDest;
+          rec.crEtd = crEtd; rec.crChargeableWeight = String(w);
+          rec.costPerKg = obj.costPerKg||''; rec.sellingPerKg = obj.sellingPerKg||'';
+
+          let lcCostAmount=0, lcRevAmount=0, dcCostAmount=0, dcRevAmount=0;
+          for(let vi=1; vi<=4; vi++){
+            lcFields.forEach(f_=>{ rec['lc'+f_+vi]=obj['lc'+f_+vi]||''; rec['lcr'+f_+vi]=obj['lcr'+f_+vi]||''; });
+            dcFields.forEach(f_=>{ rec['dc'+f_+vi]=obj['dc'+f_+vi]||''; rec['dcr'+f_+vi]=obj['dcr'+f_+vi]||''; });
+
+            const lcTruck = (parseFloat(obj['lcRatePerTruck'+vi])||0)*(parseFloat(obj['lcTruckUsage'+vi])||0);
+            lcCostAmount += lcTruck + (parseFloat(obj['lcCustoms'+vi])||0)+(parseFloat(obj['lcTerminal'+vi])||0)+(parseFloat(obj['lcDocument'+vi])||0)+(parseFloat(obj['lcAirlinesOther'+vi])||0)+(parseFloat(obj['lcPacking'+vi])||0)+(parseFloat(obj['lcOther'+vi])||0);
+
+            const lcrTruck = (parseFloat(obj['lcrRatePerTruck'+vi])||0)*(parseFloat(obj['lcrTruckUsage'+vi])||0);
+            lcRevAmount += lcrTruck + (parseFloat(obj['lcrCustoms'+vi])||0)+(parseFloat(obj['lcrTerminal'+vi])||0)+(parseFloat(obj['lcrDocument'+vi])||0)+(parseFloat(obj['lcrAirlinesOther'+vi])||0)+(parseFloat(obj['lcrPacking'+vi])||0)+(parseFloat(obj['lcrOther'+vi])||0);
+
+            const dcTruck = (parseFloat(obj['dcRatePerTruck'+vi])||0)*(parseFloat(obj['dcTruckUsage'+vi])||0);
+            dcCostAmount += dcTruck + (parseFloat(obj['dcHandling'+vi])||0)+(parseFloat(obj['dcCustoms'+vi])||0)+(parseFloat(obj['dcDelivery'+vi])||0);
+
+            const dcrTruck = (parseFloat(obj['dcrRatePerTruck'+vi])||0)*(parseFloat(obj['dcrTruckUsage'+vi])||0);
+            dcRevAmount += dcrTruck + (parseFloat(obj['dcrHandling'+vi])||0)+(parseFloat(obj['dcrCustoms'+vi])||0)+(parseFloat(obj['dcrDelivery'+vi])||0);
+          }
+          const costPerKg = parseFloat(obj.costPerKg)||0, sellingPerKg = parseFloat(obj.sellingPerKg)||0;
+          const frCostAmount = w*costPerKg, frRevAmount = w*sellingPerKg;
+          const totalCost = lcCostAmount+frCostAmount+dcCostAmount;
+          const totalRev = lcRevAmount+frRevAmount+dcRevAmount;
+          rec.lcCostAmount=round2(lcCostAmount); rec.lcRevAmount=round2(lcRevAmount);
+          rec.frCostAmount=round2(frCostAmount); rec.frRevAmount=round2(frRevAmount);
+          rec.dcCostAmount=round2(dcCostAmount); rec.dcRevAmount=round2(dcRevAmount);
+          rec.costAmount=round2(totalCost); rec.revAmount=round2(totalRev);
+          rec.gpAmount=round2(totalRev-totalCost);
+          rec.gpPercent = totalRev>0 ? round2((totalRev-totalCost)/totalRev*100) : 0;
+        }
+
+        try{ await dataSave(rec); }catch(err){ console.error(err); }
       }
-      alert('Imported '+count+' job sheet(s) from CSV.');
+      alert('Created '+createdCount+' new Booking(s), merged/updated '+updatedCount+' existing Booking(s).');
       refreshList();
     }catch(err){
       alert('Could not read this CSV file. Make sure it matches the template columns.');
-      console.error(err);
-    }
-  };
-  reader.readAsText(file);
-}
-
-function importCRCSV(file){
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = async function(e){
-    try{
-      const rows = parseCSV(e.target.result);
-      if(rows.length<2){ alert('No data rows found in this file.'); return; }
-      const header = rows[0].map(h=>h.trim());
-      const dataRows = rows.slice(1);
-      if(!confirm('Import '+dataRows.length+' Cost & Revenue row(s) from this CSV?')) return;
-
-      const allBookings = await dataGetAll();
-
-      let count = 0;
-      for(const cols of dataRows){
-        const obj = {};
-        header.forEach((h,i)=>{ obj[h] = cols[i]!==undefined ? cols[i] : ''; });
-        if(!obj.mawb && !obj.date) continue;
-
-        const jobNo = obj.jobNo && obj.jobNo.trim() ? obj.jobNo.trim() : await genJobNo('finance');
-        const dDate = parseFlexibleDate(obj.date);
-        const dateStr = dDate ? formatDateStr(dDate) : '';
-        const month = dDate ? monthNames[dDate.getMonth()]+'-'+dDate.getFullYear().toString().slice(2) : '';
-
-        const mawb = (obj.mawb||'').trim();
-        const match = mawb ? allBookings.find(r=>r.type==='booking' && r.mawb && r.mawb.trim()===mawb) : null;
-        const crCustomer = match ? (match.customer||'—') : '—';
-        const crMode = match ? (match.mode||'—') : '—';
-        const crCargoService = match ? (match.cargoService||'—') : '—';
-        const crExpImp = match ? (match.expImp||'—') : '—';
-        const crOrigin = match ? (match.origin||'—') : '—';
-        const crDest = match ? (match.dest||'—') : '—';
-        const crEtd = match ? (match.etd||'—') : '—';
-        const crChargeableWeight = match ? String(match.weight||0) : '0';
-
-        const truck4wOr6w = parseFloat(obj.lcRatePerTruck1)||0;
-        const lcTruckUsage = parseFloat(obj.lcTruckUsage1)||0;
-        const lcPickup = truck4wOr6w * lcTruckUsage;
-        const lcHandling = (parseFloat(obj.lcCustoms1)||0)+(parseFloat(obj.lcTerminal1)||0)+(parseFloat(obj.lcDocument1)||0)+(parseFloat(obj.lcAirlinesOther1)||0)+(parseFloat(obj.lcPacking1)||0)+(parseFloat(obj.lcOther1)||0);
-        const lcCostAmount = lcPickup + lcHandling;
-
-        const lcrRate = parseFloat(obj.lcrRatePerTruck1)||0;
-        const lcrTruckUsage = parseFloat(obj.lcrTruckUsage1)||0;
-        const lcrPickup = lcrRate * lcrTruckUsage;
-        const lcrHandling = (parseFloat(obj.lcrCustoms1)||0)+(parseFloat(obj.lcrTerminal1)||0)+(parseFloat(obj.lcrDocument1)||0)+(parseFloat(obj.lcrAirlinesOther1)||0)+(parseFloat(obj.lcrPacking1)||0)+(parseFloat(obj.lcrOther1)||0);
-        const lcRevAmount = lcrPickup + lcrHandling;
-
-        const w = parseFloat(crChargeableWeight)||0;
-        const costPerKg = parseFloat(obj.costPerKg)||0;
-        const sellingPerKg = parseFloat(obj.sellingPerKg)||0;
-        const frCostAmount = w * costPerKg;
-        const frRevAmount = w * sellingPerKg;
-
-        const dcCostAmount = (parseFloat(obj.dcHandlingCost)||0)+(parseFloat(obj.dcCustomsCost)||0)+(parseFloat(obj.dcDeliveryCost)||0);
-        const dcRevAmount = (parseFloat(obj.dcHandlingRev)||0)+(parseFloat(obj.dcCustomsRev)||0)+(parseFloat(obj.dcDeliveryRev)||0);
-
-        const totalCost = lcCostAmount + frCostAmount + dcCostAmount;
-        const totalRev = lcRevAmount + frRevAmount + dcRevAmount;
-
-        const rec = {
-          jobNo, type:'finance', date:dateStr, month, customer:crCustomer!=='—'?crCustomer:'',
-          status:(obj.status||'freight-input').toLowerCase(), savedAt:new Date().toISOString(),
-          refJobNo:mawb, crMawb:mawb, crCustomer, crMode, crCargoService, crExpImp, crOrigin, crDest, crEtd, crChargeableWeight,
-          costPerKg:obj.costPerKg||'', sellingPerKg:obj.sellingPerKg||'',
-          lcVendor1:obj.lcVendor1||'', lcTruckType1:obj.lcTruckType1||'', lcTruckUsage1:obj.lcTruckUsage1||'', lcRatePerTruck1:obj.lcRatePerTruck1||'',
-          lcCustoms1:obj.lcCustoms1||'', lcTerminal1:obj.lcTerminal1||'', lcDocument1:obj.lcDocument1||'', lcAirlinesOther1:obj.lcAirlinesOther1||'',
-          lcPacking1:obj.lcPacking1||'', lcOther1:obj.lcOther1||'', lcOtherRemark1:obj.lcOtherRemark1||'',
-          lcrTruckType1:obj.lcrTruckType1||'', lcrTruckUsage1:obj.lcrTruckUsage1||'', lcrRatePerTruck1:obj.lcrRatePerTruck1||'',
-          lcrCustoms1:obj.lcrCustoms1||'', lcrTerminal1:obj.lcrTerminal1||'', lcrDocument1:obj.lcrDocument1||'', lcrAirlinesOther1:obj.lcrAirlinesOther1||'',
-          lcrPacking1:obj.lcrPacking1||'', lcrOther1:obj.lcrOther1||'', lcrOtherRemark1:obj.lcrOtherRemark1||'',
-          dcHandlingCost:obj.dcHandlingCost||'', dcCustomsCost:obj.dcCustomsCost||'', dcDeliveryCost:obj.dcDeliveryCost||'',
-          dcHandlingRev:obj.dcHandlingRev||'', dcCustomsRev:obj.dcCustomsRev||'', dcDeliveryRev:obj.dcDeliveryRev||'',
-          lcCostAmount:round2(lcCostAmount), lcRevAmount:round2(lcRevAmount),
-          frCostAmount:round2(frCostAmount), frRevAmount:round2(frRevAmount),
-          dcCostAmount:round2(dcCostAmount), dcRevAmount:round2(dcRevAmount),
-          costAmount:round2(totalCost), revAmount:round2(totalRev),
-          gpAmount:round2(totalRev-totalCost), gpPercent: totalRev>0 ? round2((totalRev-totalCost)/totalRev*100) : 0,
-          notes:obj.notes||'', items:[]
-        };
-        try{ await dataSave(rec); count++; }catch(err){ console.error(err); }
-      }
-      alert('Imported '+count+' Cost & Revenue record(s) from CSV.');
-      refreshList();
-    }catch(err){
-      alert('Could not read this CSV file. Make sure it matches the C&R template columns.');
       console.error(err);
     }
   };
