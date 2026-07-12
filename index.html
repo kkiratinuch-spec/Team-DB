@@ -72,6 +72,8 @@ button.btn-dash-daily:hover{background:#111C30;}
 button.btn-dash-monthly{background:#2E5A8F; color:var(--white); border-color:#2E5A8F;}
 button.btn-dash-monthly:hover{background:#254A75;}
 button.btn-dash-rev{background:#6FAE73; color:var(--white); border-color:#6FAE73;}
+button.btn-dash-pod{background:#C0392B; color:var(--white); border-color:#C0392B;}
+button.btn-dash-pod:hover{background:#A32D2D;}
 button.btn-dash-rev:hover{background:#5A9860;}
 button.btn-inquiry{background:#EAD27A; color:#6B5A0E; border-color:#EAD27A;}
 button.btn-inquiry:hover{background:#E0C463;}
@@ -231,6 +233,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
 #dailyDashPanel .bar-section h3{background:#DCE1EA; color:#1B2A44;}
 #monthlyDashPanel .bar-section h3{background:#D6E6F4; color:#2E5A8F;}
 #revDashPanel .bar-section h3{background:#EAF4E5; color:#2F7A46;}
+#podCrDashPanel .bar-section h3{background:#FBE4E1; color:#A32D2D;}
 
 .bar-row{display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:13px;}
 .bar-row .bar-lbl{width:150px; flex-shrink:0; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
@@ -279,6 +282,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <button class="btn-dash-daily" onclick="toggleDailyDash()" id="dailyDashBtn">Daily Dashboard</button>
       <button class="btn-dash-monthly" onclick="toggleMonthlyDash()" id="monthlyDashBtn">Monthly Dashboard</button>
       <button class="btn-dash-rev" id="revDashBtn" onclick="toggleRevDash()">Rev Dashboard</button>
+      <button class="btn-dash-pod" id="podCrDashBtn" onclick="togglePodCrDash()">Billing Monitoring Dashboard</button>
       <button class="btn-inquiry" onclick="if(confirmDiscard()) newSheet('inquiry')">+ New Inquiry</button>
       <button class="btn-booking" onclick="if(confirmDiscard()) newSheet('booking')">+ New Booking</button>
       <button class="btn-finance" id="newFinanceBtn" onclick="if(confirmDiscard()) newSheet('finance')">+ Cost &amp; Revenue</button>
@@ -329,8 +333,10 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <option value="cancelled">Cancelled</option>
         <option value="freight-input">Freight Input</option>
         <option value="local-charge-input">Local Charge Input</option>
+        <option value="cost-rev-input-completed">Cost &amp; Rev Input Completed</option>
         <option value="reconcile">Reconcile</option>
         <option value="invoice-issued">Invoice Issued</option>
+        <option value="__pod_missing_cr__">⚠ POD — Missing Cost & Revenue</option>
       </select>
     </div>
     <div id="listBody"><div class="empty">Loading...</div></div>
@@ -445,7 +451,15 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>B.2 — Monthly Air Freight (kg)</h3>
+      <h3>B.2 — Total Shipment (all modes, by MAWB)</h3>
+      <table class="dash-table">
+        <thead><tr><th>Month</th><th>Total Shipment</th><th>Total Chargeable Weight</th></tr></thead>
+        <tbody id="monthlyTotalShipmentBody"></tbody>
+      </table>
+    </div>
+
+    <div class="bar-section">
+      <h3>B.3 — Monthly Air Freight (kg)</h3>
       <table class="dash-table">
         <thead><tr><th>Month</th><th>Shipments</th><th>Chargeable weight</th></tr></thead>
         <tbody id="monthlyAirFreightBody"></tbody>
@@ -453,7 +467,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>B.3 — Monthly Air Express (kg)</h3>
+      <h3>B.4 — Monthly Air Express (kg)</h3>
       <table class="dash-table">
         <thead><tr><th>Month</th><th>Shipments</th><th>Chargeable weight</th></tr></thead>
         <tbody id="monthlyAirExpressBody"></tbody>
@@ -461,7 +475,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>B.4 — Monthly Sea Freight (Container)</h3>
+      <h3>B.5 — Monthly Sea Freight (Container)</h3>
       <table class="dash-table">
         <thead><tr><th>Month</th><th>Shipments</th><th>Container</th></tr></thead>
         <tbody id="monthlySeaFreightBody"></tbody>
@@ -469,7 +483,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>B.5 — Vol by customer — Air Freight (kg) — <span id="volYearAirFreight">—</span></h3>
+      <h3>B.6 — Vol by customer — Air Freight (kg) — <span id="volYearAirFreight">—</span></h3>
       <div style="overflow-x:auto;">
         <table class="dash-table" style="min-width:820px;">
           <thead><tr id="volHeaderRowAirFreight"><th>Customer</th></tr></thead>
@@ -479,7 +493,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>B.6 — Vol by customer — Air Express (kg) — <span id="volYearAirExpress">—</span></h3>
+      <h3>B.7 — Vol by customer — Air Express (kg) — <span id="volYearAirExpress">—</span></h3>
       <div style="overflow-x:auto;">
         <table class="dash-table" style="min-width:820px;">
           <thead><tr id="volHeaderRowAirExpress"><th>Customer</th></tr></thead>
@@ -489,7 +503,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>B.7 — Vol by customer — Sea Freight (Container) — <span id="volYearSeaFreight">—</span></h3>
+      <h3>B.8 — Vol by customer — Sea Freight (Container) — <span id="volYearSeaFreight">—</span></h3>
       <div style="overflow-x:auto;">
         <table class="dash-table" style="min-width:820px;">
           <thead><tr id="volHeaderRowSeaFreight"><th>Customer</th></tr></thead>
@@ -516,6 +530,49 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     <div class="bar-section"><h3>C.5 — Cost by Customer (THB)</h3><div id="c5Container"></div></div>
     <div class="bar-section"><h3>C.6 — GP by Customer (THB)</h3><div id="c8Container"></div></div>
     <div class="bar-section"><h3>C.7 — GP by Customer (%)</h3><div id="c10Container"></div></div>
+  </div>
+
+
+  <div class="dash" id="podCrDashPanel" style="display:none;">
+    <div class="dash-head" style="margin:0 -24px 22px; background:#A32D2D;">
+      <h2>Global FF — Billing Monitoring Dashboard</h2>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <label>Year<input type="number" id="billingYearPicker" min="2020" max="2100" onchange="renderPodCrDashboard()" style="width:90px;"></label>
+      </div>
+    </div>
+
+    <div class="bar-section">
+      <h3>D.1 MONTHLY SUMMARY</h3>
+      <table class="dash-table">
+        <thead><tr><th>Month</th><th>Total MAWB</th><th>Total POD</th><th>Cost &amp; Rev Input Completed</th><th>Send Invoice to Customer (Reconcile)</th><th>INV Issued</th></tr></thead>
+        <tbody id="billingMonthlyBody"></tbody>
+      </table>
+    </div>
+
+    <div class="bar-section">
+      <h3>D.2 Details by filter</h3>
+      <div style="display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
+        <label style="font-size:12px; color:var(--steel);">Month<br>
+          <select id="billingFilterMonth" onchange="renderBillingDetail()" style="margin-top:2px;">
+            <option value="">All months</option>
+          </select>
+        </label>
+        <label style="font-size:12px; color:var(--steel);">Status<br>
+          <select id="billingFilterStatus" onchange="renderBillingDetail()" style="margin-top:2px;">
+            <option value="not-pod">Not POD yet</option>
+            <option value="total-pod">Total POD</option>
+            <option value="cost-rev-completed">Cost &amp; Rev Input Completed</option>
+            <option value="reconcile">Send Invoice to Customer (Reconcile)</option>
+            <option value="invoice-issued">INV Issued</option>
+          </select>
+        </label>
+      </div>
+      <table class="dash-table">
+        <thead><tr><th>MAWB</th><th>Customer</th><th>Origin</th><th>Destination</th><th>ETD</th></tr></thead>
+        <tbody id="billingDetailBody"></tbody>
+      </table>
+      <div id="billingDetailPager" style="margin-top:10px; text-align:center;"></div>
+    </div>
   </div>
 
 
@@ -921,6 +978,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <div class="status-toggle" id="statusFinance">
         <label><input type="radio" name="crstatus" value="freight-input" checked onchange="updateStamp()"> Freight Input</label>
         <label><input type="radio" name="crstatus" value="local-charge-input" onchange="updateStamp()"> Local Charge Input</label>
+        <label><input type="radio" name="crstatus" value="cost-rev-input-completed" onchange="updateStamp()"> Cost &amp; Rev Input Completed</label>
         <label><input type="radio" name="crstatus" value="reconcile" onchange="updateStamp()"> Reconcile</label>
         <label><input type="radio" name="crstatus" value="invoice-issued" onchange="updateStamp()"> Invoice Issued</label>
       </div>
@@ -2263,7 +2321,7 @@ function renderListPage(){
       <div style="display:flex; align-items:center; gap:10px;">
         <input type="checkbox" class="row-checkbox" data-jobno="${i.jobNo}" onclick="event.stopPropagation();" onchange="if(this.checked){selectedJobNos.add('${i.jobNo}');}else{selectedJobNos.delete('${i.jobNo}');} updateSelectedCount();">
         <div>
-          <span class="mono">${(i.crMawb||i.mawb) || i.jobNo}</span>
+          <span class="mono">${(i.crMawb||i.mawb) || (i.type==='inquiry' ? i.jobNo : '—')}</span>
           <span class="meta"> — ${i.type==='inquiry'?'Inquiry':(i.revAmount||i.costAmount?'Booking + Cost & Revenue':(i.type==='finance'?'Cost & Revenue':'Booking'))} · ${i.customer||''} · ${i.route||''} · ${i.date||''}</span>
         </div>
       </div>
@@ -2327,7 +2385,15 @@ function applyListFilters(){
       (i.jobNo && i.jobNo.toLowerCase().indexOf(query)!==-1)
     );
   }
-  if(status){
+  const CR_STATUSES = ['freight-input','local-charge-input','cost-rev-input-completed','reconcile','invoice-issued'];
+  if(status==='__pod_missing_cr__'){
+    filtered = filtered.filter(i=>i.type==='booking' && i.status && i.status.toLowerCase()==='pod' && !(i.revAmount||i.costAmount));
+  }else if(CR_STATUSES.includes(status)){
+    filtered = filtered.filter(i=>{
+      const s = (i.crStatus || (i.type==='finance' ? i.status : '') || '').toLowerCase();
+      return s===status;
+    });
+  }else if(status){
     filtered = filtered.filter(i=>i.status && i.status.toLowerCase()===status.toLowerCase());
   }
   if(filtered.length===0){
@@ -2355,10 +2421,127 @@ async function loadSheet(jobNo){
   }
 }
 
-const ALL_PANELS = ['listPanel','dailyDashPanel','monthlyDashPanel','revDashPanel','sheetRoot'];
+const ALL_PANELS = ['listPanel','dailyDashPanel','monthlyDashPanel','revDashPanel','podCrDashPanel','sheetRoot'];
 
 function hideAllPanels(){
   ALL_PANELS.forEach(id=>{ document.getElementById(id).style.display = 'none'; });
+}
+
+const BILLING_COMPLETED_UP = ['cost-rev-input-completed','reconcile','invoice-issued'];
+const BILLING_RECONCILE_UP = ['reconcile','invoice-issued'];
+const BILLING_NOT_POD_STATUSES = ['flight-booked','truck-booked','truck-booked-drafted'];
+let billingDetailPage = 1;
+const BILLING_PAGE_SIZE = 20;
+
+async function renderPodCrDashboard(){
+  const idx = await dataGetAll();
+  window.billingIdx = idx;
+  const yearPicker = document.getElementById('billingYearPicker');
+  const now = new Date();
+  if(!yearPicker.value || parseInt(yearPicker.value,10)<2020){ yearPicker.value = now.getFullYear(); }
+  const year = parseInt(yearPicker.value, 10);
+
+  const monthly = Array.from({length:12}, ()=>({total:0, pod:0, completed:0, reconcile:0, invoiced:0}));
+  idx.forEach(i=>{
+    if(i.type!=='booking' || !i.etd) return;
+    const d = new Date(i.etd+'T00:00:00');
+    if(d.getFullYear()!==year) return;
+    const m = d.getMonth();
+    monthly[m].total++;
+    const st = (i.status||'').toLowerCase();
+    if(st==='pod'){
+      monthly[m].pod++;
+      const cr = (i.crStatus||'').toLowerCase();
+      if(BILLING_COMPLETED_UP.includes(cr)) monthly[m].completed++;
+      if(BILLING_RECONCILE_UP.includes(cr)) monthly[m].reconcile++;
+      if(cr==='invoice-issued') monthly[m].invoiced++;
+    }
+  });
+
+  document.getElementById('billingMonthlyBody').innerHTML = monthShortNames.map((m,i)=>
+    `<tr><td>${m}</td><td>${fmtNum(monthly[i].total)}</td><td>${fmtNum(monthly[i].pod)}</td><td>${fmtNum(monthly[i].completed)}</td><td>${fmtNum(monthly[i].reconcile)}</td><td>${fmtNum(monthly[i].invoiced)}</td></tr>`
+  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.total,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.pod,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.completed,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.reconcile,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.invoiced,0))}</td></tr>`;
+
+  const monthSelect = document.getElementById('billingFilterMonth');
+  if(monthSelect.options.length<=1){
+    monthShortNames.forEach((m,i)=>{
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = m;
+      monthSelect.appendChild(opt);
+    });
+  }
+
+  billingDetailPage = 1;
+  renderBillingDetail();
+}
+
+function billingDetailGoToPage(p){
+  billingDetailPage = p;
+  renderBillingDetail();
+}
+
+function renderBillingDetail(){
+  const idx = window.billingIdx || [];
+  const yearPicker = document.getElementById('billingYearPicker');
+  const year = parseInt(yearPicker.value, 10);
+  const monthFilter = document.getElementById('billingFilterMonth').value;
+  const statusFilter = document.getElementById('billingFilterStatus').value;
+
+  let filtered = idx.filter(i=>{
+    if(i.type!=='booking' || !i.etd) return false;
+    const d = new Date(i.etd+'T00:00:00');
+    if(d.getFullYear()!==year) return false;
+    if(monthFilter!=='' && d.getMonth()!==parseInt(monthFilter,10)) return false;
+    const st = (i.status||'').toLowerCase();
+    const cr = (i.crStatus||'').toLowerCase();
+    if(statusFilter==='not-pod'){
+      return BILLING_NOT_POD_STATUSES.includes(st);
+    }else if(statusFilter==='total-pod'){
+      return st==='pod';
+    }else if(statusFilter==='cost-rev-completed'){
+      return st==='pod' && BILLING_COMPLETED_UP.includes(cr);
+    }else if(statusFilter==='reconcile'){
+      return st==='pod' && BILLING_RECONCILE_UP.includes(cr);
+    }else if(statusFilter==='invoice-issued'){
+      return st==='pod' && cr==='invoice-issued';
+    }
+    return false;
+  }).sort((a,b)=>(a.etd||'').localeCompare(b.etd||''));
+
+  const body = document.getElementById('billingDetailBody');
+  const totalRows = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(totalRows/BILLING_PAGE_SIZE));
+  if(billingDetailPage>totalPages) billingDetailPage = totalPages;
+  const startIdx = (billingDetailPage-1)*BILLING_PAGE_SIZE;
+  const pageRows = filtered.slice(startIdx, startIdx+BILLING_PAGE_SIZE);
+
+  if(filtered.length===0){
+    body.innerHTML = '<tr><td colspan="5" class="empty">No matching records</td></tr>';
+  }else{
+    body.innerHTML = pageRows.map(i=>
+      `<tr onclick="loadFromDash('${i.jobNo}')" style="cursor:pointer;">
+        <td class="mono">${i.mawb||'—'}</td>
+        <td>${i.customer||''}</td>
+        <td>${i.origin||''}</td>
+        <td>${i.dest||''}</td>
+        <td>${i.etd||''}</td>
+      </tr>`
+    ).join('');
+  }
+
+  const pagerEl = document.getElementById('billingDetailPager');
+  if(pagerEl){
+    if(totalRows<=BILLING_PAGE_SIZE){
+      pagerEl.innerHTML = '';
+    }else{
+      pagerEl.innerHTML = `
+        <button ${billingDetailPage<=1?'disabled':''} onclick="billingDetailGoToPage(${billingDetailPage-1})">Prev</button>
+        <span style="margin:0 10px; font-size:12px; color:var(--steel);">Page ${billingDetailPage} of ${totalPages} — Showing ${startIdx+1}-${Math.min(startIdx+BILLING_PAGE_SIZE,totalRows)} of ${totalRows}</span>
+        <button ${billingDetailPage>=totalPages?'disabled':''} onclick="billingDetailGoToPage(${billingDetailPage+1})">Next</button>
+      `;
+    }
+  }
 }
 
 function toggleList(){
@@ -2410,6 +2593,19 @@ function toggleRevDash(){
   }else{
     panel.style.display = 'block';
     renderRevDashboard();
+  }
+}
+
+function togglePodCrDash(){
+  if(document.getElementById('sheetRoot').style.display!=='none' && !confirmDiscard()) return;
+  const panel = document.getElementById('podCrDashPanel');
+  const showing = panel.style.display !== 'none';
+  hideAllPanels();
+  if(showing){
+    document.getElementById('sheetRoot').style.display = 'block';
+  }else{
+    panel.style.display = 'block';
+    renderPodCrDashboard();
   }
 }
 
@@ -2589,6 +2785,20 @@ async function renderMonthlyDashboard(){
   document.getElementById('monthlyInquiryBody').innerHTML = monthShortNames.map((m,i)=>
     `<tr><td>${m}</td><td>${fmtNum(inqByMonth[i].total)}</td><td>${fmtNum(inqByMonth[i].win)}</td><td>${fmtNum(inqByMonth[i].failed)}</td><td>${fmtNum(inqByMonth[i].negotiation)}</td><td>${fmtNum(inqByMonth[i].quotePrep)}</td></tr>`
   ).join('');
+
+  const shipmentByMonth = new Array(12).fill(0);
+  const chargeableWeightByMonth = new Array(12).fill(0);
+  idx.filter(i=>i.type==='booking' && i.mawb).forEach(i=>{
+    if(!i.etd) return;
+    const d = new Date(i.etd+'T00:00:00');
+    if(d.getFullYear()!==year) return;
+    const m = d.getMonth();
+    shipmentByMonth[m]++;
+    chargeableWeightByMonth[m] += parseFloat(i.weight)||0;
+  });
+  document.getElementById('monthlyTotalShipmentBody').innerHTML = monthShortNames.map((m,i)=>
+    `<tr><td>${m}</td><td>${fmtNum(shipmentByMonth[i])}</td><td>${fmtNum(chargeableWeightByMonth[i])}</td></tr>`
+  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(shipmentByMonth.reduce((s,v)=>s+v,0))}</td><td>${fmtNum(chargeableWeightByMonth.reduce((s,v)=>s+v,0))}</td></tr>`;
 
   function renderVolTable(headerRowId, bodyId, yearSpanId, records, valueField, unitLabel){
     const dec = 0;
