@@ -1248,7 +1248,7 @@ function lookupMAWB(){
   mawbLookupTimer = setTimeout(async ()=>{
     try{
       const all = await dataGetAll();
-      const match = all.find(r=>r.type==='booking' && r.mawb && r.mawb.trim()===mawb);
+      const match = all.find(r=>r.type==='booking' && r.mawb && String(r.mawb).trim()===mawb);
       if(match){
         window.crMergeTarget = match;
         document.getElementById('f_cr_customer').textContent = match.customer || '—';
@@ -2043,8 +2043,7 @@ function storageRemove(key){
   try{ localStorage.removeItem(key); }catch(e){ delete memStore[key]; }
 }
 
-// ⚠️ PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BELOW (must end in /exec)
-// Replace the text between the quotes with your real URL before pasting into GitHub.
+// ⚠️ Apps Script Web App URL is set below.
 let API_URL = 'https://script.google.com/macros/s/AKfycbxDiWDA7q8SZ8BdtddTUCP4Oj0dMG4Q_bTiNBUX5NB5I8qsjtti5KB-Mx61ag8l7XupMQ/exec';
 
 function updateConnStatus(){
@@ -2161,10 +2160,10 @@ async function saveSheet(){
   if(!currentJobNo){ await newSheet(); }
   const rec = gatherRecord();
 
-  if(rec.mawb && rec.mawb.trim()){
+  if(rec.mawb && String(rec.mawb).trim()){
     try{
       const all = await dataGetAll();
-      const dup = all.find(r => r.jobNo !== rec.jobNo && r.mawb && r.mawb.trim() === rec.mawb.trim());
+      const dup = all.find(r => r.jobNo !== rec.jobNo && r.mawb && String(r.mawb).trim() === String(rec.mawb).trim());
       if(dup){
         const proceed = confirm('เลข MAWB ซ้ำ (พบใน Job No. '+dup.jobNo+') ต้องการบันทึกต่อหรือไม่?');
         if(!proceed) return;
@@ -2331,7 +2330,10 @@ function renderListPage(){
           <span class="meta"> — ${i.type==='inquiry'?'Inquiry':(i.revAmount||i.costAmount?'Booking + Cost & Revenue':(i.type==='finance'?'Cost & Revenue':'Booking'))} · ${i.customer||''} · ${i.route||''} · ${i.date||''}</span>
         </div>
       </div>
-      <span class="badge">${i.status}</span>
+      <div style="display:flex; gap:6px; align-items:center;">
+        <span class="badge">${i.status}</span>
+        ${i.crStatus ? `<span class="badge" style="background:#F7E4A3; color:#6B5A0E;">${i.crStatus}</span>` : ''}
+      </div>
     `;
     row.addEventListener('click', (e)=>{
       if(e.target.classList.contains('row-checkbox')) return;
@@ -2387,8 +2389,8 @@ function applyListFilters(){
   }
   if(query){
     filtered = filtered.filter(i=>
-      (i.mawb && i.mawb.toLowerCase().indexOf(query)!==-1) ||
-      (i.jobNo && i.jobNo.toLowerCase().indexOf(query)!==-1)
+      (i.mawb && String(i.mawb).toLowerCase().indexOf(query)!==-1) ||
+      (i.jobNo && String(i.jobNo).toLowerCase().indexOf(query)!==-1)
     );
   }
   const CR_STATUSES = ['freight-input','local-charge-input','cost-rev-input-completed','reconcile','invoice-issued'];
@@ -3211,7 +3213,7 @@ function importCSV(file){
 
         const type = (obj.type||'booking').trim().toLowerCase()==='inquiry' ? 'inquiry' : 'booking';
         const mawb = (obj.mawb||'').trim();
-        const existing = mawb ? allBookings.find(r=>r.type==='booking' && r.mawb && r.mawb.trim()===mawb) : null;
+        const existing = mawb ? allBookings.find(r=>r.type==='booking' && r.mawb && String(r.mawb).trim()===mawb) : null;
 
         const dDate = parseFlexibleDate(obj.date);
         const dateStr = dDate ? formatDateStr(dDate) : (existing ? existing.date : '');
