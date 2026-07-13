@@ -625,7 +625,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
             <option>WTT Electronics</option>
           </select>
         </div>
-        <div class="field finance-hide"><label>Remark</label><input type="text" id="f_remark" placeholder="e.g. new customer details"></div>
+        <div class="field finance-hide"><label id="remarkLabel">Remark</label><input type="text" id="f_remark" placeholder="e.g. new customer details"></div>
         <div class="field finance-hide inquiry-only"><label>Quotation ref</label><input type="text" id="f_quotationref" class="mono" placeholder="e.g. QT1-2026-05-0004"></div>
         <div class="field finance-hide">
           <label>Cargo service</label>
@@ -1027,6 +1027,10 @@ function setType(type){
   document.body.classList.add('type-'+type);
   document.getElementById('sheetTitle').textContent = type==='inquiry' ? 'Inquiry' : (type==='finance' ? 'Cost & Revenue' : 'Booking');
   document.getElementById('dateLabel').textContent = type==='inquiry' ? 'Inquiry Date' : (type==='finance' ? 'Cost & Revenue Date' : 'Booking Date');
+  const remarkLabelEl = document.getElementById('remarkLabel');
+  if(remarkLabelEl) remarkLabelEl.textContent = type==='booking' ? 'Quotation Ref.' : 'Remark';
+  const remarkInputEl = document.getElementById('f_remark');
+  if(remarkInputEl) remarkInputEl.placeholder = type==='booking' ? 'e.g. QT1-2026-07-0012' : 'e.g. new customer details';
   const defaultStatus = type==='inquiry' ? 'quotation-preparation' : (type==='finance' ? 'freight-input' : 'flight-booked');
   const el = document.querySelector('input[name=status][value="'+defaultStatus+'"]');
   if(el) el.checked = true;
@@ -2041,7 +2045,7 @@ function storageRemove(key){
 
 // ⚠️ PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BELOW (must end in /exec)
 // Replace the text between the quotes with your real URL before pasting into GitHub.
-let API_URL = 'https://script.google.com/macros/s/AKfycbxDiWDA7q8SZ8BdtddTUCP4Oj0dMG4Q_bTiNBUX5NB5I8qsjtti5KB-Mx61ag8l7XupMQ/exec';
+let API_URL = 'https://script.google.com/macros/s/AKfycbzaRkR_nNLtphrnFmsy1TKrhdWL1PncMzlYEj6t7LnbdLFq6Ot2nJeoeyjfDfVwamWIEQ/exec';
 
 function updateConnStatus(){
   const el = document.getElementById('connStatus');
