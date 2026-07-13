@@ -2045,7 +2045,7 @@ function storageRemove(key){
 
 // ⚠️ PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BELOW (must end in /exec)
 // Replace the text between the quotes with your real URL before pasting into GitHub.
-let API_URL = 'https://script.google.com/macros/s/AKfycbzaRkR_nNLtphrnFmsy1TKrhdWL1PncMzlYEj6t7LnbdLFq6Ot2nJeoeyjfDfVwamWIEQ/exec';
+let API_URL = 'https://script.google.com/macros/s/AKfycbxDiWDA7q8SZ8BdtddTUCP4Oj0dMG4Q_bTiNBUX5NB5I8qsjtti5KB-Mx61ag8l7XupMQ/exec';
 
 function updateConnStatus(){
   const el = document.getElementById('connStatus');
@@ -2123,12 +2123,17 @@ async function dataSave(rec){
   if(API_URL){
     await apiSaveRecord(rec);
   }else{
-    storageSet('jobsheet:'+rec.jobNo, JSON.stringify(rec));
+    // Merge with whatever was already stored for this jobNo, so saving from one form
+    // (e.g. Cost & Revenue) never wipes out fields that belong to another form (e.g. Booking).
+    const existingRaw = storageGet('jobsheet:'+rec.jobNo);
+    const existing = existingRaw ? JSON.parse(existingRaw) : {};
+    const merged = Object.assign({}, existing, rec);
+    storageSet('jobsheet:'+rec.jobNo, JSON.stringify(merged));
     let idx = getLocalIndex();
     idx = idx.filter(i=>i.jobNo !== rec.jobNo);
-    const totalWeight = (rec.items||[]).reduce((sum,it)=>sum+itemWeight(it),0);
-    const totalContainers = (rec.items||[]).reduce((sum,it)=>sum+itemContainer(it),0);
-    idx.unshift({jobNo:rec.jobNo, type:rec.type, date:rec.date, etd:rec.etd, customer:rec.customer, mode:rec.mode, cargoService:rec.cargoService, route:rec.route, mawb:rec.mawb, status:rec.status, weight:totalWeight, containers:totalContainers});
+    const totalWeight = (merged.items||[]).reduce((sum,it)=>sum+itemWeight(it),0);
+    const totalContainers = (merged.items||[]).reduce((sum,it)=>sum+itemContainer(it),0);
+    idx.unshift({jobNo:merged.jobNo, type:merged.type, date:merged.date, etd:merged.etd, customer:merged.customer, mode:merged.mode, cargoService:merged.cargoService, route:merged.route, mawb:merged.mawb, status:merged.status, weight:totalWeight, containers:totalContainers});
     setLocalIndex(idx);
   }
 }
@@ -2450,15 +2455,12 @@ async function renderPodCrDashboard(){
     const m = d.getMonth();
     monthly[m].total++;
     const st = (i.status||'').toLowerCase();
-    if(st==='pod'){
-      monthly[m].pod++;
-      const cr = (i.crStatus||'').toLowerCase();
-      if(BILLING_COMPLETED_UP.includes(cr)) monthly[m].completed++;
-      if(BILLING_RECONCILE_UP.includes(cr)) monthly[m].reconcile++;
-      if(cr==='invoice-issued') monthly[m].invoiced++;
-    }else if(st==='cancelled'){
-      monthly[m].cancelled++;
-    }
+    if(st==='pod') monthly[m].pod++;
+    if(st==='cancelled') monthly[m].cancelled++;
+    const cr = (i.crStatus||'').toLowerCase();
+    if(BILLING_COMPLETED_UP.includes(cr)) monthly[m].completed++;
+    if(BILLING_RECONCILE_UP.includes(cr)) monthly[m].reconcile++;
+    if(cr==='invoice-issued') monthly[m].invoiced++;
   });
 
   document.getElementById('billingMonthlyBody').innerHTML = monthShortNames.map((m,i)=>
@@ -2503,11 +2505,11 @@ function renderBillingDetail(){
     }else if(statusFilter==='total-pod'){
       return st==='pod';
     }else if(statusFilter==='cost-rev-completed'){
-      return st==='pod' && BILLING_COMPLETED_UP.includes(cr);
+      return BILLING_COMPLETED_UP.includes(cr);
     }else if(statusFilter==='reconcile'){
-      return st==='pod' && BILLING_RECONCILE_UP.includes(cr);
+      return BILLING_RECONCILE_UP.includes(cr);
     }else if(statusFilter==='invoice-issued'){
-      return st==='pod' && cr==='invoice-issued';
+      return cr==='invoice-issued';
     }
     return false;
   }).sort((a,b)=>(a.etd||'').localeCompare(b.etd||''));
