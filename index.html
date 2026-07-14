@@ -74,6 +74,8 @@ button.btn-dash-monthly:hover{background:#254A75;}
 button.btn-dash-rev{background:#6FAE73; color:var(--white); border-color:#6FAE73;}
 button.btn-dash-pod{background:#C0392B; color:var(--white); border-color:#C0392B;}
 button.btn-dash-pod:hover{background:#A32D2D;}
+button.btn-dash-ops{background:#B39DDB; color:#3A2A5C; border-color:#B39DDB;}
+button.btn-dash-ops:hover{background:#9F85CC;}
 button.btn-dash-rev:hover{background:#5A9860;}
 button.btn-inquiry{background:#EAD27A; color:#6B5A0E; border-color:#EAD27A;}
 button.btn-inquiry:hover{background:#E0C463;}
@@ -234,6 +236,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
 #monthlyDashPanel .bar-section h3{background:#D6E6F4; color:#2E5A8F;}
 #revDashPanel .bar-section h3{background:#EAF4E5; color:#2F7A46;}
 #podCrDashPanel .bar-section h3{background:#FBE4E1; color:#A32D2D;}
+#opsDashPanel .bar-section h3{background:#E6DDF2; color:#5B3A7A;}
 
 .bar-row{display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:13px;}
 .bar-row .bar-lbl{width:150px; flex-shrink:0; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
@@ -283,6 +286,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <button class="btn-dash-monthly" onclick="toggleMonthlyDash()" id="monthlyDashBtn">Monthly Dashboard</button>
       <button class="btn-dash-rev" id="revDashBtn" onclick="toggleRevDash()">Revenue Dashboard</button>
       <button class="btn-dash-pod" id="podCrDashBtn" onclick="togglePodCrDash()">Billing Monitoring Dashboard</button>
+      <button class="btn-dash-ops" id="opsDashBtn" onclick="toggleOpsDash()">OPS Dashboard</button>
       <button class="btn-inquiry" onclick="if(confirmDiscard()) newSheet('inquiry')">+ New Inquiry</button>
       <button class="btn-booking" onclick="if(confirmDiscard()) newSheet('booking')">+ New Booking</button>
       <button class="btn-finance" id="newFinanceBtn" onclick="if(confirmDiscard()) newSheet('finance')">+ Cost &amp; Revenue</button>
@@ -313,10 +317,6 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <button class="btn-tab btn-inquiry-tab" id="typeTabInquiry" onclick="setListTypeFilter('inquiry')">Inquiry</button>
       <button class="btn-tab btn-booking-tab" id="typeTabBooking" onclick="setListTypeFilter('booking')">Booking</button>
       <button class="btn-tab btn-finance-tab" id="typeTabFinance" onclick="setListTypeFilter('finance')">Cost &amp; Revenue</button>
-    </div>
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-      <span style="font-size:12px; font-weight:700; color:var(--navy); text-transform:uppercase;">Monthly Status Summary</span>
-      <label style="font-size:12px;">Year <input type="number" id="statusSummaryYear" min="2020" max="2100" onchange="renderStatusSummary(allListRecords)" style="width:80px;"></label>
     </div>
     <div id="statusSummary" style="margin-bottom:14px;"></div>
     <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
@@ -589,6 +589,16 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       </table>
       <div id="billingDetailPager" style="margin-top:10px; text-align:center;"></div>
     </div>
+  </div>
+
+  <div class="dash" id="opsDashPanel" style="display:none;">
+    <div class="dash-head" style="margin:0 -24px 22px; background:#7B5EA7;">
+      <h2>Global FF — OPS Dashboard</h2>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <label>Year<input type="number" id="opsDashYear" min="2020" max="2100" onchange="renderOpsDashboard()" style="width:90px;"></label>
+      </div>
+    </div>
+    <div id="opsDashTables"></div>
   </div>
 
 
@@ -2348,19 +2358,46 @@ function isSeaRecord(r){
 }
 
 function renderStatusSummary(records){
+  // Saved Job Sheets keeps just the two quick-filter chips; all the monthly
+  // breakdown tables now live on the OPS Dashboard page instead.
+  const weightPendingCount = records.filter(r=>r.type==='booking' && !isSeaRecord(r) && !(parseFloat(r.weight)>0)).length;
+  const crWeightPendingCount = records.filter(r=>r.type==='booking' && !isSeaRecord(r) && r.crStatus && !(parseFloat(r.crChargeableWeight)>0)).length;
+
+  document.getElementById('statusSummary').innerHTML = `
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
+      <div onclick="document.getElementById('listStatusFilter').value='__weight_pending__'; applyListFilters();" style="cursor:pointer; background:${weightPendingCount>0?'#FBE4E1':'#EDEDED'}; color:${weightPendingCount>0?'#A32D2D':'#6B6F76'}; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap;" title="Click to filter — Booking with no Chargeable weight filled in">⚠ Chargeable weight pending (booking): ${weightPendingCount}</div>
+      <div onclick="document.getElementById('listStatusFilter').value='__cr_weight_pending__'; applyListFilters();" style="cursor:pointer; background:${crWeightPendingCount>0?'#FBE4E1':'#EDEDED'}; color:${crWeightPendingCount>0?'#A32D2D':'#6B6F76'}; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap;" title="Click to filter — Cost & Revenue saved but Chargeable weight is 0 (Booking weight was likely added after)">⚠ Chargeable weight pending (Cost &amp; Rev): ${crWeightPendingCount}</div>
+    </div>
+  `;
+}
+
+function toggleOpsDash(){
+  if(document.getElementById('sheetRoot').style.display!=='none' && !confirmDiscard()) return;
+  const panel = document.getElementById('opsDashPanel');
+  const showing = panel.style.display !== 'none';
+  hideAllPanels();
+  if(showing){
+    document.getElementById('sheetRoot').style.display = 'block';
+  }else{
+    panel.style.display = 'block';
+    renderOpsDashboard();
+  }
+}
+
+async function renderOpsDashboard(){
+  const records = await dataGetAll();
   const inquiryStatuses = ['quotation-preparation','negotiation','win','failed'];
   const bookingStatuses = ['flight-booked','truck-booked','truck-booked-drafted','pod','cancelled'];
   const financeStatuses = ['freight-input','local-charge-input','cost-rev-input-completed','accrued','reconcile','invoice-issued'];
 
-  const yearPicker = document.getElementById('statusSummaryYear');
+  const yearPicker = document.getElementById('opsDashYear');
   const now = new Date();
   if(!yearPicker.value || parseInt(yearPicker.value,10)<2020){ yearPicker.value = now.getFullYear(); }
   const year = parseInt(yearPicker.value, 10);
 
-  const weightPendingCount = records.filter(r=>r.type==='booking' && !isSeaRecord(r) && !(parseFloat(r.weight)>0)).length;
-  const crWeightPendingCount = records.filter(r=>r.type==='booking' && !isSeaRecord(r) && r.crStatus && !(parseFloat(r.crChargeableWeight)>0)).length;
+  const PURPLE_BG = '#E6DDF2', PURPLE_TXT = '#5B3A7A';
 
-  function monthlyTable(title, headerBg, headerColor, records, statuses, matchField, extraColLabel, extraColFn, dateField){
+  function monthlyTable(title, records, statuses, matchField, extraColLabel, extraColFn, dateField){
     dateField = dateField || 'date';
     const monthly = Array.from({length:12}, ()=>{
       const row = {};
@@ -2388,37 +2425,29 @@ function renderStatusSummary(records){
     const totalRow = '<tr style="font-weight:600;"><td>Total</td>' + (extraColLabel?`<td>${extraTotal}</td>`:'') + totals.map(t=>`<td>${t}</td>`).join('') + '</tr>';
     return `
       <div style="margin-bottom:16px;">
-        <div style="background:${headerBg}; color:${headerColor}; padding:5px 10px; font-size:11px; font-weight:700; text-transform:uppercase; border-radius:3px 3px 0 0;">${title}</div>
+        <div style="background:${PURPLE_BG}; color:${PURPLE_TXT}; padding:5px 10px; font-size:11px; font-weight:700; text-transform:uppercase; border-radius:3px 3px 0 0;">${title}</div>
         <div style="overflow-x:auto;">
           <table class="dash-table" style="min-width:600px;"><thead><tr>${thead}</tr></thead><tbody>${rows}${totalRow}</tbody></table>
         </div>
       </div>`;
   }
 
-  const inqTable = monthlyTable('Inquiry', '#F7E4A3', '#6B5A0E', records, inquiryStatuses, 'inquiry');
-  const airFreightExportRecords = records.filter(r=>r.mode==='Air' && r.cargoService==='Freight Forwarding' && r.expImp==='Export');
-  const airFreightImportRecords = records.filter(r=>r.mode==='Air' && r.cargoService==='Freight Forwarding' && r.expImp==='Import');
-  const airExpressRecords = records.filter(r=>r.mode==='Air' && r.cargoService==='Express');
-  const seaFreightExportRecords = records.filter(r=>r.mode==='Sea' && r.cargoService==='Freight Forwarding' && r.expImp==='Export');
-  const seaFreightImportRecords = records.filter(r=>r.mode==='Sea' && r.cargoService==='Freight Forwarding' && r.expImp==='Import');
-  const bkAirFreightExportTable = monthlyTable('Booking — Air Freight (Export)', '#A8D8F0', '#1B2A44', airFreightExportRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb, 'etd');
-  const bkAirFreightImportTable = monthlyTable('Booking — Air Freight (Import)', '#A8D8F0', '#1B2A44', airFreightImportRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb, 'etd');
-  const bkAirExpressTable = monthlyTable('Booking — Air Express', '#A8D8F0', '#1B2A44', airExpressRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb, 'etd');
-  const bkSeaFreightExportTable = monthlyTable('Booking — Sea Freight (Export)', '#A8D8F0', '#1B2A44', seaFreightExportRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb, 'etd');
-  const bkSeaFreightImportTable = monthlyTable('Booking — Sea Freight (Import)', '#A8D8F0', '#1B2A44', seaFreightImportRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb, 'etd');
-  const finTable = monthlyTable('Cost & Revenue', '#F0D19A', '#7A4A0E', records, financeStatuses, 'crStatus', 'Total MAWB', r=>r.type==='booking' && !!r.mawb, 'etd');
+  const mawbCounter = r=>r.type==='booking' && !!r.mawb;
 
-  document.getElementById('statusSummary').innerHTML = `
-    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
-      <div onclick="document.getElementById('listStatusFilter').value='__weight_pending__'; applyListFilters();" style="cursor:pointer; background:${weightPendingCount>0?'#FBE4E1':'#EDEDED'}; color:${weightPendingCount>0?'#A32D2D':'#6B6F76'}; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap;" title="Click to filter — Booking with no Chargeable weight filled in">⚠ Chargeable weight pending (booking): ${weightPendingCount}</div>
-      <div onclick="document.getElementById('listStatusFilter').value='__cr_weight_pending__'; applyListFilters();" style="cursor:pointer; background:${crWeightPendingCount>0?'#FBE4E1':'#EDEDED'}; color:${crWeightPendingCount>0?'#A32D2D':'#6B6F76'}; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap;" title="Click to filter — Cost & Revenue saved but Chargeable weight is 0 (Booking weight was likely added after)">⚠ Chargeable weight pending (Cost &amp; Rev): ${crWeightPendingCount}</div>
-    </div>
+  const inqTable = monthlyTable('Inquiry', records, inquiryStatuses, 'inquiry');
+  const airFreightRecords = records.filter(r=>r.mode==='Air' && r.cargoService==='Freight Forwarding');
+  const airExpressRecords = records.filter(r=>r.mode==='Air' && r.cargoService==='Express');
+  const seaFreightRecords = records.filter(r=>r.mode==='Sea' && r.cargoService==='Freight Forwarding');
+  const bkAirFreightTable = monthlyTable('Booking — Air Freight', airFreightRecords, bookingStatuses, 'booking', 'Total MAWB', mawbCounter, 'etd');
+  const bkAirExpressTable = monthlyTable('Booking — Air Express', airExpressRecords, bookingStatuses, 'booking', 'Total MAWB', mawbCounter, 'etd');
+  const bkSeaFreightTable = monthlyTable('Booking — Sea Freight', seaFreightRecords, bookingStatuses, 'booking', 'Total MAWB', mawbCounter, 'etd');
+  const finTable = monthlyTable('Cost & Revenue', records, financeStatuses, 'crStatus', 'Total MAWB', mawbCounter, 'etd');
+
+  document.getElementById('opsDashTables').innerHTML = `
     ${inqTable}
-    ${bkAirFreightExportTable}
-    ${bkAirFreightImportTable}
+    ${bkAirFreightTable}
     ${bkAirExpressTable}
-    ${bkSeaFreightExportTable}
-    ${bkSeaFreightImportTable}
+    ${bkSeaFreightTable}
     ${finTable}
   `;
 }
@@ -2618,7 +2647,7 @@ async function openSheetForEdit(rec, mode){
   }
 }
 
-const ALL_PANELS = ['listPanel','dailyDashPanel','monthlyDashPanel','revDashPanel','podCrDashPanel','sheetRoot'];
+const ALL_PANELS = ['listPanel','dailyDashPanel','monthlyDashPanel','revDashPanel','podCrDashPanel','opsDashPanel','sheetRoot'];
 
 function hideAllPanels(){
   ALL_PANELS.forEach(id=>{ document.getElementById(id).style.display = 'none'; });
