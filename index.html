@@ -2146,7 +2146,36 @@ function normalizeRecord(r){
   const weight = items.reduce((s,it)=>s+itemWeight(it),0);
   const bookingWeight = items.reduce((s,it)=>s+(parseFloat(it.bookingWeight)||0),0);
   const containers = items.length ? items.reduce((s,it)=>s+itemContainer(it),0) : (parseFloat(r.containers)||0);
-  return Object.assign({}, r, {weight, bookingWeight, containers});
+  const rec = Object.assign({}, r, {weight, bookingWeight, containers});
+
+  // If this record has Cost & Revenue attached, recompute the Freight amounts (and
+  // therefore the Grand Total) using the Booking's CURRENT chargeable weight, rather
+  // than trusting whatever was stored the last time the Cost & Revenue form was saved.
+  // This means editing the Booking's weight is reflected immediately everywhere
+  // (Dashboard, Grand Total, Saved Job Sheets) without needing to reopen and re-save
+  // the Cost & Revenue form.
+  if(rec.crStatus){
+    const costPerKg = parseFloat(rec.costPerKg)||0;
+    const sellingPerKg = parseFloat(rec.sellingPerKg)||0;
+    const lcCostAmount = parseFloat(rec.lcCostAmount)||0;
+    const lcRevAmount = parseFloat(rec.lcRevAmount)||0;
+    const dcCostAmount = parseFloat(rec.dcCostAmount)||0;
+    const dcRevAmount = parseFloat(rec.dcRevAmount)||0;
+    const frCostAmount = weight * costPerKg;
+    const frRevAmount = weight * sellingPerKg;
+    const costAmount = lcCostAmount + frCostAmount + dcCostAmount;
+    const revAmount = lcRevAmount + frRevAmount + dcRevAmount;
+    const gpAmount = revAmount - costAmount;
+    const gpPercent = revAmount>0 ? (gpAmount/revAmount*100) : 0;
+    rec.crChargeableWeight = String(weight);
+    rec.frCostAmount = frCostAmount;
+    rec.frRevAmount = frRevAmount;
+    rec.costAmount = costAmount;
+    rec.revAmount = revAmount;
+    rec.gpAmount = gpAmount;
+    rec.gpPercent = gpPercent;
+  }
+  return rec;
 }
 
 function getLocalIndex(){
