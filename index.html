@@ -2394,10 +2394,16 @@ function renderStatusSummary(records){
   }
 
   const inqTable = monthlyTable('Inquiry', '#F7E4A3', '#6B5A0E', records, inquiryStatuses, 'inquiry');
-  const airFreightRecords = records.filter(r=>r.cargoService==='Freight Forwarding');
-  const expressRecords = records.filter(r=>r.cargoService==='Express');
-  const bkAirFreightTable = monthlyTable('Booking — Freight Forwarding', '#A8D8F0', '#1B2A44', airFreightRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
-  const bkExpressTable = monthlyTable('Booking — Express', '#A8D8F0', '#1B2A44', expressRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
+  const airFreightExportRecords = records.filter(r=>r.mode==='Air' && r.cargoService==='Freight Forwarding' && r.expImp==='Export');
+  const airFreightImportRecords = records.filter(r=>r.mode==='Air' && r.cargoService==='Freight Forwarding' && r.expImp==='Import');
+  const airExpressRecords = records.filter(r=>r.mode==='Air' && r.cargoService==='Express');
+  const seaFreightExportRecords = records.filter(r=>r.mode==='Sea' && r.cargoService==='Freight Forwarding' && r.expImp==='Export');
+  const seaFreightImportRecords = records.filter(r=>r.mode==='Sea' && r.cargoService==='Freight Forwarding' && r.expImp==='Import');
+  const bkAirFreightExportTable = monthlyTable('Booking — Air Freight (Export)', '#A8D8F0', '#1B2A44', airFreightExportRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
+  const bkAirFreightImportTable = monthlyTable('Booking — Air Freight (Import)', '#A8D8F0', '#1B2A44', airFreightImportRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
+  const bkAirExpressTable = monthlyTable('Booking — Air Express', '#A8D8F0', '#1B2A44', airExpressRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
+  const bkSeaFreightExportTable = monthlyTable('Booking — Sea Freight (Export)', '#A8D8F0', '#1B2A44', seaFreightExportRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
+  const bkSeaFreightImportTable = monthlyTable('Booking — Sea Freight (Import)', '#A8D8F0', '#1B2A44', seaFreightImportRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
   const finTable = monthlyTable('Cost & Revenue', '#F0D19A', '#7A4A0E', records, financeStatuses, 'crStatus', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
 
   document.getElementById('statusSummary').innerHTML = `
@@ -2406,8 +2412,11 @@ function renderStatusSummary(records){
       <div onclick="document.getElementById('listStatusFilter').value='__cr_weight_pending__'; applyListFilters();" style="cursor:pointer; background:${crWeightPendingCount>0?'#FBE4E1':'#EDEDED'}; color:${crWeightPendingCount>0?'#A32D2D':'#6B6F76'}; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap;" title="Click to filter — Cost & Revenue saved but Chargeable weight is 0 (Booking weight was likely added after)">⚠ Chargeable weight pending (Cost &amp; Rev): ${crWeightPendingCount}</div>
     </div>
     ${inqTable}
-    ${bkAirFreightTable}
-    ${bkExpressTable}
+    ${bkAirFreightExportTable}
+    ${bkAirFreightImportTable}
+    ${bkAirExpressTable}
+    ${bkSeaFreightExportTable}
+    ${bkSeaFreightImportTable}
     ${finTable}
   `;
 }
