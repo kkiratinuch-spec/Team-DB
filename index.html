@@ -321,6 +321,18 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     <div id="statusSummary" style="margin-bottom:14px;"></div>
     <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
       <input type="text" id="listSearchBox" placeholder="Search MAWB or Job No..." oninput="applyListFilters()" style="flex:1; min-width:180px;">
+      <select id="listMonthFilter" onchange="applyListFilters()" style="min-width:130px;">
+        <option value="">All Months</option>
+        <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
+        <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
+        <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
+        <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
+      </select>
+      <select id="listCargoServiceFilter" onchange="applyListFilters()" style="min-width:150px;">
+        <option value="">All Cargo Service</option>
+        <option value="Freight Forwarding">Freight Forwarding</option>
+        <option value="Express">Express</option>
+      </select>
       <select id="listStatusFilter" onchange="applyListFilters()" style="min-width:160px;">
         <option value="">All Status</option>
         <option value="quotation-preparation">Quotation prep</option>
@@ -2382,8 +2394,11 @@ function renderStatusSummary(records){
   }
 
   const inqTable = monthlyTable('Inquiry', '#F7E4A3', '#6B5A0E', records, inquiryStatuses, 'inquiry');
-  const bkTable = monthlyTable('Booking', '#A8D8F0', '#1B2A44', records, bookingStatuses, 'booking');
-  const finTable = monthlyTable('Cost & Revenue', '#F0D19A', '#7A4A0E', records, financeStatuses, 'crStatus', 'Total Flight Book', r=>r.type==='booking' && !!r.mawb);
+  const airFreightRecords = records.filter(r=>r.cargoService==='Freight Forwarding');
+  const expressRecords = records.filter(r=>r.cargoService==='Express');
+  const bkAirFreightTable = monthlyTable('Booking — Freight Forwarding', '#A8D8F0', '#1B2A44', airFreightRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
+  const bkExpressTable = monthlyTable('Booking — Express', '#A8D8F0', '#1B2A44', expressRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
+  const finTable = monthlyTable('Cost & Revenue', '#F0D19A', '#7A4A0E', records, financeStatuses, 'crStatus', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
 
   document.getElementById('statusSummary').innerHTML = `
     <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
@@ -2391,7 +2406,8 @@ function renderStatusSummary(records){
       <div onclick="document.getElementById('listStatusFilter').value='__cr_weight_pending__'; applyListFilters();" style="cursor:pointer; background:${crWeightPendingCount>0?'#FBE4E1':'#EDEDED'}; color:${crWeightPendingCount>0?'#A32D2D':'#6B6F76'}; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap;" title="Click to filter — Cost & Revenue saved but Chargeable weight is 0 (Booking weight was likely added after)">⚠ Chargeable weight pending (Cost &amp; Rev): ${crWeightPendingCount}</div>
     </div>
     ${inqTable}
-    ${bkTable}
+    ${bkAirFreightTable}
+    ${bkExpressTable}
     ${finTable}
   `;
 }
@@ -2493,12 +2509,24 @@ function setListTypeFilter(type){
 function applyListFilters(){
   const query = document.getElementById('listSearchBox').value.trim().toLowerCase();
   const status = document.getElementById('listStatusFilter').value;
+  const monthFilter = document.getElementById('listMonthFilter').value;
+  const cargoServiceFilter = document.getElementById('listCargoServiceFilter').value;
   currentListPage = 1;
   let filtered = allListRecords;
   if(listTypeFilter){
     filtered = listTypeFilter==='finance'
       ? filtered.filter(i=>i.type==='finance' || i.revAmount || i.costAmount)
       : filtered.filter(i=>i.type===listTypeFilter);
+  }
+  if(monthFilter!==''){
+    filtered = filtered.filter(i=>{
+      if(!i.date) return false;
+      const d = new Date(i.date+'T00:00:00');
+      return d.getMonth()===parseInt(monthFilter,10);
+    });
+  }
+  if(cargoServiceFilter){
+    filtered = filtered.filter(i=>i.cargoService===cargoServiceFilter);
   }
   if(query){
     filtered = filtered.filter(i=>
