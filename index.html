@@ -331,10 +331,12 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <option value="freight-input">Freight Input</option>
         <option value="local-charge-input">Local Charge Input</option>
         <option value="cost-rev-input-completed">Cost &amp; Rev Input Completed</option>
+        <option value="accrued">Accrued</option>
         <option value="reconcile">Reconcile</option>
         <option value="invoice-issued">Invoice Issued</option>
         <option value="__pod_missing_cr__">⚠ POD — Missing Cost & Revenue</option>
-        <option value="__weight_pending__">⚠ Chargeable Weight Pending</option>
+        <option value="__weight_pending__">⚠ Chargeable Weight Pending (Booking)</option>
+        <option value="__cr_weight_pending__">⚠ Chargeable Weight Pending (Cost &amp; Rev)</option>
       </select>
     </div>
     <div id="listBody"><div class="empty">Loading...</div></div>
@@ -741,17 +743,16 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
           <label>Service (Incoterm)</label>
           <select id="f_service">
             <option value="">—</option>
-            <option>P2P</option>
-            <option>D2P</option>
-            <option>D2D</option>
+            <option>EXW</option>
+            <option>FCA</option>
+            <option>FOB</option>
+            <option>CFR</option>
+            <option>CIF</option>
+            <option>CPT</option>
+            <option>CIP</option>
+            <option>DPU</option>
             <option>DAP</option>
             <option>DDP</option>
-            <option>EXW</option>
-            <option>CIP</option>
-            <option>FCL</option>
-            <option>LCL</option>
-            <option>FTL</option>
-            <option>LTL</option>
           </select>
         </div>
         <div class="field">
@@ -807,6 +808,34 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
             <optgroup label="Oceania">
               <option>SYD</option><option>MEL</option><option>BNE</option><option>PER</option><option>AKL</option>
               <option>CHC</option><option>NAN</option><option>POM</option>
+            </optgroup>
+            <optgroup label="Sea Port — Thailand">
+              <option>LCH</option><option>BKP</option><option>MTP</option><option>SGZ</option><option>RNG</option>
+            </optgroup>
+            <optgroup label="Sea Port — East &amp; Southeast Asia">
+              <option>SHA</option><option>NGB</option><option>SZP</option><option>GZP</option><option>QIN</option>
+              <option>TJN</option><option>DLP</option><option>XMP</option><option>YTP</option><option>FZP</option>
+              <option>HKP</option><option>KHP</option><option>PUS</option><option>INP</option><option>YOK</option>
+              <option>KOB</option><option>NGY</option><option>SIP</option><option>PKG</option><option>JKT</option>
+              <option>SUB</option><option>MNP</option><option>HPH</option><option>SGP</option><option>LEM</option>
+            </optgroup>
+            <optgroup label="Sea Port — South Asia &amp; Middle East">
+              <option>NSA</option><option>MUP</option><option>CHT</option><option>KOP</option><option>CGB</option>
+              <option>CLM</option><option>KHI</option><option>JEA</option><option>DXP</option><option>SHJ</option>
+              <option>SAL</option>
+            </optgroup>
+            <optgroup label="Sea Port — Europe">
+              <option>RTM</option><option>ANR</option><option>HAM</option><option>BRV</option><option>FEL</option>
+              <option>LEH</option><option>SOU</option><option>GOA</option><option>VCE</option><option>VLC</option>
+              <option>BCP</option><option>PIR</option><option>GDN</option><option>STP</option>
+            </optgroup>
+            <optgroup label="Sea Port — North America">
+              <option>LAX</option><option>LGB</option><option>OAK</option><option>SEP</option><option>NYP</option>
+              <option>SAV</option><option>HOU</option><option>CHS</option><option>VAN</option><option>MTL</option>
+            </optgroup>
+            <optgroup label="Sea Port — Oceania &amp; Others">
+              <option>SYP</option><option>MEP</option><option>BNP</option><option>FRP</option><option>AKP</option>
+              <option>DUR</option><option>JEB</option><option>SNT</option>
             </optgroup>
             <optgroup label="Country">
               <option>CN</option><option>KR</option><option>UH</option><option>HK</option><option>JP</option><option>SG</option><option>TW</option>
@@ -866,6 +895,34 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
             <optgroup label="Oceania">
               <option>SYD</option><option>MEL</option><option>BNE</option><option>PER</option><option>AKL</option>
               <option>CHC</option><option>NAN</option><option>POM</option>
+            </optgroup>
+            <optgroup label="Sea Port — Thailand">
+              <option>LCH</option><option>BKP</option><option>MTP</option><option>SGZ</option><option>RNG</option>
+            </optgroup>
+            <optgroup label="Sea Port — East &amp; Southeast Asia">
+              <option>SHA</option><option>NGB</option><option>SZP</option><option>GZP</option><option>QIN</option>
+              <option>TJN</option><option>DLP</option><option>XMP</option><option>YTP</option><option>FZP</option>
+              <option>HKP</option><option>KHP</option><option>PUS</option><option>INP</option><option>YOK</option>
+              <option>KOB</option><option>NGY</option><option>SIP</option><option>PKG</option><option>JKT</option>
+              <option>SUB</option><option>MNP</option><option>HPH</option><option>SGP</option><option>LEM</option>
+            </optgroup>
+            <optgroup label="Sea Port — South Asia &amp; Middle East">
+              <option>NSA</option><option>MUP</option><option>CHT</option><option>KOP</option><option>CGB</option>
+              <option>CLM</option><option>KHI</option><option>JEA</option><option>DXP</option><option>SHJ</option>
+              <option>SAL</option>
+            </optgroup>
+            <optgroup label="Sea Port — Europe">
+              <option>RTM</option><option>ANR</option><option>HAM</option><option>BRV</option><option>FEL</option>
+              <option>LEH</option><option>SOU</option><option>GOA</option><option>VCE</option><option>VLC</option>
+              <option>BCP</option><option>PIR</option><option>GDN</option><option>STP</option>
+            </optgroup>
+            <optgroup label="Sea Port — North America">
+              <option>LAX</option><option>LGB</option><option>OAK</option><option>SEP</option><option>NYP</option>
+              <option>SAV</option><option>HOU</option><option>CHS</option><option>VAN</option><option>MTL</option>
+            </optgroup>
+            <optgroup label="Sea Port — Oceania &amp; Others">
+              <option>SYP</option><option>MEP</option><option>BNP</option><option>FRP</option><option>AKP</option>
+              <option>DUR</option><option>JEB</option><option>SNT</option>
             </optgroup>
             <optgroup label="Country">
               <option>CN</option><option>KR</option><option>UH</option><option>HK</option><option>JP</option><option>SG</option><option>TW</option>
@@ -977,6 +1034,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <label><input type="radio" name="crstatus" value="freight-input" checked onchange="updateStamp()"> Freight Input</label>
         <label><input type="radio" name="crstatus" value="local-charge-input" onchange="updateStamp()"> Local Charge Input</label>
         <label><input type="radio" name="crstatus" value="cost-rev-input-completed" onchange="updateStamp()"> Cost &amp; Rev Input Completed</label>
+        <label><input type="radio" name="crstatus" value="accrued" onchange="updateStamp()"> Accrued</label>
         <label><input type="radio" name="crstatus" value="reconcile" onchange="updateStamp()"> Reconcile</label>
         <label><input type="radio" name="crstatus" value="invoice-issued" onchange="updateStamp()"> Invoice Issued</label>
       </div>
@@ -2236,7 +2294,7 @@ const LIST_PAGE_SIZE = 20;
 const STATUS_LABELS = {
   'quotation-preparation':'Quotation prep', 'negotiation':'Negotiation', 'win':'Win', 'failed':'Failed',
   'flight-booked':'Flight Booked', 'truck-booked':'Truck Booked', 'truck-booked-drafted':'Truck Booked (Drafted)', 'pod':'POD', 'cancelled':'Cancelled',
-  'freight-input':'Freight Input', 'local-charge-input':'Local Charge Input', 'cost-rev-input-completed':'Cost & Rev Completed', 'reconcile':'Reconcile', 'invoice-issued':'Invoice Issued'
+  'freight-input':'Freight Input', 'local-charge-input':'Local Charge Input', 'cost-rev-input-completed':'Cost & Rev Completed', 'accrued':'Accrued', 'reconcile':'Reconcile', 'invoice-issued':'Invoice Issued'
 };
 
 function isSeaRecord(r){
@@ -2247,7 +2305,7 @@ function isSeaRecord(r){
 function renderStatusSummary(records){
   const inquiryStatuses = ['quotation-preparation','negotiation','win','failed'];
   const bookingStatuses = ['flight-booked','truck-booked','truck-booked-drafted','pod','cancelled'];
-  const financeStatuses = ['freight-input','local-charge-input','cost-rev-input-completed','reconcile','invoice-issued'];
+  const financeStatuses = ['freight-input','local-charge-input','cost-rev-input-completed','accrued','reconcile','invoice-issued'];
 
   function countByStatus(type, statuses, keyField){
     const counts = {};
@@ -2279,6 +2337,7 @@ function renderStatusSummary(records){
   const bkCounts = countByStatus('booking', bookingStatuses, 'mawb');
   const finCounts = countByCrStatus(financeStatuses);
   const weightPendingCount = records.filter(r=>r.type==='booking' && !isSeaRecord(r) && !(parseFloat(r.weight)>0)).length;
+  const crWeightPendingCount = records.filter(r=>r.type==='booking' && !isSeaRecord(r) && r.crStatus && !(parseFloat(r.crChargeableWeight)>0)).length;
 
   function chipsHtml(counts, bgColor, textColor){
     return Object.entries(counts).map(([status,count])=>
@@ -2295,7 +2354,8 @@ function renderStatusSummary(records){
       <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
         <span style="font-size:11px; font-weight:700; color:#1B2A44; text-transform:uppercase; min-width:90px;">Booking</span>
         ${chipsHtml(bkCounts, '#A8D8F0', '#1B2A44')}
-        <div onclick="document.getElementById('listStatusFilter').value='__weight_pending__'; applyListFilters();" style="cursor:pointer; background:${weightPendingCount>0?'#FBE4E1':'#EDEDED'}; color:${weightPendingCount>0?'#A32D2D':'#6B6F76'}; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap;" title="Click to filter — Booking with no Chargeable weight filled in">⚠ Chargeable weight pending: ${weightPendingCount}</div>
+        <div onclick="document.getElementById('listStatusFilter').value='__weight_pending__'; applyListFilters();" style="cursor:pointer; background:${weightPendingCount>0?'#FBE4E1':'#EDEDED'}; color:${weightPendingCount>0?'#A32D2D':'#6B6F76'}; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap;" title="Click to filter — Booking with no Chargeable weight filled in">⚠ Chargeable weight pending (booking): ${weightPendingCount}</div>
+        <div onclick="document.getElementById('listStatusFilter').value='__cr_weight_pending__'; applyListFilters();" style="cursor:pointer; background:${crWeightPendingCount>0?'#FBE4E1':'#EDEDED'}; color:${crWeightPendingCount>0?'#A32D2D':'#6B6F76'}; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap;" title="Click to filter — Cost & Revenue saved but Chargeable weight is 0 (Booking weight was likely added after)">⚠ Chargeable weight pending (Cost &amp; Rev): ${crWeightPendingCount}</div>
       </div>
       <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
         <span style="font-size:11px; font-weight:700; color:#7A4A0E; text-transform:uppercase; min-width:90px;">Cost &amp; Revenue</span>
@@ -2415,11 +2475,13 @@ function applyListFilters(){
       (i.jobNo && String(i.jobNo).toLowerCase().indexOf(query)!==-1)
     );
   }
-  const CR_STATUSES = ['freight-input','local-charge-input','cost-rev-input-completed','reconcile','invoice-issued'];
+  const CR_STATUSES = ['freight-input','local-charge-input','cost-rev-input-completed','accrued','reconcile','invoice-issued'];
   if(status==='__pod_missing_cr__'){
     filtered = filtered.filter(i=>i.type==='booking' && i.status && i.status.toLowerCase()==='pod' && !(i.revAmount||i.costAmount));
   }else if(status==='__weight_pending__'){
     filtered = filtered.filter(i=>i.type==='booking' && !isSeaRecord(i) && !(parseFloat(i.weight)>0));
+  }else if(status==='__cr_weight_pending__'){
+    filtered = filtered.filter(i=>i.type==='booking' && !isSeaRecord(i) && i.crStatus && !(parseFloat(i.crChargeableWeight)>0));
   }else if(CR_STATUSES.includes(status)){
     filtered = filtered.filter(i=>{
       const s = (i.crStatus || (i.type==='finance' ? i.status : '') || '').toLowerCase();
@@ -2492,7 +2554,7 @@ function hideAllPanels(){
   ALL_PANELS.forEach(id=>{ document.getElementById(id).style.display = 'none'; });
 }
 
-const BILLING_COMPLETED_UP = ['cost-rev-input-completed','reconcile','invoice-issued'];
+const BILLING_COMPLETED_UP = ['cost-rev-input-completed','accrued','reconcile','invoice-issued'];
 const BILLING_RECONCILE_UP = ['reconcile','invoice-issued'];
 const BILLING_NOT_POD_STATUSES = ['flight-booked','truck-booked','truck-booked-drafted'];
 let billingDetailPage = 1;
