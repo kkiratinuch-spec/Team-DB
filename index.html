@@ -2360,7 +2360,8 @@ function renderStatusSummary(records){
   const weightPendingCount = records.filter(r=>r.type==='booking' && !isSeaRecord(r) && !(parseFloat(r.weight)>0)).length;
   const crWeightPendingCount = records.filter(r=>r.type==='booking' && !isSeaRecord(r) && r.crStatus && !(parseFloat(r.crChargeableWeight)>0)).length;
 
-  function monthlyTable(title, headerBg, headerColor, records, statuses, matchField, extraColLabel, extraColFn){
+  function monthlyTable(title, headerBg, headerColor, records, statuses, matchField, extraColLabel, extraColFn, dateField){
+    dateField = dateField || 'date';
     const monthly = Array.from({length:12}, ()=>{
       const row = {};
       statuses.forEach(s=>row[s]=0);
@@ -2368,9 +2369,10 @@ function renderStatusSummary(records){
     });
     const extraMonthly = new Array(12).fill(0);
     records.forEach(r=>{
-      if(!r.date) return;
-      const d = new Date(r.date+'T00:00:00');
-      if(d.getFullYear()!==year) return;
+      const dateVal = r[dateField];
+      if(!dateVal) return;
+      const d = new Date(dateVal+'T00:00:00');
+      if(isNaN(d.getTime()) || d.getFullYear()!==year) return;
       if(extraColFn && extraColFn(r)) extraMonthly[d.getMonth()]++;
       const st = matchField==='crStatus' ? r.crStatus : r.status;
       if(!st || !monthly[0].hasOwnProperty(st)) return;
@@ -2399,12 +2401,12 @@ function renderStatusSummary(records){
   const airExpressRecords = records.filter(r=>r.mode==='Air' && r.cargoService==='Express');
   const seaFreightExportRecords = records.filter(r=>r.mode==='Sea' && r.cargoService==='Freight Forwarding' && r.expImp==='Export');
   const seaFreightImportRecords = records.filter(r=>r.mode==='Sea' && r.cargoService==='Freight Forwarding' && r.expImp==='Import');
-  const bkAirFreightExportTable = monthlyTable('Booking — Air Freight (Export)', '#A8D8F0', '#1B2A44', airFreightExportRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
-  const bkAirFreightImportTable = monthlyTable('Booking — Air Freight (Import)', '#A8D8F0', '#1B2A44', airFreightImportRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
-  const bkAirExpressTable = monthlyTable('Booking — Air Express', '#A8D8F0', '#1B2A44', airExpressRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
-  const bkSeaFreightExportTable = monthlyTable('Booking — Sea Freight (Export)', '#A8D8F0', '#1B2A44', seaFreightExportRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
-  const bkSeaFreightImportTable = monthlyTable('Booking — Sea Freight (Import)', '#A8D8F0', '#1B2A44', seaFreightImportRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
-  const finTable = monthlyTable('Cost & Revenue', '#F0D19A', '#7A4A0E', records, financeStatuses, 'crStatus', 'Total MAWB', r=>r.type==='booking' && !!r.mawb);
+  const bkAirFreightExportTable = monthlyTable('Booking — Air Freight (Export)', '#A8D8F0', '#1B2A44', airFreightExportRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb, 'etd');
+  const bkAirFreightImportTable = monthlyTable('Booking — Air Freight (Import)', '#A8D8F0', '#1B2A44', airFreightImportRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb, 'etd');
+  const bkAirExpressTable = monthlyTable('Booking — Air Express', '#A8D8F0', '#1B2A44', airExpressRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb, 'etd');
+  const bkSeaFreightExportTable = monthlyTable('Booking — Sea Freight (Export)', '#A8D8F0', '#1B2A44', seaFreightExportRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb, 'etd');
+  const bkSeaFreightImportTable = monthlyTable('Booking — Sea Freight (Import)', '#A8D8F0', '#1B2A44', seaFreightImportRecords, bookingStatuses, 'booking', 'Total MAWB', r=>r.type==='booking' && !!r.mawb, 'etd');
+  const finTable = monthlyTable('Cost & Revenue', '#F0D19A', '#7A4A0E', records, financeStatuses, 'crStatus', 'Total MAWB', r=>r.type==='booking' && !!r.mawb, 'etd');
 
   document.getElementById('statusSummary').innerHTML = `
     <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
