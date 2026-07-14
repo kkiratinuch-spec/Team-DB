@@ -314,6 +314,10 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <button class="btn-tab btn-booking-tab" id="typeTabBooking" onclick="setListTypeFilter('booking')">Booking</button>
       <button class="btn-tab btn-finance-tab" id="typeTabFinance" onclick="setListTypeFilter('finance')">Cost &amp; Revenue</button>
     </div>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+      <span style="font-size:12px; font-weight:700; color:var(--navy); text-transform:uppercase;">Monthly Status Summary</span>
+      <label style="font-size:12px;">Year <input type="number" id="statusSummaryYear" min="2020" max="2100" onchange="renderStatusSummary(allListRecords)" style="width:80px;"></label>
+    </div>
     <div id="statusSummary" style="margin-bottom:14px;"></div>
     <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
       <input type="text" id="listSearchBox" placeholder="Search MAWB or Job No..." oninput="applyListFilters()" style="flex:1; min-width:180px;">
@@ -2336,61 +2340,59 @@ function renderStatusSummary(records){
   const bookingStatuses = ['flight-booked','truck-booked','truck-booked-drafted','pod','cancelled'];
   const financeStatuses = ['freight-input','local-charge-input','cost-rev-input-completed','accrued','reconcile','invoice-issued'];
 
-  function countByStatus(type, statuses, keyField){
-    const counts = {};
-    statuses.forEach(s=>counts[s]=0);
-    records.forEach(r=>{
-      if(r.type!==type) return;
-      const key = r[keyField];
-      if(!key || !String(key).trim()) return;
-      if(counts.hasOwnProperty(r.status)) counts[r.status]++;
-    });
-    return counts;
-  }
+  const yearPicker = document.getElementById('statusSummaryYear');
+  const now = new Date();
+  if(!yearPicker.value || parseInt(yearPicker.value,10)<2020){ yearPicker.value = now.getFullYear(); }
+  const year = parseInt(yearPicker.value, 10);
 
-  // Cost & Revenue status now lives on crStatus, and can be present on either a
-  // standalone type='finance' row (legacy) or a merged type='booking' row —
-  // so count by crStatus directly rather than by type.
-  function countByCrStatus(statuses){
-    const counts = {};
-    statuses.forEach(s=>counts[s]=0);
-    records.forEach(r=>{
-      const key = r.crStatus;
-      if(!key || !counts.hasOwnProperty(key)) return;
-      counts[key]++;
-    });
-    return counts;
-  }
-
-  const inqCounts = countByStatus('inquiry', inquiryStatuses, 'quotationRef');
-  const bkCounts = countByStatus('booking', bookingStatuses, 'mawb');
-  const finCounts = countByCrStatus(financeStatuses);
   const weightPendingCount = records.filter(r=>r.type==='booking' && !isSeaRecord(r) && !(parseFloat(r.weight)>0)).length;
   const crWeightPendingCount = records.filter(r=>r.type==='booking' && !isSeaRecord(r) && r.crStatus && !(parseFloat(r.crChargeableWeight)>0)).length;
 
-  function chipsHtml(counts, bgColor, textColor){
-    return Object.entries(counts).map(([status,count])=>
-      `<div style="background:${bgColor}; color:${textColor}; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap;">${STATUS_LABELS[status]||status}: ${count}</div>`
+  function monthlyTable(title, headerBg, headerColor, records, statuses, matchField, extraColLabel, extraColFn){
+    const monthly = Array.from({length:12}, ()=>{
+      const row = {};
+      statuses.forEach(s=>row[s]=0);
+      return row;
+    });
+    const extraMonthly = new Array(12).fill(0);
+    records.forEach(r=>{
+      if(!r.date) return;
+      const d = new Date(r.date+'T00:00:00');
+      if(d.getFullYear()!==year) return;
+      if(extraColFn && extraColFn(r)) extraMonthly[d.getMonth()]++;
+      const st = matchField==='crStatus' ? r.crStatus : r.status;
+      if(!st || !monthly[0].hasOwnProperty(st)) return;
+      if(matchField!=='crStatus' && r.type!==matchField) return;
+      monthly[d.getMonth()][st]++;
+    });
+    const thead = '<th>Month</th>' + (extraColLabel?`<th>${extraColLabel}</th>`:'') + statuses.map(s=>`<th>${STATUS_LABELS[s]||s}</th>`).join('');
+    const rows = monthShortNames.map((m,i)=>
+      '<tr><td>'+m+'</td>' + (extraColLabel?`<td>${extraMonthly[i]>0?extraMonthly[i]:'—'}</td>`:'') + statuses.map(s=>`<td>${monthly[i][s]>0?monthly[i][s]:'—'}</td>`).join('') + '</tr>'
     ).join('');
+    const totals = statuses.map(s=>monthly.reduce((sum,row)=>sum+row[s],0));
+    const extraTotal = extraMonthly.reduce((s,v)=>s+v,0);
+    const totalRow = '<tr style="font-weight:600;"><td>Total</td>' + (extraColLabel?`<td>${extraTotal}</td>`:'') + totals.map(t=>`<td>${t}</td>`).join('') + '</tr>';
+    return `
+      <div style="margin-bottom:16px;">
+        <div style="background:${headerBg}; color:${headerColor}; padding:5px 10px; font-size:11px; font-weight:700; text-transform:uppercase; border-radius:3px 3px 0 0;">${title}</div>
+        <div style="overflow-x:auto;">
+          <table class="dash-table" style="min-width:600px;"><thead><tr>${thead}</tr></thead><tbody>${rows}${totalRow}</tbody></table>
+        </div>
+      </div>`;
   }
 
+  const inqTable = monthlyTable('Inquiry', '#F7E4A3', '#6B5A0E', records, inquiryStatuses, 'inquiry');
+  const bkTable = monthlyTable('Booking', '#A8D8F0', '#1B2A44', records, bookingStatuses, 'booking');
+  const finTable = monthlyTable('Cost & Revenue', '#F0D19A', '#7A4A0E', records, financeStatuses, 'crStatus', 'Total Flight Book', r=>r.type==='booking' && !!r.mawb);
+
   document.getElementById('statusSummary').innerHTML = `
-    <div style="display:flex; flex-direction:column; gap:8px;">
-      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-        <span style="font-size:11px; font-weight:700; color:#6B5A0E; text-transform:uppercase; min-width:90px;">Inquiry</span>
-        ${chipsHtml(inqCounts, '#F7E4A3', '#6B5A0E')}
-      </div>
-      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-        <span style="font-size:11px; font-weight:700; color:#1B2A44; text-transform:uppercase; min-width:90px;">Booking</span>
-        ${chipsHtml(bkCounts, '#A8D8F0', '#1B2A44')}
-        <div onclick="document.getElementById('listStatusFilter').value='__weight_pending__'; applyListFilters();" style="cursor:pointer; background:${weightPendingCount>0?'#FBE4E1':'#EDEDED'}; color:${weightPendingCount>0?'#A32D2D':'#6B6F76'}; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap;" title="Click to filter — Booking with no Chargeable weight filled in">⚠ Chargeable weight pending (booking): ${weightPendingCount}</div>
-        <div onclick="document.getElementById('listStatusFilter').value='__cr_weight_pending__'; applyListFilters();" style="cursor:pointer; background:${crWeightPendingCount>0?'#FBE4E1':'#EDEDED'}; color:${crWeightPendingCount>0?'#A32D2D':'#6B6F76'}; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap;" title="Click to filter — Cost & Revenue saved but Chargeable weight is 0 (Booking weight was likely added after)">⚠ Chargeable weight pending (Cost &amp; Rev): ${crWeightPendingCount}</div>
-      </div>
-      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-        <span style="font-size:11px; font-weight:700; color:#7A4A0E; text-transform:uppercase; min-width:90px;">Cost &amp; Revenue</span>
-        ${chipsHtml(finCounts, '#F0D19A', '#7A4A0E')}
-      </div>
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+      <div onclick="document.getElementById('listStatusFilter').value='__weight_pending__'; applyListFilters();" style="cursor:pointer; background:${weightPendingCount>0?'#FBE4E1':'#EDEDED'}; color:${weightPendingCount>0?'#A32D2D':'#6B6F76'}; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap;" title="Click to filter — Booking with no Chargeable weight filled in">⚠ Chargeable weight pending (booking): ${weightPendingCount}</div>
+      <div onclick="document.getElementById('listStatusFilter').value='__cr_weight_pending__'; applyListFilters();" style="cursor:pointer; background:${crWeightPendingCount>0?'#FBE4E1':'#EDEDED'}; color:${crWeightPendingCount>0?'#A32D2D':'#6B6F76'}; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap;" title="Click to filter — Cost & Revenue saved but Chargeable weight is 0 (Booking weight was likely added after)">⚠ Chargeable weight pending (Cost &amp; Rev): ${crWeightPendingCount}</div>
     </div>
+    ${inqTable}
+    ${bkTable}
+    ${finTable}
   `;
 }
 
