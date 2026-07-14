@@ -2273,7 +2273,7 @@ function renderStatusSummary(records){
   const inqCounts = countByStatus('inquiry', inquiryStatuses, 'quotationRef');
   const bkCounts = countByStatus('booking', bookingStatuses, 'mawb');
   const finCounts = countByCrStatus(financeStatuses);
-  const weightPendingCount = records.filter(r=>r.type==='booking' && !(parseFloat(r.weight)>0)).length;
+  const weightPendingCount = records.filter(r=>r.type==='booking' && r.mode!=='Sea' && !(parseFloat(r.weight)>0)).length;
 
   function chipsHtml(counts, bgColor, textColor){
     return Object.entries(counts).map(([status,count])=>
@@ -2414,7 +2414,7 @@ function applyListFilters(){
   if(status==='__pod_missing_cr__'){
     filtered = filtered.filter(i=>i.type==='booking' && i.status && i.status.toLowerCase()==='pod' && !(i.revAmount||i.costAmount));
   }else if(status==='__weight_pending__'){
-    filtered = filtered.filter(i=>i.type==='booking' && !(parseFloat(i.weight)>0));
+    filtered = filtered.filter(i=>i.type==='booking' && i.mode!=='Sea' && !(parseFloat(i.weight)>0));
   }else if(CR_STATUSES.includes(status)){
     filtered = filtered.filter(i=>{
       const s = (i.crStatus || (i.type==='finance' ? i.status : '') || '').toLowerCase();
