@@ -779,6 +779,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
             <option>DPU</option>
             <option>DAP</option>
             <option>DDP</option>
+            <option>D2P</option>
           </select>
         </div>
         <div class="field">
@@ -2678,8 +2679,8 @@ async function renderPodCrDashboard(){
     if(st==='pod') monthly[m].pod++;
     if(st==='cancelled') monthly[m].cancelled++;
     const cr = (i.crStatus||'').toLowerCase();
-    if(BILLING_COMPLETED_UP.includes(cr)) monthly[m].completed++;
-    if(BILLING_RECONCILE_UP.includes(cr)) monthly[m].reconcile++;
+    if(cr==='cost-rev-input-completed') monthly[m].completed++;
+    if(cr==='reconcile') monthly[m].reconcile++;
     if(cr==='invoice-issued') monthly[m].invoiced++;
   });
 
@@ -2725,9 +2726,9 @@ function renderBillingDetail(){
     }else if(statusFilter==='total-pod'){
       return st==='pod';
     }else if(statusFilter==='cost-rev-completed'){
-      return BILLING_COMPLETED_UP.includes(cr);
+      return cr==='cost-rev-input-completed';
     }else if(statusFilter==='reconcile'){
-      return BILLING_RECONCILE_UP.includes(cr);
+      return cr==='reconcile';
     }else if(statusFilter==='invoice-issued'){
       return cr==='invoice-issued';
     }
