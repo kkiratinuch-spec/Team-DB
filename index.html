@@ -575,8 +575,6 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         </label>
         <label style="font-size:12px; color:var(--steel);">Status<br>
           <select id="billingFilterStatus" onchange="renderBillingDetail()" style="margin-top:2px;">
-            <option value="not-pod">Not POD yet</option>
-            <option value="total-pod">Total POD</option>
             <option value="cost-rev-completed">Cost &amp; Rev Input Completed</option>
             <option value="reconcile">Send Billing to customer (Reconcile)</option>
             <option value="invoice-issued">INV Issued</option>
@@ -584,7 +582,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         </label>
       </div>
       <table class="dash-table">
-        <thead><tr><th>MAWB</th><th>Customer</th><th>Origin</th><th>Destination</th><th>ETD</th></tr></thead>
+        <thead><tr><th>MAWB</th><th>Customer</th><th>ETD</th><th>Invoice Issue Date</th><th>Estimate Rev.</th></tr></thead>
         <tbody id="billingDetailBody"></tbody>
       </table>
       <div id="billingDetailPager" style="margin-top:10px; text-align:center;"></div>
@@ -1041,6 +1039,10 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
 
       <div class="section-label">Special remarks</div>
       <div class="field"><textarea id="f_notes" rows="3"></textarea></div>
+
+      <div class="grid finance-only">
+        <div class="field"><label>Invoice Issue Date</label><input type="date" id="f_invoiceissuedate"></div>
+      </div>
     </div>
 
     <div class="footer-bar">
@@ -1476,6 +1478,7 @@ async function newSheet(type){
   document.getElementById('f_licenseplate').value = '';
   document.getElementById('f_pickupdate').value = '';
   document.getElementById('f_notes').value = '';
+  document.getElementById('f_invoiceissuedate').value = '';
   document.getElementById('f_cr_mawb').value = '';
   document.getElementById('f_cr_customer').textContent = '—';
   document.getElementById('f_cr_mode').textContent = '—';
@@ -1685,6 +1688,7 @@ function gatherRecord(){
     licensePlate: document.getElementById('f_licenseplate').value,
     pickupDate: document.getElementById('f_pickupdate').value,
     notes: document.getElementById('f_notes').value,
+    invoiceIssueDate: document.getElementById('f_invoiceissuedate').value,
     refJobNo: document.getElementById('f_cr_mawb').value,
     crMawb: document.getElementById('f_cr_mawb').value,
     crCustomer: document.getElementById('f_cr_customer').textContent,
@@ -1944,6 +1948,7 @@ function applyRecord(rec){
   document.getElementById('f_licenseplate').value = rec.licensePlate || '';
   document.getElementById('f_pickupdate').value = rec.pickupDate || '';
   document.getElementById('f_notes').value = rec.notes || '';
+  document.getElementById('f_invoiceissuedate').value = rec.invoiceIssueDate || '';
   document.getElementById('f_cr_mawb').value = rec.crMawb || rec.refJobNo || '';
   document.getElementById('f_cr_lookupstatus').textContent = 'Refreshing…';
   // Re-run live MAWB lookup instead of trusting the saved snapshot, so any edits made
@@ -2719,13 +2724,8 @@ function renderBillingDetail(){
     const d = new Date(i.etd+'T00:00:00');
     if(d.getFullYear()!==year) return false;
     if(monthFilter!=='' && d.getMonth()!==parseInt(monthFilter,10)) return false;
-    const st = (i.status||'').toLowerCase();
     const cr = (i.crStatus||'').toLowerCase();
-    if(statusFilter==='not-pod'){
-      return BILLING_NOT_POD_STATUSES.includes(st);
-    }else if(statusFilter==='total-pod'){
-      return st==='pod';
-    }else if(statusFilter==='cost-rev-completed'){
+    if(statusFilter==='cost-rev-completed'){
       return cr==='cost-rev-input-completed';
     }else if(statusFilter==='reconcile'){
       return cr==='reconcile';
@@ -2749,9 +2749,9 @@ function renderBillingDetail(){
       `<tr onclick="loadFromDash('${i.jobNo}')" style="cursor:pointer;">
         <td class="mono">${i.mawb||'—'}</td>
         <td>${i.customer||''}</td>
-        <td>${i.origin||''}</td>
-        <td>${i.dest||''}</td>
         <td>${i.etd||''}</td>
+        <td>${i.invoiceIssueDate||'—'}</td>
+        <td>${i.revAmount ? fmtMoney(parseFloat(i.revAmount)) : '—'}</td>
       </tr>`
     ).join('');
   }
