@@ -573,11 +573,15 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
             <option value="">All months</option>
           </select>
         </label>
+        <label style="font-size:12px; color:var(--steel);">Customer<br>
+          <select id="billingFilterCustomer" onchange="renderBillingDetail()" style="margin-top:2px;">
+            <option value="">All Customers</option>
+          </select>
+        </label>
         <label style="font-size:12px; color:var(--steel);">Status<br>
           <select id="billingFilterStatus" onchange="renderBillingDetail()" style="margin-top:2px;">
-            <option value="cost-rev-completed">Cost &amp; Rev Input Completed</option>
-            <option value="reconcile">Send Billing to customer (Reconcile)</option>
-            <option value="invoice-issued">INV Issued</option>
+            <option value="invoice-issued">INV Issue</option>
+            <option value="not-issued">Not Issue INV yet</option>
           </select>
         </label>
       </div>
@@ -2703,6 +2707,12 @@ async function renderPodCrDashboard(){
     });
   }
 
+  const customerSelect = document.getElementById('billingFilterCustomer');
+  const currentCustomerVal = customerSelect.value;
+  const customers = Array.from(new Set(idx.filter(i=>i.type==='booking' && i.customer).map(i=>i.customer))).sort();
+  customerSelect.innerHTML = '<option value="">All Customers</option>' + customers.map(c=>`<option value="${c}">${c}</option>`).join('');
+  customerSelect.value = currentCustomerVal;
+
   billingDetailPage = 1;
   renderBillingDetail();
 }
@@ -2717,6 +2727,7 @@ function renderBillingDetail(){
   const yearPicker = document.getElementById('billingYearPicker');
   const year = parseInt(yearPicker.value, 10);
   const monthFilter = document.getElementById('billingFilterMonth').value;
+  const customerFilter = document.getElementById('billingFilterCustomer').value;
   const statusFilter = document.getElementById('billingFilterStatus').value;
 
   let filtered = idx.filter(i=>{
@@ -2724,13 +2735,12 @@ function renderBillingDetail(){
     const d = new Date(i.etd+'T00:00:00');
     if(d.getFullYear()!==year) return false;
     if(monthFilter!=='' && d.getMonth()!==parseInt(monthFilter,10)) return false;
+    if(customerFilter && i.customer!==customerFilter) return false;
     const cr = (i.crStatus||'').toLowerCase();
-    if(statusFilter==='cost-rev-completed'){
-      return cr==='cost-rev-input-completed';
-    }else if(statusFilter==='reconcile'){
-      return cr==='reconcile';
-    }else if(statusFilter==='invoice-issued'){
+    if(statusFilter==='invoice-issued'){
       return cr==='invoice-issued';
+    }else if(statusFilter==='not-issued'){
+      return cr!=='invoice-issued';
     }
     return false;
   }).sort((a,b)=>(a.etd||'').localeCompare(b.etd||''));
