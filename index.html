@@ -627,7 +627,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <div class="field"><label>Month</label><div class="readout mono" id="f_month">—</div></div>
         <div class="field finance-hide">
           <label>Customer</label>
-          <select id="f_customer">
+          <select id="f_customer" onchange="handleNewCustomer(this)">
             <option value="">—</option>
             <option>New Customer</option>
             <option>ADM Promotion (Thailand)</option>
@@ -1192,6 +1192,21 @@ function parseFlexibleDate(str){
 
 function formatDateStr(d){
   return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+}
+
+function handleNewCustomer(select){
+  if(select.value==='New Customer'){
+    const name = prompt('พิมพ์ชื่อลูกค้าใหม่:');
+    if(name && name.trim()){
+      const opt = document.createElement('option');
+      opt.value = name.trim();
+      opt.textContent = name.trim();
+      opt.selected = true;
+      select.insertBefore(opt, select.options[1]);
+    }else{
+      select.value = '';
+    }
+  }
 }
 
 function updateMonth(){
@@ -2286,6 +2301,17 @@ function showToast(message){
 async function saveSheet(){
   if(!currentJobNo){ await newSheet(); }
   const rec = gatherRecord();
+
+  if(!rec.jobNo || !String(rec.jobNo).trim()){
+    alert('เกิดข้อผิดพลาด: ไม่มีเลข Job No. กรุณาปิดแล้วเปิดฟอร์มใหม่อีกครั้งก่อน Save');
+    console.error('Blocked save with empty jobNo', rec);
+    return;
+  }
+
+  if(rec.customer==='New Customer'){
+    alert('กรุณาพิมพ์ชื่อลูกค้าจริงแทน "New Customer" ก่อน Save');
+    return;
+  }
 
   if(rec.mawb && String(rec.mawb).trim()){
     try{
