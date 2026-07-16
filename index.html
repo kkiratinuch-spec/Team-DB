@@ -333,6 +333,9 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <option value="Freight Forwarding">Freight Forwarding</option>
         <option value="Express">Express</option>
       </select>
+      <select id="listCustomerFilter" onchange="applyListFilters()" style="min-width:160px;">
+        <option value="">All Customers</option>
+      </select>
       <select id="listStatusFilter" onchange="applyListFilters()" style="min-width:160px;">
         <option value="">All Status</option>
         <option value="quotation-preparation">Quotation prep</option>
@@ -2480,6 +2483,13 @@ async function refreshList(){
     document.getElementById('typeTabFinance').classList.remove('active');
   }
   allListRecords = await dataGetAll();
+  const customerSelect = document.getElementById('listCustomerFilter');
+  if(customerSelect){
+    const currentVal = customerSelect.value;
+    const customers = Array.from(new Set(allListRecords.filter(i=>i.customer).map(i=>i.customer))).sort();
+    customerSelect.innerHTML = '<option value="">All Customers</option>' + customers.map(c=>`<option value="${c}">${c}</option>`).join('');
+    customerSelect.value = currentVal;
+  }
   renderStatusSummary(allListRecords);
   renderListRows(allListRecords);
 }
@@ -2561,6 +2571,7 @@ function applyListFilters(){
   const status = document.getElementById('listStatusFilter').value;
   const monthFilter = document.getElementById('listMonthFilter').value;
   const cargoServiceFilter = document.getElementById('listCargoServiceFilter').value;
+  const customerFilter = document.getElementById('listCustomerFilter').value;
   currentListPage = 1;
   let filtered = allListRecords;
   if(listTypeFilter){
@@ -2577,6 +2588,9 @@ function applyListFilters(){
   }
   if(cargoServiceFilter){
     filtered = filtered.filter(i=>i.cargoService===cargoServiceFilter);
+  }
+  if(customerFilter){
+    filtered = filtered.filter(i=>i.customer===customerFilter);
   }
   if(query){
     filtered = filtered.filter(i=>
