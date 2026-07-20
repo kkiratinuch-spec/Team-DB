@@ -3487,6 +3487,45 @@ function downloadCSVTemplate(){
   downloadFile('job-sheet-import-template.csv', csv, 'text/csv');
 }
 
+function parseCSV(text){
+  const rows = [];
+  let row = [];
+  let field = '';
+  let inQuotes = false;
+  // Normalize line endings and strip BOM
+  text = text.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  for(let i = 0; i < text.length; i++){
+    const c = text[i];
+    if(inQuotes){
+      if(c === '"'){
+        if(text[i+1] === '"'){ field += '"'; i++; }
+        else{ inQuotes = false; }
+      }else{
+        field += c;
+      }
+    }else{
+      if(c === '"'){
+        inQuotes = true;
+      }else if(c === ','){
+        row.push(field); field = '';
+      }else if(c === '\n'){
+        row.push(field); field = '';
+        rows.push(row); row = [];
+      }else{
+        field += c;
+      }
+    }
+  }
+  // push the last field/row if the file doesn't end with a newline
+  if(field !== '' || row.length > 0){
+    row.push(field);
+    rows.push(row);
+  }
+  // drop fully-empty trailing rows
+  while(rows.length && rows[rows.length-1].every(v=>v==='')) rows.pop();
+  return rows;
+}
+
 function importCSV(file){
   if(!file) return;
   const reader = new FileReader();
