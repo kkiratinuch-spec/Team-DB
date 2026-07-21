@@ -561,6 +561,88 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
+      <h3>D.0 — AR AGING OVERVIEW (BILLING NOT YET ISSUED)</h3>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
+        <label style="font-size:12px; color:var(--steel);">Month (by ETD)<br>
+          <select id="arMonthFilter" onchange="renderPodCrDashboard()" style="margin-top:2px;">
+            <option value="">All months</option>
+            <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
+            <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
+            <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
+            <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
+          </select>
+        </label>
+        <span style="font-size:11px; color:#999; max-width:380px;">MAWB ที่ POD แล้วแต่ยังไม่ Invoice Issued — Default: due date = วันสิ้นเดือนของ ETD + 7 วัน ลูกค้าที่ไม่ได้ตั้งค่าเฉพาะจะใช้กฎนี้</span>
+      </div>
+
+      <div style="font-size:11px; color:#555; background:#FFF8E1; border-left:3px solid #E2B33C; padding:8px 12px; margin-bottom:16px; border-radius:0 4px 4px 0;">
+        <b>Logic:</b> Overdue = Cost &amp; Rev ยังไม่ถึง <b>Invoice Issued</b> (ไม่สนสถานะ Booking) และวันนี้เลย <b>Due Date</b> ของ MAWB นั้นไปแล้ว — Default Due Date = วันสิ้นเดือนของ ETD + 7 วัน (จับเดือนจาก ETD ของ MAWB) — ดูกฎของแต่ละลูกค้าได้ใน "Customer Logic Reference" ด้านล่างสุด
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:14px; margin-bottom:20px;">
+        <div class="metric m-navy"><div class="num" id="arTotalCount">—</div><div class="lbl">Not Yet Invoiced — Total MAWB</div></div>
+        <div class="metric m-sky"><div class="num" id="arTotalRev">—</div><div class="lbl">Not Yet Invoiced — Est. Revenue (THB)</div></div>
+        <div class="metric" style="background:#E2EFDA;"><div class="num" id="arOnTrackCount" style="color:#1E6B3C;">—</div><div class="lbl">On Track — MAWB</div></div>
+        <div class="metric" style="background:#E2EFDA;"><div class="num" id="arOnTrackRev" style="color:#1E6B3C;">—</div><div class="lbl">On Track — Est. Revenue (THB)</div></div>
+        <div class="metric" style="background:#FBE4E1;"><div class="num" id="arOverdueCount" style="color:#A32D2D;">—</div><div class="lbl">Overdue — MAWB</div></div>
+        <div class="metric" style="background:#FBE4E1;"><div class="num" id="arOverdueRev" style="color:#A32D2D;">—</div><div class="lbl">Overdue — Est. Revenue (THB)</div></div>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Aging Breakdown</div>
+        <div id="arAgingChart"></div>
+        <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; align-items:flex-end;">
+          <label style="font-size:12px; color:var(--steel);">Filter this chart — Customer<br>
+            <select id="arChartCustomerFilter" onchange="renderPodCrDashboard()" style="margin-top:2px;">
+              <option value="">All Customers</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">AR Detail — All Outstanding Shipments (sorted by most urgent first)</div>
+      <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; align-items:flex-end;">
+        <label style="font-size:12px; color:var(--steel);">Search MAWB<br>
+          <input type="text" id="arSearchMawb" placeholder="MAWB..." oninput="renderARAging(window.billingIdx, new Date())" style="margin-top:2px;">
+        </label>
+        <label style="font-size:12px; color:var(--steel);">Customer<br>
+          <select id="arCustomerFilter" onchange="renderARAging(window.billingIdx, new Date())" style="margin-top:2px;">
+            <option value="">All Customers</option>
+          </select>
+        </label>
+        <label style="font-size:12px; color:var(--steel);">Aging Bucket<br>
+          <select id="arBucketFilter" onchange="renderARAging(window.billingIdx, new Date())" style="margin-top:2px;">
+            <option value="">All</option>
+            <option value="dueLater">On track (4+ days left)</option>
+            <option value="due3">Due in 1–3 days</option>
+            <option value="od7">Overdue 1–7d</option>
+            <option value="od14">Overdue 8–14d</option>
+            <option value="od30">Overdue 15–30d</option>
+            <option value="od30plus">Overdue 30d+</option>
+          </select>
+        </label>
+        <label style="font-size:12px; color:var(--steel);">Min days overdue<br>
+          <input type="number" id="arMinDaysOverdue" value="0" min="0" style="width:70px; margin-top:2px;" onchange="renderARAging(window.billingIdx, new Date())">
+        </label>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="dash-table">
+          <thead><tr><th>MAWB</th><th>Customer</th><th>ETD</th><th>crStatus</th><th>Due Date</th><th>Rule</th><th>Status</th><th>Est. Revenue (THB)</th></tr></thead>
+          <tbody id="arOverdueBody"></tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:24px;">
+        <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Customer Logic Reference — Due Date Rule per Customer</div>
+        <table class="dash-table">
+          <thead><tr><th>Customer</th><th>Rule</th></tr></thead>
+          <tbody id="arLogicRefBody"></tbody>
+        </table>
+        <div id="arLogicRefPager" style="margin-top:10px; text-align:center;"></div>
+      </div>
+    </div>
+
+    <div class="bar-section">
       <h3>D.1 MONTHLY SUMMARY — FREIGHT FORWARDING</h3>
       <table class="dash-table">
         <thead><tr><th>Month</th><th>Total MAWB</th><th>Total POD</th><th>Total Cancelled</th><th>Cost &amp; Rev Input Completed</th><th>Send Billing to customer (Reconcile)</th><th>INV Issued</th></tr></thead>
@@ -2575,7 +2657,7 @@ async function refreshList(){
     document.getElementById('typeTabBooking').classList.remove('active');
     document.getElementById('typeTabFinance').classList.remove('active');
   }
-  allListRecords = await dataGetAll();
+  allListRecords = (await dataGetAll()).filter(r=>r.type!=='arCustomerSetting');
   const customerSelect = document.getElementById('listCustomerFilter');
   if(customerSelect){
     const currentVal = customerSelect.value;
@@ -2776,6 +2858,219 @@ const BILLING_NOT_POD_STATUSES = ['flight-booked','truck-booked','truck-booked-d
 let billingDetailPage = 1;
 const BILLING_PAGE_SIZE = 20;
 
+const RULE_LABELS = {
+  'days-after-etd': 'Days after ETD',
+  'bimonthly-split': 'Bi-monthly split (15th / month-end)',
+  'days-after-month-end': 'Days after month-end',
+  'due-on-etd': 'Due on ETD date',
+};
+
+// Fixed, agreed billing-cutoff rules per customer. Any customer not listed here
+// falls back to DEFAULT_AR_RULE (month-end + 7 days).
+const CUSTOMER_AR_RULES = {
+  'EOPTOLINK': {ruleType:'bimonthly-split', cutoffDays:''},
+  'MULTI-FINELINE ELECTRONICS': {ruleType:'days-after-month-end', cutoffDays:'7'},
+  'MIKASA': {ruleType:'days-after-month-end', cutoffDays:'0'},
+  'NANYANG': {ruleType:'due-on-etd', cutoffDays:''},
+  'MASS TRANSPORT': {ruleType:'due-on-etd', cutoffDays:''},
+};
+const DEFAULT_AR_RULE = {ruleType:'days-after-month-end', cutoffDays:'7'};
+
+function computeDueDate(etdStr, ruleType, cutoffDays){
+  const etd = new Date(etdStr+'T00:00:00');
+  if(ruleType==='bimonthly-split'){
+    const day = etd.getDate();
+    if(day<=15) return new Date(etd.getFullYear(), etd.getMonth(), 15);
+    return new Date(etd.getFullYear(), etd.getMonth()+1, 0);
+  }else if(ruleType==='days-after-month-end'){
+    const monthEnd = new Date(etd.getFullYear(), etd.getMonth()+1, 0);
+    const days = (cutoffDays!==undefined && cutoffDays!=='' && !isNaN(parseInt(cutoffDays,10))) ? parseInt(cutoffDays,10) : 0;
+    return new Date(monthEnd.getTime() + days*86400000);
+  }else if(ruleType==='due-on-etd'){
+    return etd;
+  }
+  // default: days-after-etd
+  const days = (cutoffDays!==undefined && cutoffDays!=='' && !isNaN(parseInt(cutoffDays,10))) ? parseInt(cutoffDays,10) : 7;
+  return new Date(etd.getTime() + days*86400000);
+}
+
+function renderARAging(idx, now){
+  const monthFilter = document.getElementById('arMonthFilter').value;
+  const searchMawb = (document.getElementById('arSearchMawb').value || '').trim().toLowerCase();
+  const customerFilterEl = document.getElementById('arCustomerFilter');
+  const customerFilter = customerFilterEl.value;
+  const chartCustomerFilterEl = document.getElementById('arChartCustomerFilter');
+  const chartCustomerFilter = chartCustomerFilterEl.value;
+  const bucketFilter = document.getElementById('arBucketFilter').value;
+  const minDaysOverdue = parseInt(document.getElementById('arMinDaysOverdue').value, 10) || 0;
+  const todayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+  const ruleFor = customer => CUSTOMER_AR_RULES.hasOwnProperty(customer) ? CUSTOMER_AR_RULES[customer] : DEFAULT_AR_RULE;
+
+  let bookings = idx.filter(i=>{
+    if(i.type!=='booking' || !i.etd) return false;
+    if(monthFilter!==''){
+      const d = new Date(i.etd+'T00:00:00');
+      if(d.getMonth()!==parseInt(monthFilter,10)) return false;
+    }
+    const st = (i.status||'').toLowerCase();
+    if(st==='cancelled') return false;
+    const cr = (i.crStatus||'').toLowerCase();
+    return cr!=='invoice-issued';
+  });
+
+  const notInvoiced = bookings.map(i=>{
+    const rule = ruleFor(i.customer || '');
+    const dueDate = computeDueDate(i.etd, rule.ruleType, rule.cutoffDays);
+    const dueMs = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()).getTime();
+    const daysUntilDue = Math.round((dueMs - todayMs) / 86400000); // positive = days remaining, negative = days overdue
+    const daysOverdue = daysUntilDue < 0 ? -daysUntilDue : 0;
+    const isOverdue = daysUntilDue < 0;
+    let bucket;
+    if(daysUntilDue >= 4) bucket = 'dueLater';
+    else if(daysUntilDue >= 0) bucket = 'due3';
+    else if(daysOverdue <= 7) bucket = 'od7';
+    else if(daysOverdue <= 14) bucket = 'od14';
+    else if(daysOverdue <= 30) bucket = 'od30';
+    else bucket = 'od30plus';
+    return Object.assign({}, i, {
+      dueDate: dueDate.toISOString().slice(0,10), daysUntilDue, daysOverdue, isOverdue, bucket,
+      ruleType: rule.ruleType, ruleLabel: RULE_LABELS[rule.ruleType] || rule.ruleType
+    });
+  });
+
+  const onTrack = notInvoiced.filter(i=>!i.isOverdue);
+  const overdue = notInvoiced.filter(i=>i.isOverdue);
+
+  const sum = arr => arr.reduce((s,i)=>s+(parseFloat(i.revAmount)||0),0);
+
+  document.getElementById('arTotalCount').textContent = fmtNum(notInvoiced.length);
+  document.getElementById('arTotalRev').textContent = fmtMoney(sum(notInvoiced));
+  document.getElementById('arOnTrackCount').textContent = fmtNum(onTrack.length);
+  document.getElementById('arOnTrackRev').textContent = fmtMoney(sum(onTrack));
+  document.getElementById('arOverdueCount').textContent = fmtNum(overdue.length);
+  document.getElementById('arOverdueRev').textContent = fmtMoney(sum(overdue));
+
+  // Aging buckets — On track / Due soon (both green), then overdue tiers (unchanged)
+  const chartData = chartCustomerFilter ? notInvoiced.filter(i=>i.customer===chartCustomerFilter) : notInvoiced;
+  const buckets = [
+    {key:'dueLater', label:'On track', color:'#2F7A46'},
+    {key:'due3', label:'Due in 1–3 days', color:'#2F7A46'},
+    {key:'od7', label:'Overdue 1–7d', color:'#C0392B'},
+    {key:'od14', label:'Overdue 8–14d', color:'#A32D2D'},
+    {key:'od30', label:'Overdue 15–30d', color:'#7A1F1F'},
+    {key:'od30plus', label:'Overdue 30d+', color:'#4A1010'},
+  ];
+  const bucketData = buckets.map(b=>{
+    const matches = chartData.filter(i=>i.bucket===b.key);
+    return {label:b.label, color:b.color, count:matches.length, rev:sum(matches)};
+  });
+  const maxCount = Math.max(1, ...bucketData.map(b=>b.count));
+  document.getElementById('arAgingChart').innerHTML = bucketData.map(b=>`
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+      <div style="width:130px; font-size:11px; color:#555; text-align:right;">${b.label}</div>
+      <div style="flex:1; background:#EDEDED; border-radius:3px; height:20px; position:relative;">
+        <div style="width:${(b.count/maxCount*100)}%; background:${b.color}; height:100%; border-radius:3px; min-width:${b.count>0?'2px':'0'};"></div>
+      </div>
+      <div style="width:150px; font-size:11px; color:#333; white-space:nowrap;">${fmtNum(b.count)} MAWB · ${fmtMoney(b.rev)} THB</div>
+    </div>
+  `).join('');
+
+  // Populate the chart's own Customer filter (once, preserving current selection)
+  if(chartCustomerFilterEl.options.length<=1 || chartCustomerFilterEl.dataset.stale==='1'){
+    const custsChart = Array.from(new Set(idx.filter(i=>i.type==='booking' && i.customer).map(i=>i.customer))).sort();
+    const curChart = chartCustomerFilterEl.value;
+    chartCustomerFilterEl.innerHTML = '<option value="">All Customers</option>' + custsChart.map(c=>`<option value="${c}">${c}</option>`).join('');
+    chartCustomerFilterEl.value = curChart;
+    chartCustomerFilterEl.dataset.stale = '0';
+  }
+
+  // Populate the Customer filter (once, preserving current selection)
+  if(customerFilterEl.options.length<=1 || customerFilterEl.dataset.stale==='1'){
+    const custs = Array.from(new Set(idx.filter(i=>i.type==='booking' && i.customer).map(i=>i.customer))).sort();
+    const cur = customerFilterEl.value;
+    customerFilterEl.innerHTML = '<option value="">All Customers</option>' + custs.map(c=>`<option value="${c}">${c}</option>`).join('');
+    customerFilterEl.value = cur;
+    customerFilterEl.dataset.stale = '0';
+  }
+
+  // AR detail table — apply filters, sorted by most urgent first (most overdue, then soonest due)
+  let filteredRows = notInvoiced.filter(i=>{
+    if(searchMawb && !(i.mawb||'').toLowerCase().includes(searchMawb)) return false;
+    if(customerFilter && i.customer!==customerFilter) return false;
+    if(bucketFilter && i.bucket!==bucketFilter) return false;
+    if(minDaysOverdue>0 && i.daysOverdue < minDaysOverdue) return false;
+    return true;
+  });
+  filteredRows.sort((a,b)=>a.daysUntilDue-b.daysUntilDue);
+
+  const bucketStyle = {
+    dueLater:{bg:'', txt:'#333', label:'On track'},
+    due3:{bg:'#E2EFDA', txt:'#1E6B3C', label:'Due soon'},
+    od7:{bg:'#FBE4E1', txt:'#A32D2D', label:'Overdue'},
+    od14:{bg:'#FBE4E1', txt:'#A32D2D', label:'Overdue'},
+    od30:{bg:'#FBE4E1', txt:'#A32D2D', label:'Overdue'},
+    od30plus:{bg:'#F5D0D0', txt:'#7A1F1F', label:'Overdue (30d+)'},
+  };
+
+  document.getElementById('arOverdueBody').innerHTML = filteredRows.length ? filteredRows.map(i=>{
+    const bs = bucketStyle[i.bucket];
+    const statusText = i.isOverdue ? `${bs.label} ${i.daysOverdue}d` : (i.daysUntilDue===0 ? 'Due today' : `${bs.label} (${i.daysUntilDue}d left)`);
+    return `<tr style="cursor:pointer; background:${bs.bg};" onclick="loadFromDash('${i.jobNo}')">
+      <td class="mono">${i.mawb||'—'}</td>
+      <td>${i.customer||''}</td>
+      <td>${i.etd||''}</td>
+      <td>${i.crStatus||'—'}</td>
+      <td>${i.dueDate}</td>
+      <td style="font-size:10px;">${i.ruleLabel}</td>
+      <td style="color:${bs.txt}; font-weight:600;">${statusText}</td>
+      <td>${i.revAmount ? fmtMoney(parseFloat(i.revAmount)) : '—'}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="8" style="text-align:center; color:#999;">No shipments matching this filter 🎉</td></tr>';
+
+  const allCustomers = Array.from(new Set(idx.filter(i=>i.type==='booking' && i.customer).map(i=>i.customer))).sort();
+  renderArLogicRef(allCustomers, CUSTOMER_AR_RULES, DEFAULT_AR_RULE);
+}
+
+let arLogicRefPage = 1;
+const AR_LOGIC_REF_PAGE_SIZE = 5;
+window._arLogicRefCache = null;
+
+function renderArLogicRef(allCustomers, customerRuleMap, defaultRule){
+  window._arLogicRefCache = {allCustomers, customerRuleMap, defaultRule};
+  const total = allCustomers.length;
+  const totalPages = Math.max(1, Math.ceil(total / AR_LOGIC_REF_PAGE_SIZE));
+  arLogicRefPage = Math.min(Math.max(1, arLogicRefPage), totalPages);
+  const start = (arLogicRefPage-1) * AR_LOGIC_REF_PAGE_SIZE;
+  const pageCustomers = allCustomers.slice(start, start+AR_LOGIC_REF_PAGE_SIZE);
+
+  function ruleText(c){
+    const rule = customerRuleMap[c];
+    if(!rule) return `Month-end + ${defaultRule.cutoffDays} days (default)`;
+    if(rule.ruleType==='bimonthly-split') return 'Bi-monthly split — ETD 1-15 → due 15th same month · ETD 16-end → due last day of month';
+    if(rule.ruleType==='days-after-month-end') return `Month-end + ${rule.cutoffDays||0} days (จับเดือนจาก ETD)`;
+    if(rule.ruleType==='due-on-etd') return 'Due on ETD date (no grace period)';
+    return `${rule.cutoffDays||7} days after ETD`;
+  }
+
+  document.getElementById('arLogicRefBody').innerHTML = pageCustomers.map(c=>
+    `<tr><td>${c}</td><td style="font-size:11px;">${ruleText(c)}</td></tr>`
+  ).join('') || '<tr><td colspan="2" style="text-align:center; color:#999;">No customers yet</td></tr>';
+
+  const pager = document.getElementById('arLogicRefPager');
+  pager.innerHTML = `
+    <button onclick="arLogicRefGoToPage(${arLogicRefPage-1})" ${arLogicRefPage<=1?'disabled':''}>‹ Prev</button>
+    <span style="margin:0 10px; font-size:12px;">Page ${arLogicRefPage} of ${totalPages}</span>
+    <button onclick="arLogicRefGoToPage(${arLogicRefPage+1})" ${arLogicRefPage>=totalPages?'disabled':''}>Next ›</button>
+  `;
+}
+
+function arLogicRefGoToPage(p){
+  arLogicRefPage = p;
+  const c = window._arLogicRefCache;
+  if(c) renderArLogicRef(c.allCustomers, c.customerRuleMap, c.defaultRule);
+}
+
 async function renderPodCrDashboard(){
   const idx = await dataGetAll();
   window.billingIdx = idx;
@@ -2783,6 +3078,8 @@ async function renderPodCrDashboard(){
   const now = new Date();
   if(!yearPicker.value || parseInt(yearPicker.value,10)<2020){ yearPicker.value = now.getFullYear(); }
   const year = parseInt(yearPicker.value, 10);
+
+  renderARAging(idx, now);
 
   function buildMonthly(records){
     const monthly = Array.from({length:12}, ()=>({total:0, pod:0, cancelled:0, completed:0, reconcile:0, invoiced:0}));
@@ -3483,7 +3780,7 @@ function csvEscape(val){
 }
 
 async function exportCSV(){
-  const records = await dataGetAll();
+  const records = (await dataGetAll()).filter(r=>r.type!=='arCustomerSetting');
   if(records.length===0){ alert('No job sheets to export yet.'); return; }
   const cols = ['jobNo','type','date','month','customer','cargoService','mode','expImp','service','origin','dest','route','carrier','coloader','etd','eta','transit','containers','itemsJSON','vendorName','truckType','totalTruck','driverName','licensePlate','pickupDate','mawb','notes','status','savedAt','bookingWeight','chargeableWeight','remark','quotationRef','crStatus','refJobNo','lcCostAmount','lcRevAmount','frCostAmount','frRevAmount','dcCostAmount','dcRevAmount','revAmount','costAmount','gpAmount','gpPercent','crMawb','crCustomer','crMode','crCargoService','crExpImp','crOrigin','crDest','crEtd','crChargeableWeight','costPerKg','sellingPerKg','lcVendor1','lcVendor2','lcVendor3','lcVendor4','lcTruckType1','lcTruckType2','lcTruckType3','lcTruckType4','lcTruckUsage1','lcTruckUsage2','lcTruckUsage3','lcTruckUsage4','lcRatePerTruck1','lcRatePerTruck2','lcRatePerTruck3','lcRatePerTruck4','lcCustoms1','lcCustoms2','lcCustoms3','lcCustoms4','lcTerminal1','lcTerminal2','lcTerminal3','lcTerminal4','lcDocument1','lcDocument2','lcDocument3','lcDocument4','lcAirlinesOther1','lcAirlinesOther2','lcAirlinesOther3','lcAirlinesOther4','lcPacking1','lcPacking2','lcPacking3','lcPacking4','lcOther1','lcOther2','lcOther3','lcOther4','lcOtherRemark1','lcOtherRemark2','lcOtherRemark3','lcOtherRemark4','lcrVendor1','lcrVendor2','lcrVendor3','lcrVendor4','lcrTruckType1','lcrTruckType2','lcrTruckType3','lcrTruckType4','lcrTruckUsage1','lcrTruckUsage2','lcrTruckUsage3','lcrTruckUsage4','lcrRatePerTruck1','lcrRatePerTruck2','lcrRatePerTruck3','lcrRatePerTruck4','lcrCustoms1','lcrCustoms2','lcrCustoms3','lcrCustoms4','lcrTerminal1','lcrTerminal2','lcrTerminal3','lcrTerminal4','lcrDocument1','lcrDocument2','lcrDocument3','lcrDocument4','lcrAirlinesOther1','lcrAirlinesOther2','lcrAirlinesOther3','lcrAirlinesOther4','lcrPacking1','lcrPacking2','lcrPacking3','lcrPacking4','lcrOther1','lcrOther2','lcrOther3','lcrOther4','lcrOtherRemark1','lcrOtherRemark2','lcrOtherRemark3','lcrOtherRemark4','dcVendor1','dcVendor2','dcVendor3','dcVendor4','dcTruckType1','dcTruckType2','dcTruckType3','dcTruckType4','dcTruckUsage1','dcTruckUsage2','dcTruckUsage3','dcTruckUsage4','dcRatePerTruck1','dcRatePerTruck2','dcRatePerTruck3','dcRatePerTruck4','dcHandling1','dcHandling2','dcHandling3','dcHandling4','dcCustoms1','dcCustoms2','dcCustoms3','dcCustoms4','dcDelivery1','dcDelivery2','dcDelivery3','dcDelivery4','dcrVendor1','dcrVendor2','dcrVendor3','dcrVendor4','dcrTruckType1','dcrTruckType2','dcrTruckType3','dcrTruckType4','dcrTruckUsage1','dcrTruckUsage2','dcrTruckUsage3','dcrTruckUsage4','dcrRatePerTruck1','dcrRatePerTruck2','dcrRatePerTruck3','dcrRatePerTruck4','dcrHandling1','dcrHandling2','dcrHandling3','dcrHandling4','dcrCustoms1','dcrCustoms2','dcrCustoms3','dcrCustoms4','dcrDelivery1','dcrDelivery2','dcrDelivery3','dcrDelivery4','dcRemark1','dcRemark2','dcRemark3','dcRemark4','dcrRemark1','dcrRemark2','dcrRemark3','dcrRemark4'];
   const header = cols.join(',');
