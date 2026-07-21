@@ -2704,7 +2704,7 @@ function renderListPage(){
         <input type="checkbox" class="row-checkbox" data-jobno="${i.jobNo}" onclick="event.stopPropagation();" onchange="if(this.checked){selectedJobNos.add('${i.jobNo}');}else{selectedJobNos.delete('${i.jobNo}');} updateSelectedCount();">
         <div>
           <span class="mono">${(i.crMawb||i.mawb) || (i.type==='inquiry' ? i.jobNo : '—')}</span>
-          <span class="meta"> — ${i.type==='inquiry'?'Inquiry':(i.revAmount||i.costAmount?'Booking + Cost & Revenue':(i.type==='finance'?'Cost & Revenue':'Booking'))} · ${i.customer||''} · ${i.route||''} · ${i.date||''}</span>
+          <span class="meta"> — ${i.type==='inquiry'?'Inquiry':(i.revAmount||i.costAmount?'Booking + Cost & Revenue':(i.type==='finance'?'Cost & Revenue':'Booking'))} · ${i.customer||''} · ${i.route||''} · ${i.type==='inquiry' ? (i.date||'') : (i.etd||i.date||'')}</span>
         </div>
       </div>
       <div style="display:flex; gap:6px; align-items:center;">
@@ -2769,8 +2769,9 @@ function applyListFilters(){
   }
   if(monthFilter!==''){
     filtered = filtered.filter(i=>{
-      if(!i.date) return false;
-      const d = new Date(i.date+'T00:00:00');
+      const dateVal = i.type==='inquiry' ? i.date : (i.etd||i.date);
+      if(!dateVal) return false;
+      const d = new Date(dateVal+'T00:00:00');
       return d.getMonth()===parseInt(monthFilter,10);
     });
   }
@@ -3558,8 +3559,8 @@ function revFilterByCat(records, cat){
 function revMonthlyTotals(records, year, valueField){
   const totals = new Array(12).fill(0);
   records.forEach(i=>{
-    if(!i.date) return;
-    const d = new Date(i.date+'T00:00:00');
+    if(!i.etd) return;
+    const d = new Date(i.etd+'T00:00:00');
     if(d.getFullYear()!==year) return;
     totals[d.getMonth()] += parseFloat(i[valueField])||0;
   });
@@ -3583,11 +3584,11 @@ function buildSimpleModeTables(containerId, records, year, valueField, categorie
 
 function buildByCustomerModeTables(containerId, records, year, valueField, categories){
   const html = categories.map(cat=>{
-    const catRecords = revFilterByCat(records, cat).filter(i=>i.date && new Date(i.date+'T00:00:00').getFullYear()===year);
+    const catRecords = revFilterByCat(records, cat).filter(i=>i.etd && new Date(i.etd+'T00:00:00').getFullYear()===year);
     const map = {};
     let grand = 0;
     catRecords.forEach(i=>{
-      const d = new Date(i.date+'T00:00:00');
+      const d = new Date(i.etd+'T00:00:00');
       const k = i.customer || i.refJobNo || '—';
       if(!map[k]) map[k] = new Array(12).fill(0);
       const v = parseFloat(i[valueField])||0;
@@ -3652,7 +3653,7 @@ function buildMonthlyAllModesTable(containerId, records, year){
 }
 
 function buildDestinationTable(containerId, records, year){
-  const yearRecords = records.filter(i=>i.date && new Date(i.date+'T00:00:00').getFullYear()===year);
+  const yearRecords = records.filter(i=>i.etd && new Date(i.etd+'T00:00:00').getFullYear()===year);
   const map = {};
   yearRecords.forEach(i=>{
     const k = i.crDest || '—';
@@ -3680,10 +3681,10 @@ function buildDestinationTable(containerId, records, year){
 }
 
 function buildCustomerGPPercentTable(containerId, records, year){
-  const yearRecords = records.filter(i=>i.date && new Date(i.date+'T00:00:00').getFullYear()===year);
+  const yearRecords = records.filter(i=>i.etd && new Date(i.etd+'T00:00:00').getFullYear()===year);
   const map = {};
   yearRecords.forEach(i=>{
-    const d = new Date(i.date+'T00:00:00');
+    const d = new Date(i.etd+'T00:00:00');
     const k = i.customer || i.refJobNo || '—';
     if(!map[k]) map[k] = {rev:new Array(12).fill(0), cost:new Array(12).fill(0)};
     map[k].rev[d.getMonth()] += parseFloat(i.revAmount)||0;
@@ -3731,11 +3732,11 @@ function buildCombinedModeTables(containerId, records, year, categories){
 }
 
 function buildCustomerOnlyTable(containerId, records, year, valueField){
-  const yearRecords = records.filter(i=>i.date && new Date(i.date+'T00:00:00').getFullYear()===year);
+  const yearRecords = records.filter(i=>i.etd && new Date(i.etd+'T00:00:00').getFullYear()===year);
   const map = {};
   let grand = 0;
   yearRecords.forEach(i=>{
-    const d = new Date(i.date+'T00:00:00');
+    const d = new Date(i.etd+'T00:00:00');
     const k = i.customer || i.refJobNo || '—';
     if(!map[k]) map[k] = new Array(12).fill(0);
     const v = parseFloat(i[valueField])||0;
@@ -3766,10 +3767,10 @@ async function renderRevDashboard(){
   if(!yearPicker.value || parseInt(yearPicker.value,10)<2020){ yearPicker.value = now.getFullYear(); }
   const year = parseInt(yearPicker.value, 10);
 
-  const financeRecords = idx.filter(i=>(i.type==='finance' || i.revAmount || i.costAmount) && i.date);
+  const financeRecords = idx.filter(i=>(i.type==='finance' || i.revAmount || i.costAmount) && i.etd);
 
   const todayKey = todayStr();
-  const mtdRecords = financeRecords.filter(i=>i.date.slice(0,7)===todayKey.slice(0,7));
+  const mtdRecords = financeRecords.filter(i=>i.etd.slice(0,7)===todayKey.slice(0,7));
   const mtdRev = mtdRecords.reduce((s,i)=>s+(parseFloat(i.revAmount)||0),0);
   const mtdCost = mtdRecords.reduce((s,i)=>s+(parseFloat(i.costAmount)||0),0);
   const mtdGP = mtdRev - mtdCost;
