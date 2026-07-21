@@ -588,11 +588,16 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <div class="metric" style="background:#FBE4E1;"><div class="num" id="arOverdueRev" style="color:#A32D2D;">—</div><div class="lbl">Overdue — Est. Revenue (THB)</div></div>
       </div>
 
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Aging Breakdown — Freight Forwarding</div>
+        <div id="arAgingChartFF"></div>
+      </div>
+
       <div style="margin-bottom:20px;">
-        <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Aging Breakdown</div>
-        <div id="arAgingChart"></div>
+        <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Aging Breakdown — Express</div>
+        <div id="arAgingChartExpress"></div>
         <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; align-items:flex-end;">
-          <label style="font-size:12px; color:var(--steel);">Filter this chart — Customer<br>
+          <label style="font-size:12px; color:var(--steel);">Filter both charts — Customer<br>
             <select id="arChartCustomerFilter" onchange="renderPodCrDashboard()" style="margin-top:2px;">
               <option value="">All Customers</option>
             </select>
@@ -2952,7 +2957,7 @@ function renderARAging(idx, now){
   document.getElementById('arOverdueRev').textContent = fmtMoney(sum(overdue));
 
   // Aging buckets — On track / Due soon (both green), then overdue tiers (unchanged)
-  const chartData = chartCustomerFilter ? notInvoiced.filter(i=>i.customer===chartCustomerFilter) : notInvoiced;
+  const chartDataBase = chartCustomerFilter ? notInvoiced.filter(i=>i.customer===chartCustomerFilter) : notInvoiced;
   const buckets = [
     {key:'dueLater', label:'On track', color:'#2F7A46'},
     {key:'due3', label:'Due in 1–3 days', color:'#2F7A46'},
@@ -2961,20 +2966,24 @@ function renderARAging(idx, now){
     {key:'od30', label:'Overdue 15–30d', color:'#7A1F1F'},
     {key:'od30plus', label:'Overdue 30d+', color:'#4A1010'},
   ];
-  const bucketData = buckets.map(b=>{
-    const matches = chartData.filter(i=>i.bucket===b.key);
-    return {label:b.label, color:b.color, count:matches.length, rev:sum(matches)};
-  });
-  const maxCount = Math.max(1, ...bucketData.map(b=>b.count));
-  document.getElementById('arAgingChart').innerHTML = bucketData.map(b=>`
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-      <div style="width:130px; font-size:11px; color:#555; text-align:right;">${b.label}</div>
-      <div style="flex:1; background:#EDEDED; border-radius:3px; height:20px; position:relative;">
-        <div style="width:${(b.count/maxCount*100)}%; background:${b.color}; height:100%; border-radius:3px; min-width:${b.count>0?'2px':'0'};"></div>
+  function renderAgingChart(elId, chartData){
+    const bucketData = buckets.map(b=>{
+      const matches = chartData.filter(i=>i.bucket===b.key);
+      return {label:b.label, color:b.color, count:matches.length, rev:sum(matches)};
+    });
+    const maxCount = Math.max(1, ...bucketData.map(b=>b.count));
+    document.getElementById(elId).innerHTML = bucketData.map(b=>`
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <div style="width:130px; font-size:11px; color:#555; text-align:right;">${b.label}</div>
+        <div style="flex:1; background:#EDEDED; border-radius:3px; height:20px; position:relative;">
+          <div style="width:${(b.count/maxCount*100)}%; background:${b.color}; height:100%; border-radius:3px; min-width:${b.count>0?'2px':'0'};"></div>
+        </div>
+        <div style="width:150px; font-size:11px; color:#333; white-space:nowrap;">${fmtNum(b.count)} MAWB · ${fmtMoney(b.rev)} THB</div>
       </div>
-      <div style="width:150px; font-size:11px; color:#333; white-space:nowrap;">${fmtNum(b.count)} MAWB · ${fmtMoney(b.rev)} THB</div>
-    </div>
-  `).join('');
+    `).join('');
+  }
+  renderAgingChart('arAgingChartFF', chartDataBase.filter(i=>i.cargoService==='Freight Forwarding'));
+  renderAgingChart('arAgingChartExpress', chartDataBase.filter(i=>i.cargoService==='Express'));
 
   // Populate the chart's own Customer filter (once, preserving current selection)
   if(chartCustomerFilterEl.options.length<=1 || chartCustomerFilterEl.dataset.stale==='1'){
