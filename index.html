@@ -575,17 +575,24 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <span style="font-size:11px; color:#999; max-width:380px;">MAWB ที่ POD แล้วแต่ยังไม่ Invoice Issued — Default: due date = วันสิ้นเดือนของ ETD + 7 วัน ลูกค้าที่ไม่ได้ตั้งค่าเฉพาะจะใช้กฎนี้</span>
       </div>
 
-      <div style="font-size:11px; color:#555; background:#FFF8E1; border-left:3px solid #E2B33C; padding:8px 12px; margin-bottom:16px; border-radius:0 4px 4px 0;">
-        <b>Logic:</b> Overdue = Cost &amp; Rev ยังไม่ถึง <b>Invoice Issued</b> (ไม่สนสถานะ Booking) และวันนี้เลย <b>Due Date</b> ของ MAWB นั้นไปแล้ว — Default Due Date = วันสิ้นเดือนของ ETD + 7 วัน (จับเดือนจาก ETD ของ MAWB) — ดูกฎของแต่ละลูกค้าได้ใน "Customer Logic Reference" ด้านล่างสุด
+      <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Summary — Freight Forwarding</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:14px; margin-bottom:16px;">
+        <div class="metric m-navy"><div class="num" id="arTotalCountFF">—</div><div class="lbl">Not Yet Invoiced — Total MAWB</div></div>
+        <div class="metric m-sky"><div class="num" id="arTotalRevFF">—</div><div class="lbl">Not Yet Invoiced — Est. Revenue (THB)</div></div>
+        <div class="metric" style="background:#E2EFDA;"><div class="num" id="arOnTrackCountFF" style="color:#1E6B3C;">—</div><div class="lbl">On Track — MAWB</div></div>
+        <div class="metric" style="background:#E2EFDA;"><div class="num" id="arOnTrackRevFF" style="color:#1E6B3C;">—</div><div class="lbl">On Track — Est. Revenue (THB)</div></div>
+        <div class="metric" style="background:#FBE4E1;"><div class="num" id="arOverdueCountFF" style="color:#A32D2D;">—</div><div class="lbl">Overdue — MAWB</div></div>
+        <div class="metric" style="background:#FBE4E1;"><div class="num" id="arOverdueRevFF" style="color:#A32D2D;">—</div><div class="lbl">Overdue — Est. Revenue (THB)</div></div>
       </div>
 
+      <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Summary — Express</div>
       <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:14px; margin-bottom:20px;">
-        <div class="metric m-navy"><div class="num" id="arTotalCount">—</div><div class="lbl">Not Yet Invoiced — Total MAWB</div></div>
-        <div class="metric m-sky"><div class="num" id="arTotalRev">—</div><div class="lbl">Not Yet Invoiced — Est. Revenue (THB)</div></div>
-        <div class="metric" style="background:#E2EFDA;"><div class="num" id="arOnTrackCount" style="color:#1E6B3C;">—</div><div class="lbl">On Track — MAWB</div></div>
-        <div class="metric" style="background:#E2EFDA;"><div class="num" id="arOnTrackRev" style="color:#1E6B3C;">—</div><div class="lbl">On Track — Est. Revenue (THB)</div></div>
-        <div class="metric" style="background:#FBE4E1;"><div class="num" id="arOverdueCount" style="color:#A32D2D;">—</div><div class="lbl">Overdue — MAWB</div></div>
-        <div class="metric" style="background:#FBE4E1;"><div class="num" id="arOverdueRev" style="color:#A32D2D;">—</div><div class="lbl">Overdue — Est. Revenue (THB)</div></div>
+        <div class="metric m-navy"><div class="num" id="arTotalCountExpress">—</div><div class="lbl">Not Yet Invoiced — Total MAWB</div></div>
+        <div class="metric m-sky"><div class="num" id="arTotalRevExpress">—</div><div class="lbl">Not Yet Invoiced — Est. Revenue (THB)</div></div>
+        <div class="metric" style="background:#E2EFDA;"><div class="num" id="arOnTrackCountExpress" style="color:#1E6B3C;">—</div><div class="lbl">On Track — MAWB</div></div>
+        <div class="metric" style="background:#E2EFDA;"><div class="num" id="arOnTrackRevExpress" style="color:#1E6B3C;">—</div><div class="lbl">On Track — Est. Revenue (THB)</div></div>
+        <div class="metric" style="background:#FBE4E1;"><div class="num" id="arOverdueCountExpress" style="color:#A32D2D;">—</div><div class="lbl">Overdue — MAWB</div></div>
+        <div class="metric" style="background:#FBE4E1;"><div class="num" id="arOverdueRevExpress" style="color:#A32D2D;">—</div><div class="lbl">Overdue — Est. Revenue (THB)</div></div>
       </div>
 
       <div style="margin-bottom:12px;">
@@ -608,15 +615,15 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">AR Detail — All Outstanding Shipments (sorted by most urgent first)</div>
       <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; align-items:flex-end;">
         <label style="font-size:12px; color:var(--steel);">Search MAWB<br>
-          <input type="text" id="arSearchMawb" placeholder="MAWB..." oninput="renderARAging(window.billingIdx, new Date())" style="margin-top:2px;">
+          <input type="text" id="arSearchMawb" placeholder="MAWB..." oninput="arDetailPage=1; renderARAging(window.billingIdx, new Date())" style="margin-top:2px;">
         </label>
         <label style="font-size:12px; color:var(--steel);">Customer<br>
-          <select id="arCustomerFilter" onchange="renderARAging(window.billingIdx, new Date())" style="margin-top:2px;">
+          <select id="arCustomerFilter" onchange="arDetailPage=1; renderARAging(window.billingIdx, new Date())" style="margin-top:2px;">
             <option value="">All Customers</option>
           </select>
         </label>
         <label style="font-size:12px; color:var(--steel);">Aging Bucket<br>
-          <select id="arBucketFilter" onchange="renderARAging(window.billingIdx, new Date())" style="margin-top:2px;">
+          <select id="arBucketFilter" onchange="arDetailPage=1; renderARAging(window.billingIdx, new Date())" style="margin-top:2px;">
             <option value="">All</option>
             <option value="dueLater">On track (4+ days left)</option>
             <option value="due3">Due in 1–3 days</option>
@@ -627,7 +634,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
           </select>
         </label>
         <label style="font-size:12px; color:var(--steel);">Min days overdue<br>
-          <input type="number" id="arMinDaysOverdue" value="0" min="0" style="width:70px; margin-top:2px;" onchange="renderARAging(window.billingIdx, new Date())">
+          <input type="number" id="arMinDaysOverdue" value="0" min="0" style="width:70px; margin-top:2px;" onchange="arDetailPage=1; renderARAging(window.billingIdx, new Date())">
         </label>
       </div>
       <div style="overflow-x:auto;">
@@ -636,6 +643,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
           <tbody id="arOverdueBody"></tbody>
         </table>
       </div>
+      <div id="arOverduePager" style="margin-top:10px; text-align:center;"></div>
 
       <div style="margin-top:24px;">
         <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Customer Logic Reference — Due Date Rule per Customer</div>
@@ -2899,6 +2907,12 @@ function computeDueDate(etdStr, ruleType, cutoffDays){
   return new Date(etd.getTime() + days*86400000);
 }
 
+let arDetailPage = 1;
+function arDetailGoToPage(p){
+  arDetailPage = p;
+  renderARAging(window.billingIdx, new Date());
+}
+
 function renderARAging(idx, now){
   const monthFilter = document.getElementById('arMonthFilter').value;
   const searchMawb = (document.getElementById('arSearchMawb').value || '').trim().toLowerCase();
@@ -2921,7 +2935,7 @@ function renderARAging(idx, now){
     const st = (i.status||'').toLowerCase();
     if(st==='cancelled') return false;
     const cr = (i.crStatus||'').toLowerCase();
-    return cr!=='invoice-issued';
+    return cr!=='invoice-issued' && cr!=='reconcile';
   });
 
   const notInvoiced = bookings.map(i=>{
@@ -2949,12 +2963,19 @@ function renderARAging(idx, now){
 
   const sum = arr => arr.reduce((s,i)=>s+(parseFloat(i.revAmount)||0),0);
 
-  document.getElementById('arTotalCount').textContent = fmtNum(notInvoiced.length);
-  document.getElementById('arTotalRev').textContent = fmtMoney(sum(notInvoiced));
-  document.getElementById('arOnTrackCount').textContent = fmtNum(onTrack.length);
-  document.getElementById('arOnTrackRev').textContent = fmtMoney(sum(onTrack));
-  document.getElementById('arOverdueCount').textContent = fmtNum(overdue.length);
-  document.getElementById('arOverdueRev').textContent = fmtMoney(sum(overdue));
+  function renderSummaryCards(suffix, records){
+    const nInv = records;
+    const oTrack = nInv.filter(i=>!i.isOverdue);
+    const oDue = nInv.filter(i=>i.isOverdue);
+    document.getElementById('arTotalCount'+suffix).textContent = fmtNum(nInv.length);
+    document.getElementById('arTotalRev'+suffix).textContent = fmtMoney(sum(nInv));
+    document.getElementById('arOnTrackCount'+suffix).textContent = fmtNum(oTrack.length);
+    document.getElementById('arOnTrackRev'+suffix).textContent = fmtMoney(sum(oTrack));
+    document.getElementById('arOverdueCount'+suffix).textContent = fmtNum(oDue.length);
+    document.getElementById('arOverdueRev'+suffix).textContent = fmtMoney(sum(oDue));
+  }
+  renderSummaryCards('FF', notInvoiced.filter(i=>i.cargoService==='Freight Forwarding'));
+  renderSummaryCards('Express', notInvoiced.filter(i=>i.cargoService==='Express'));
 
   // Aging buckets — On track / Due soon (both green), then overdue tiers (unchanged)
   const chartDataBase = chartCustomerFilter ? notInvoiced.filter(i=>i.customer===chartCustomerFilter) : notInvoiced;
@@ -3022,7 +3043,13 @@ function renderARAging(idx, now){
     od30plus:{bg:'#F5D0D0', txt:'#7A1F1F', label:'Overdue (30d+)'},
   };
 
-  document.getElementById('arOverdueBody').innerHTML = filteredRows.length ? filteredRows.map(i=>{
+  const AR_DETAIL_PAGE_SIZE = 10;
+  const arDetailTotalPages = Math.max(1, Math.ceil(filteredRows.length / AR_DETAIL_PAGE_SIZE));
+  arDetailPage = Math.min(Math.max(1, arDetailPage), arDetailTotalPages);
+  const arDetailStart = (arDetailPage-1) * AR_DETAIL_PAGE_SIZE;
+  const pageRows = filteredRows.slice(arDetailStart, arDetailStart+AR_DETAIL_PAGE_SIZE);
+
+  document.getElementById('arOverdueBody').innerHTML = pageRows.length ? pageRows.map(i=>{
     const bs = bucketStyle[i.bucket];
     const statusText = i.isOverdue ? `${bs.label} ${i.daysOverdue}d` : (i.daysUntilDue===0 ? 'Due today' : `${bs.label} (${i.daysUntilDue}d left)`);
     return `<tr style="cursor:pointer; background:${bs.bg};" onclick="loadFromDash('${i.jobNo}')">
@@ -3036,6 +3063,12 @@ function renderARAging(idx, now){
       <td>${i.revAmount ? fmtMoney(parseFloat(i.revAmount)) : '—'}</td>
     </tr>`;
   }).join('') : '<tr><td colspan="8" style="text-align:center; color:#999;">No shipments matching this filter 🎉</td></tr>';
+
+  document.getElementById('arOverduePager').innerHTML = `
+    <button onclick="arDetailGoToPage(${arDetailPage-1})" ${arDetailPage<=1?'disabled':''}>‹ Prev</button>
+    <span style="margin:0 10px; font-size:12px;">Page ${arDetailPage} of ${arDetailTotalPages} (${filteredRows.length} total)</span>
+    <button onclick="arDetailGoToPage(${arDetailPage+1})" ${arDetailPage>=arDetailTotalPages?'disabled':''}>Next ›</button>
+  `;
 
   const allCustomers = Array.from(new Set(idx.filter(i=>i.type==='booking' && i.customer).map(i=>i.customer))).sort();
   renderArLogicRef(allCustomers, CUSTOMER_AR_RULES, DEFAULT_AR_RULE);
