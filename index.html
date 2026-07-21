@@ -561,19 +561,34 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>D.1 MONTHLY SUMMARY</h3>
+      <h3>D.1 MONTHLY SUMMARY — FREIGHT FORWARDING</h3>
       <table class="dash-table">
         <thead><tr><th>Month</th><th>Total MAWB</th><th>Total POD</th><th>Total Cancelled</th><th>Cost &amp; Rev Input Completed</th><th>Send Billing to customer (Reconcile)</th><th>INV Issued</th></tr></thead>
-        <tbody id="billingMonthlyBody"></tbody>
+        <tbody id="billingMonthlyBodyFF"></tbody>
       </table>
     </div>
 
     <div class="bar-section">
-      <h3>D.2 Breakdown by Status</h3>
+      <h3>D.2 MONTHLY SUMMARY — EXPRESS</h3>
+      <table class="dash-table">
+        <thead><tr><th>Month</th><th>Total MAWB</th><th>Total POD</th><th>Total Cancelled</th><th>Cost &amp; Rev Input Completed</th><th>Send Billing to customer (Reconcile)</th><th>INV Issued</th></tr></thead>
+        <tbody id="billingMonthlyBodyExpress"></tbody>
+      </table>
+    </div>
+
+    <div class="bar-section">
+      <h3>D.3 Breakdown by Status</h3>
       <div style="display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
         <label style="font-size:12px; color:var(--steel);">Month<br>
           <select id="billingFilterMonth" onchange="renderBillingDetail()" style="margin-top:2px;">
             <option value="">All months</option>
+          </select>
+        </label>
+        <label style="font-size:12px; color:var(--steel);">Cargo Service<br>
+          <select id="billingFilterCargoService" onchange="renderBillingDetail()" style="margin-top:2px;">
+            <option value="">All Cargo Service</option>
+            <option value="Freight Forwarding">Freight Forwarding</option>
+            <option value="Express">Express</option>
           </select>
         </label>
         <label style="font-size:12px; color:var(--steel);">Customer<br>
@@ -2769,25 +2784,31 @@ async function renderPodCrDashboard(){
   if(!yearPicker.value || parseInt(yearPicker.value,10)<2020){ yearPicker.value = now.getFullYear(); }
   const year = parseInt(yearPicker.value, 10);
 
-  const monthly = Array.from({length:12}, ()=>({total:0, pod:0, cancelled:0, completed:0, reconcile:0, invoiced:0}));
-  idx.forEach(i=>{
-    if(i.type!=='booking' || !i.etd) return;
-    const d = new Date(i.etd+'T00:00:00');
-    if(d.getFullYear()!==year) return;
-    const m = d.getMonth();
-    monthly[m].total++;
-    const st = (i.status||'').toLowerCase();
-    if(st==='pod') monthly[m].pod++;
-    if(st==='cancelled') monthly[m].cancelled++;
-    const cr = (i.crStatus||'').toLowerCase();
-    if(cr==='cost-rev-input-completed') monthly[m].completed++;
-    if(cr==='reconcile') monthly[m].reconcile++;
-    if(cr==='invoice-issued') monthly[m].invoiced++;
-  });
-
-  document.getElementById('billingMonthlyBody').innerHTML = monthShortNames.map((m,i)=>
-    `<tr><td>${m}</td><td>${fmtNum(monthly[i].total)}</td><td>${fmtNum(monthly[i].pod)}</td><td>${fmtNum(monthly[i].cancelled)}</td><td>${fmtNum(monthly[i].completed)}</td><td>${fmtNum(monthly[i].reconcile)}</td><td>${fmtNum(monthly[i].invoiced)}</td></tr>`
-  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.total,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.pod,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.cancelled,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.completed,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.reconcile,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.invoiced,0))}</td></tr>`;
+  function buildMonthly(records){
+    const monthly = Array.from({length:12}, ()=>({total:0, pod:0, cancelled:0, completed:0, reconcile:0, invoiced:0}));
+    records.forEach(i=>{
+      if(i.type!=='booking' || !i.etd) return;
+      const d = new Date(i.etd+'T00:00:00');
+      if(d.getFullYear()!==year) return;
+      const m = d.getMonth();
+      monthly[m].total++;
+      const st = (i.status||'').toLowerCase();
+      if(st==='pod') monthly[m].pod++;
+      if(st==='cancelled') monthly[m].cancelled++;
+      const cr = (i.crStatus||'').toLowerCase();
+      if(cr==='cost-rev-input-completed') monthly[m].completed++;
+      if(cr==='reconcile') monthly[m].reconcile++;
+      if(cr==='invoice-issued') monthly[m].invoiced++;
+    });
+    return monthly;
+  }
+  function renderMonthlyTable(elId, monthly){
+    document.getElementById(elId).innerHTML = monthShortNames.map((m,i)=>
+      `<tr><td>${m}</td><td>${fmtNum(monthly[i].total)}</td><td>${fmtNum(monthly[i].pod)}</td><td>${fmtNum(monthly[i].cancelled)}</td><td>${fmtNum(monthly[i].completed)}</td><td>${fmtNum(monthly[i].reconcile)}</td><td>${fmtNum(monthly[i].invoiced)}</td></tr>`
+    ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.total,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.pod,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.cancelled,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.completed,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.reconcile,0))}</td><td>${fmtNum(monthly.reduce((s,mm)=>s+mm.invoiced,0))}</td></tr>`;
+  }
+  renderMonthlyTable('billingMonthlyBodyFF', buildMonthly(idx.filter(i=>i.cargoService==='Freight Forwarding')));
+  renderMonthlyTable('billingMonthlyBodyExpress', buildMonthly(idx.filter(i=>i.cargoService==='Express')));
 
   const monthSelect = document.getElementById('billingFilterMonth');
   if(monthSelect.options.length<=1){
@@ -2819,6 +2840,7 @@ function renderBillingDetail(){
   const yearPicker = document.getElementById('billingYearPicker');
   const year = parseInt(yearPicker.value, 10);
   const monthFilter = document.getElementById('billingFilterMonth').value;
+  const cargoServiceFilter = document.getElementById('billingFilterCargoService').value;
   const customerFilter = document.getElementById('billingFilterCustomer').value;
   const statusFilter = document.getElementById('billingFilterStatus').value;
 
@@ -2827,6 +2849,7 @@ function renderBillingDetail(){
     const d = new Date(i.etd+'T00:00:00');
     if(d.getFullYear()!==year) return false;
     if(monthFilter!=='' && d.getMonth()!==parseInt(monthFilter,10)) return false;
+    if(cargoServiceFilter && i.cargoService!==cargoServiceFilter) return false;
     if(customerFilter && i.customer!==customerFilter) return false;
     const cr = (i.crStatus||'').toLowerCase();
     if(statusFilter==='invoice-issued'){
