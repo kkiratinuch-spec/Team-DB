@@ -302,6 +302,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <button onclick="downloadCSVTemplate()">Download CSV template</button>
       <button class="accent" onclick="document.getElementById('importCsvFile').click()">Batch upload (CSV)</button>
       <input type="file" id="importCsvFile" accept=".csv" style="display:none" onchange="importCSV(this.files[0])">
+      <button onclick="syncRecalculateAll()" title="คำนวณ Freight Cost/Revenue ใหม่จากน้ำหนักล่าสุด แล้วเขียนกลับเข้า Google Sheet">🔄 Sync/Recalculate All</button>
     </div>
   </div>
 
@@ -4008,6 +4009,34 @@ function parseCSV(text){
   // drop fully-empty trailing rows
   while(rows.length && rows[rows.length-1].every(v=>v==='')) rows.pop();
   return rows;
+}
+
+async function syncRecalculateAll(){
+  const idx = await dataGetAll();
+  const targets = idx.filter(r=>r.type==='booking' && r.crStatus);
+  if(targets.length===0){
+    alert('ไม่พบ MAWB ที่มี Cost & Revenue ให้ Sync');
+    return;
+  }
+  if(!confirm(`จะคำนวณ Freight Cost/Revenue ใหม่จากน้ำหนักล่าสุด แล้วเขียนกลับเข้า Google Sheet ให้ ${targets.length} MAWB\n\nขั้นตอนนี้อาจใช้เวลาสักครู่ (ยิ่งเยอะยิ่งนาน) ห้ามปิดหน้านี้ระหว่างทำ\n\nดำเนินการต่อ?`)) return;
+
+  let updated = 0, unchanged = 0, failed = 0;
+  for(let i=0; i<targets.length; i++){
+    const rec = targets[i];
+    try{
+      const before = JSON.stringify({rev:rec.revAmount, cost:rec.costAmount});
+      await dataSave(rec);
+      updated++;
+    }catch(e){
+      console.error('Sync failed for', rec.mawb, e);
+      failed++;
+    }
+    if((i+1) % 10 === 0 || i===targets.length-1){
+      console.log(`Sync progress: ${i+1}/${targets.length}`);
+    }
+  }
+  alert(`Sync เสร็จแล้ว!\n\nอัปเดตสำเร็จ: ${updated} MAWB\nล้มเหลว: ${failed} MAWB`);
+  refreshList();
 }
 
 function importCSV(file){
