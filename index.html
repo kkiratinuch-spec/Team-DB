@@ -218,6 +218,9 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
 .dash{background:var(--white); border:1px solid var(--line); border-radius:6px; padding:0 24px 22px; overflow:hidden;}
 .metric-cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:24px;}
 .metric{border-radius:6px; padding:14px 16px;}
+.metric-sm{border-radius:5px; padding:9px 12px;}
+.metric-sm .num{font-family:'Oswald',sans-serif; font-size:18px;}
+.metric-sm .lbl{font-size:9.5px; text-transform:uppercase; letter-spacing:0.03em; color:var(--steel); margin-top:1px; line-height:1.25;}
 .metric.m-navy{background:var(--navy-tint);}
 .metric.m-sky{background:#D6EBF7;}
 .metric.m-orange{background:var(--orange-tint);}
@@ -561,7 +564,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>D.0 — AR AGING OVERVIEW (BILLING NOT YET ISSUED)</h3>
+      <h3>D.1 AR AGING OVERVIEW</h3>
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
         <label style="font-size:12px; color:var(--steel);">Month (by ETD)<br>
           <select id="arMonthFilter" onchange="renderPodCrDashboard()" style="margin-top:2px;">
@@ -572,27 +575,34 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
             <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
           </select>
         </label>
-        <span style="font-size:11px; color:#999; max-width:380px;">MAWB ที่ POD แล้วแต่ยังไม่ Invoice Issued — Default: due date = วันสิ้นเดือนของ ETD + 7 วัน ลูกค้าที่ไม่ได้ตั้งค่าเฉพาะจะใช้กฎนี้</span>
       </div>
 
-      <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Summary — Freight Forwarding</div>
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:14px; margin-bottom:16px;">
-        <div class="metric m-navy"><div class="num" id="arTotalCountFF">—</div><div class="lbl">Not Yet Invoiced — Total MAWB</div></div>
-        <div class="metric m-sky"><div class="num" id="arTotalRevFF">—</div><div class="lbl">Not Yet Invoiced — Est. Revenue (THB)</div></div>
-        <div class="metric" style="background:#E2EFDA;"><div class="num" id="arOnTrackCountFF" style="color:#1E6B3C;">—</div><div class="lbl">On Track — MAWB</div></div>
-        <div class="metric" style="background:#E2EFDA;"><div class="num" id="arOnTrackRevFF" style="color:#1E6B3C;">—</div><div class="lbl">On Track — Est. Revenue (THB)</div></div>
-        <div class="metric" style="background:#FBE4E1;"><div class="num" id="arOverdueCountFF" style="color:#A32D2D;">—</div><div class="lbl">Overdue — MAWB</div></div>
-        <div class="metric" style="background:#FBE4E1;"><div class="num" id="arOverdueRevFF" style="color:#A32D2D;">—</div><div class="lbl">Overdue — Est. Revenue (THB)</div></div>
+      <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:6px;">Summary — Freight Forwarding</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:8px; margin-bottom:14px;">
+        <div class="metric-sm" style="background:#EAEAEA;"><div class="num" id="arTotalCountFF" style="color:#555;">—</div><div class="lbl">Total MAWB</div></div>
+        <div class="metric-sm" style="background:#EAEAEA;"><div class="num" id="arTotalRevFF" style="color:#555;">—</div><div class="lbl">Estimate Revenue</div></div>
+        <div class="metric-sm" style="background:#E2EFDA;"><div class="num" id="arOnTrackCountFF" style="color:#1E6B3C;">—</div><div class="lbl">On Track — MAWB</div></div>
+        <div class="metric-sm" style="background:#E2EFDA;"><div class="num" id="arOnTrackRevFF" style="color:#1E6B3C;">—</div><div class="lbl">On Track — Revenue</div></div>
+        <div class="metric-sm" style="background:#FBE4E1;"><div class="num" id="arOverdueCountFF" style="color:#A32D2D;">—</div><div class="lbl">Overdue — MAWB</div></div>
+        <div class="metric-sm" style="background:#FBE4E1;"><div class="num" id="arOverdueRevFF" style="color:#A32D2D;">—</div><div class="lbl">Overdue — Revenue</div></div>
+        <div class="metric-sm" style="background:#D6EBF7;"><div class="num" id="arReconcileCountFF" style="color:#1B5A82;">—</div><div class="lbl">Reconcile — MAWB</div></div>
+        <div class="metric-sm" style="background:#D6EBF7;"><div class="num" id="arReconcileRevFF" style="color:#1B5A82;">—</div><div class="lbl">Reconcile — Revenue</div></div>
+        <div class="metric-sm" style="background:#FBD9EA;"><div class="num" id="arInvoicedCountFF" style="color:#A3266B;">—</div><div class="lbl">INV Issued — MAWB</div></div>
+        <div class="metric-sm" style="background:#FBD9EA;"><div class="num" id="arInvoicedRevFF" style="color:#A3266B;">—</div><div class="lbl">INV Issued — Revenue</div></div>
       </div>
 
-      <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Summary — Express</div>
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:14px; margin-bottom:20px;">
-        <div class="metric m-navy"><div class="num" id="arTotalCountExpress">—</div><div class="lbl">Not Yet Invoiced — Total MAWB</div></div>
-        <div class="metric m-sky"><div class="num" id="arTotalRevExpress">—</div><div class="lbl">Not Yet Invoiced — Est. Revenue (THB)</div></div>
-        <div class="metric" style="background:#E2EFDA;"><div class="num" id="arOnTrackCountExpress" style="color:#1E6B3C;">—</div><div class="lbl">On Track — MAWB</div></div>
-        <div class="metric" style="background:#E2EFDA;"><div class="num" id="arOnTrackRevExpress" style="color:#1E6B3C;">—</div><div class="lbl">On Track — Est. Revenue (THB)</div></div>
-        <div class="metric" style="background:#FBE4E1;"><div class="num" id="arOverdueCountExpress" style="color:#A32D2D;">—</div><div class="lbl">Overdue — MAWB</div></div>
-        <div class="metric" style="background:#FBE4E1;"><div class="num" id="arOverdueRevExpress" style="color:#A32D2D;">—</div><div class="lbl">Overdue — Est. Revenue (THB)</div></div>
+      <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:6px;">Summary — Express</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:8px; margin-bottom:18px;">
+        <div class="metric-sm" style="background:#EAEAEA;"><div class="num" id="arTotalCountExpress" style="color:#555;">—</div><div class="lbl">Total MAWB</div></div>
+        <div class="metric-sm" style="background:#EAEAEA;"><div class="num" id="arTotalRevExpress" style="color:#555;">—</div><div class="lbl">Estimate Revenue</div></div>
+        <div class="metric-sm" style="background:#E2EFDA;"><div class="num" id="arOnTrackCountExpress" style="color:#1E6B3C;">—</div><div class="lbl">On Track — MAWB</div></div>
+        <div class="metric-sm" style="background:#E2EFDA;"><div class="num" id="arOnTrackRevExpress" style="color:#1E6B3C;">—</div><div class="lbl">On Track — Revenue</div></div>
+        <div class="metric-sm" style="background:#FBE4E1;"><div class="num" id="arOverdueCountExpress" style="color:#A32D2D;">—</div><div class="lbl">Overdue — MAWB</div></div>
+        <div class="metric-sm" style="background:#FBE4E1;"><div class="num" id="arOverdueRevExpress" style="color:#A32D2D;">—</div><div class="lbl">Overdue — Revenue</div></div>
+        <div class="metric-sm" style="background:#D6EBF7;"><div class="num" id="arReconcileCountExpress" style="color:#1B5A82;">—</div><div class="lbl">Reconcile — MAWB</div></div>
+        <div class="metric-sm" style="background:#D6EBF7;"><div class="num" id="arReconcileRevExpress" style="color:#1B5A82;">—</div><div class="lbl">Reconcile — Revenue</div></div>
+        <div class="metric-sm" style="background:#FBD9EA;"><div class="num" id="arInvoicedCountExpress" style="color:#A3266B;">—</div><div class="lbl">INV Issued — MAWB</div></div>
+        <div class="metric-sm" style="background:#FBD9EA;"><div class="num" id="arInvoicedRevExpress" style="color:#A3266B;">—</div><div class="lbl">INV Issued — Revenue</div></div>
       </div>
 
       <div style="margin-bottom:12px;">
@@ -616,6 +626,13 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; align-items:flex-end;">
         <label style="font-size:12px; color:var(--steel);">Search MAWB<br>
           <input type="text" id="arSearchMawb" placeholder="MAWB..." oninput="arDetailPage=1; renderARAging(window.billingIdx, new Date())" style="margin-top:2px;">
+        </label>
+        <label style="font-size:12px; color:var(--steel);">Cargo Service<br>
+          <select id="arCargoServiceFilter" onchange="arDetailPage=1; renderARAging(window.billingIdx, new Date())" style="margin-top:2px;">
+            <option value="">All</option>
+            <option value="Freight Forwarding">Freight Forwarding</option>
+            <option value="Express">Express</option>
+          </select>
         </label>
         <label style="font-size:12px; color:var(--steel);">Customer<br>
           <select id="arCustomerFilter" onchange="arDetailPage=1; renderARAging(window.billingIdx, new Date())" style="margin-top:2px;">
@@ -656,7 +673,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>D.1 MONTHLY SUMMARY — FREIGHT FORWARDING</h3>
+      <h3>D.2 MONTHLY SUMMARY — FREIGHT FORWARDING</h3>
       <table class="dash-table">
         <thead><tr><th>Month</th><th>Total MAWB</th><th>Total POD</th><th>Total Cancelled</th><th>Cost &amp; Rev Input Completed</th><th>Send Billing to customer (Reconcile)</th><th>INV Issued</th></tr></thead>
         <tbody id="billingMonthlyBodyFF"></tbody>
@@ -664,7 +681,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>D.2 MONTHLY SUMMARY — EXPRESS</h3>
+      <h3>D.3 MONTHLY SUMMARY — EXPRESS</h3>
       <table class="dash-table">
         <thead><tr><th>Month</th><th>Total MAWB</th><th>Total POD</th><th>Total Cancelled</th><th>Cost &amp; Rev Input Completed</th><th>Send Billing to customer (Reconcile)</th><th>INV Issued</th></tr></thead>
         <tbody id="billingMonthlyBodyExpress"></tbody>
@@ -672,7 +689,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>D.3 Breakdown by Status</h3>
+      <h3>D.4 Breakdown by Status</h3>
       <div style="display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
         <label style="font-size:12px; color:var(--steel);">Month<br>
           <select id="billingFilterMonth" onchange="renderBillingDetail()" style="margin-top:2px;">
@@ -2885,8 +2902,8 @@ const CUSTOMER_AR_RULES = {
   'EOPTOLINK': {ruleType:'bimonthly-split', cutoffDays:''},
   'MULTI-FINELINE ELECTRONICS': {ruleType:'days-after-month-end', cutoffDays:'7'},
   'MIKASA': {ruleType:'days-after-month-end', cutoffDays:'0'},
-  'NANYANG': {ruleType:'due-on-etd', cutoffDays:''},
-  'MASS TRANSPORT': {ruleType:'due-on-etd', cutoffDays:''},
+  'NANYANG': {ruleType:'days-after-etd', cutoffDays:'1'},
+  'MASS TRANSPORT': {ruleType:'days-after-etd', cutoffDays:'1'},
 };
 const DEFAULT_AR_RULE = {ruleType:'days-after-month-end', cutoffDays:'7'};
 
@@ -2917,6 +2934,7 @@ function arDetailGoToPage(p){
 function renderARAging(idx, now){
   const monthFilter = document.getElementById('arMonthFilter').value;
   const searchMawb = (document.getElementById('arSearchMawb').value || '').trim().toLowerCase();
+  const cargoServiceFilterEl = document.getElementById('arCargoServiceFilter');
   const customerFilterEl = document.getElementById('arCustomerFilter');
   const customerFilter = customerFilterEl.value;
   const chartCustomerFilterEl = document.getElementById('arChartCustomerFilter');
@@ -2937,6 +2955,25 @@ function renderARAging(idx, now){
     if(st==='cancelled') return false;
     const cr = (i.crStatus||'').toLowerCase();
     return cr!=='invoice-issued' && cr!=='reconcile';
+  });
+
+  const reconcileRecords = idx.filter(i=>{
+    if(i.type!=='booking' || !i.etd) return false;
+    if(monthFilter!==''){
+      const d = new Date(i.etd+'T00:00:00');
+      if(d.getMonth()!==parseInt(monthFilter,10)) return false;
+    }
+    if((i.status||'').toLowerCase()==='cancelled') return false;
+    return (i.crStatus||'').toLowerCase()==='reconcile';
+  });
+  const invoicedRecords = idx.filter(i=>{
+    if(i.type!=='booking' || !i.etd) return false;
+    if(monthFilter!==''){
+      const d = new Date(i.etd+'T00:00:00');
+      if(d.getMonth()!==parseInt(monthFilter,10)) return false;
+    }
+    if((i.status||'').toLowerCase()==='cancelled') return false;
+    return (i.crStatus||'').toLowerCase()==='invoice-issued';
   });
 
   const notInvoiced = bookings.map(i=>{
@@ -2964,7 +3001,7 @@ function renderARAging(idx, now){
 
   const sum = arr => arr.reduce((s,i)=>s+(parseFloat(i.revAmount)||0),0);
 
-  function renderSummaryCards(suffix, records){
+  function renderSummaryCards(suffix, records, reconcileRecs, invoicedRecs){
     const nInv = records;
     const oTrack = nInv.filter(i=>!i.isOverdue);
     const oDue = nInv.filter(i=>i.isOverdue);
@@ -2974,25 +3011,33 @@ function renderARAging(idx, now){
     document.getElementById('arOnTrackRev'+suffix).textContent = fmtMoney(sum(oTrack));
     document.getElementById('arOverdueCount'+suffix).textContent = fmtNum(oDue.length);
     document.getElementById('arOverdueRev'+suffix).textContent = fmtMoney(sum(oDue));
+    document.getElementById('arReconcileCount'+suffix).textContent = fmtNum(reconcileRecs.length);
+    document.getElementById('arReconcileRev'+suffix).textContent = fmtMoney(sum(reconcileRecs));
+    document.getElementById('arInvoicedCount'+suffix).textContent = fmtNum(invoicedRecs.length);
+    document.getElementById('arInvoicedRev'+suffix).textContent = fmtMoney(sum(invoicedRecs));
   }
-  renderSummaryCards('FF', notInvoiced.filter(i=>i.cargoService==='Freight Forwarding'));
-  renderSummaryCards('Express', notInvoiced.filter(i=>i.cargoService==='Express'));
+  renderSummaryCards('FF', notInvoiced.filter(i=>i.cargoService==='Freight Forwarding'), reconcileRecords.filter(i=>i.cargoService==='Freight Forwarding'), invoicedRecords.filter(i=>i.cargoService==='Freight Forwarding'));
+  renderSummaryCards('Express', notInvoiced.filter(i=>i.cargoService==='Express'), reconcileRecords.filter(i=>i.cargoService==='Express'), invoicedRecords.filter(i=>i.cargoService==='Express'));
 
-  // Aging buckets — On track / Due soon (both green), then overdue tiers (unchanged)
+  // Aging buckets — On track (light green) / Due soon (orange) / Overdue tiers (red shades) / Reconcile (blue) / INV Issued (bright green)
   const chartDataBase = chartCustomerFilter ? notInvoiced.filter(i=>i.customer===chartCustomerFilter) : notInvoiced;
+  const reconcileChartBase = chartCustomerFilter ? reconcileRecords.filter(i=>i.customer===chartCustomerFilter) : reconcileRecords;
+  const invoicedChartBase = chartCustomerFilter ? invoicedRecords.filter(i=>i.customer===chartCustomerFilter) : invoicedRecords;
   const buckets = [
-    {key:'dueLater', label:'On track', color:'#2F7A46'},
-    {key:'due3', label:'Due in 1–3 days', color:'#2F7A46'},
+    {key:'dueLater', label:'On track', color:'#8FD9A0'},
+    {key:'due3', label:'Due in 1–3 days', color:'#F0A050'},
     {key:'od7', label:'Overdue 1–7d', color:'#C0392B'},
     {key:'od14', label:'Overdue 8–14d', color:'#A32D2D'},
     {key:'od30', label:'Overdue 15–30d', color:'#7A1F1F'},
     {key:'od30plus', label:'Overdue 30d+', color:'#4A1010'},
   ];
-  function renderAgingChart(elId, chartData){
+  function renderAgingChart(elId, chartData, reconcileData, invoicedData){
     const bucketData = buckets.map(b=>{
       const matches = chartData.filter(i=>i.bucket===b.key);
       return {label:b.label, color:b.color, count:matches.length, rev:sum(matches)};
     });
+    bucketData.push({label:'Total Reconcile', color:'#4FA6D6', count:reconcileData.length, rev:sum(reconcileData)});
+    bucketData.push({label:'Total INV Issued', color:'#27AE60', count:invoicedData.length, rev:sum(invoicedData)});
     const maxCount = Math.max(1, ...bucketData.map(b=>b.count));
     document.getElementById(elId).innerHTML = bucketData.map(b=>`
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
@@ -3004,8 +3049,8 @@ function renderARAging(idx, now){
       </div>
     `).join('');
   }
-  renderAgingChart('arAgingChartFF', chartDataBase.filter(i=>i.cargoService==='Freight Forwarding'));
-  renderAgingChart('arAgingChartExpress', chartDataBase.filter(i=>i.cargoService==='Express'));
+  renderAgingChart('arAgingChartFF', chartDataBase.filter(i=>i.cargoService==='Freight Forwarding'), reconcileChartBase.filter(i=>i.cargoService==='Freight Forwarding'), invoicedChartBase.filter(i=>i.cargoService==='Freight Forwarding'));
+  renderAgingChart('arAgingChartExpress', chartDataBase.filter(i=>i.cargoService==='Express'), reconcileChartBase.filter(i=>i.cargoService==='Express'), invoicedChartBase.filter(i=>i.cargoService==='Express'));
 
   // Populate the chart's own Customer filter (once, preserving current selection)
   if(chartCustomerFilterEl.options.length<=1 || chartCustomerFilterEl.dataset.stale==='1'){
@@ -3028,6 +3073,7 @@ function renderARAging(idx, now){
   // AR detail table — apply filters, sorted by most urgent first (most overdue, then soonest due)
   let filteredRows = notInvoiced.filter(i=>{
     if(searchMawb && !(i.mawb||'').toLowerCase().includes(searchMawb)) return false;
+    if(cargoServiceFilterEl.value && i.cargoService!==cargoServiceFilterEl.value) return false;
     if(customerFilter && i.customer!==customerFilter) return false;
     if(bucketFilter && i.bucket!==bucketFilter) return false;
     if(minDaysOverdue>0 && i.daysOverdue < minDaysOverdue) return false;
@@ -3296,6 +3342,11 @@ function togglePodCrDash(){
     document.getElementById('sheetRoot').style.display = 'block';
   }else{
     panel.style.display = 'block';
+    const monthFilterEl = document.getElementById('arMonthFilter');
+    if(monthFilterEl && monthFilterEl.dataset.initialized!=='1'){
+      monthFilterEl.value = String(new Date().getMonth());
+      monthFilterEl.dataset.initialized = '1';
+    }
     renderPodCrDashboard();
   }
 }
