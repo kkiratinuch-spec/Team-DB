@@ -272,6 +272,17 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
 </head>
 <body>
 <div id="toast" class="toast"></div>
+
+<div id="syncProgressOverlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:8px; padding:28px 32px; min-width:340px; box-shadow:0 8px 30px rgba(0,0,0,0.3); text-align:center;">
+    <div id="syncProgressTitle" style="font-weight:700; font-size:15px; color:var(--navy); margin-bottom:14px;">🔄 กำลัง Sync...</div>
+    <div style="background:#EDEDED; border-radius:6px; height:16px; overflow:hidden; margin-bottom:10px;">
+      <div id="syncProgressBar" style="width:0%; background:#2F7A46; height:100%; transition:width 0.2s;"></div>
+    </div>
+    <div id="syncProgressText" style="font-size:13px; color:#555;">0 / 0</div>
+    <div id="syncProgressDetail" style="font-size:11px; color:#999; margin-top:6px;"></div>
+  </div>
+</div>
 <div class="wrap">
 
   <div class="toolbar">
@@ -654,6 +665,16 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <label style="font-size:12px; color:var(--steel);">Min days overdue<br>
           <input type="number" id="arMinDaysOverdue" value="0" min="0" style="width:70px; margin-top:2px;" onchange="arDetailPage=1; renderARAging(window.billingIdx, new Date())">
         </label>
+        <label style="font-size:12px; color:var(--steel);">Cost &amp; Rev Status<br>
+          <select id="arCrStatusFilter" onchange="arDetailPage=1; renderARAging(window.billingIdx, new Date())" style="margin-top:2px;">
+            <option value="">All</option>
+            <option value="__blank__">— (not started)</option>
+            <option value="freight-input">Freight Input</option>
+            <option value="local-charge-input">Local Charge Input</option>
+            <option value="cost-rev-input-completed">Cost & Rev Completed</option>
+            <option value="accrued">Accrued</option>
+          </select>
+        </label>
       </div>
       <div style="overflow-x:auto;">
         <table class="dash-table">
@@ -712,7 +733,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <label style="font-size:12px; color:var(--steel);">Status<br>
           <select id="billingFilterStatus" onchange="renderBillingDetail()" style="margin-top:2px;">
             <option value="invoice-issued">INV Issue</option>
-            <option value="not-issued">Not Issue INV yet</option>
+            <option value="reconcile">Reconcile</option>
           </select>
         </label>
       </div>
@@ -1146,6 +1167,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
             <option>Seven bell</option>
             <option>SLD Global Logistics</option>
             <option>Worldwide Logistics (Thailand)</option>
+            <option>YENTEK</option>
           </select>
         </div>
         <div class="field">
@@ -2960,6 +2982,7 @@ function renderARAging(idx, now){
   const monthFilter = document.getElementById('arMonthFilter').value;
   const searchMawb = (document.getElementById('arSearchMawb').value || '').trim().toLowerCase();
   const cargoServiceFilterEl = document.getElementById('arCargoServiceFilter');
+  const crStatusFilterEl = document.getElementById('arCrStatusFilter');
   const customerFilterEl = document.getElementById('arCustomerFilter');
   const customerFilter = customerFilterEl.value;
   const chartCustomerFilterEl = document.getElementById('arChartCustomerFilter');
@@ -3102,6 +3125,8 @@ function renderARAging(idx, now){
     if(customerFilter && i.customer!==customerFilter) return false;
     if(bucketFilter && i.bucket!==bucketFilter) return false;
     if(minDaysOverdue>0 && i.daysOverdue < minDaysOverdue) return false;
+    if(crStatusFilterEl.value==='__blank__' && i.crStatus) return false;
+    if(crStatusFilterEl.value && crStatusFilterEl.value!=='__blank__' && i.crStatus!==crStatusFilterEl.value) return false;
     return true;
   });
   filteredRows.sort((a,b)=>a.daysUntilDue-b.daysUntilDue);
@@ -3265,8 +3290,8 @@ function renderBillingDetail(){
     const cr = (i.crStatus||'').toLowerCase();
     if(statusFilter==='invoice-issued'){
       return cr==='invoice-issued';
-    }else if(statusFilter==='not-issued'){
-      return cr!=='invoice-issued';
+    }else if(statusFilter==='reconcile'){
+      return cr==='reconcile';
     }
     return false;
   }).sort((a,b)=>(a.etd||'').localeCompare(b.etd||''));
@@ -4020,22 +4045,36 @@ async function syncRecalculateAll(){
   }
   if(!confirm(`จะคำนวณ Freight Cost/Revenue ใหม่จากน้ำหนักล่าสุด แล้วเขียนกลับเข้า Google Sheet ให้ ${targets.length} MAWB\n\nขั้นตอนนี้อาจใช้เวลาสักครู่ (ยิ่งเยอะยิ่งนาน) ห้ามปิดหน้านี้ระหว่างทำ\n\nดำเนินการต่อ?`)) return;
 
-  let updated = 0, unchanged = 0, failed = 0;
+  const overlay = document.getElementById('syncProgressOverlay');
+  const bar = document.getElementById('syncProgressBar');
+  const text = document.getElementById('syncProgressText');
+  const detail = document.getElementById('syncProgressDetail');
+  const title = document.getElementById('syncProgressTitle');
+  title.textContent = '🔄 กำลัง Sync...';
+  overlay.style.display = 'flex';
+
+  let updated = 0, failed = 0;
   for(let i=0; i<targets.length; i++){
     const rec = targets[i];
+    const pct = Math.round(((i+1)/targets.length)*100);
+    bar.style.width = pct+'%';
+    text.textContent = `${i+1} / ${targets.length} MAWB (${pct}%)`;
+    detail.textContent = `กำลังประมวลผล: ${rec.mawb || rec.jobNo}`;
     try{
-      const before = JSON.stringify({rev:rec.revAmount, cost:rec.costAmount});
       await dataSave(rec);
       updated++;
     }catch(e){
       console.error('Sync failed for', rec.mawb, e);
       failed++;
     }
-    if((i+1) % 10 === 0 || i===targets.length-1){
-      console.log(`Sync progress: ${i+1}/${targets.length}`);
-    }
   }
-  alert(`Sync เสร็จแล้ว!\n\nอัปเดตสำเร็จ: ${updated} MAWB\nล้มเหลว: ${failed} MAWB`);
+
+  title.textContent = '✅ Sync เสร็จแล้ว!';
+  bar.style.background = failed>0 ? '#E2B33C' : '#2F7A46';
+  text.textContent = `สำเร็จ ${updated} MAWB${failed>0 ? ` · ล้มเหลว ${failed} MAWB` : ''}`;
+  detail.textContent = 'กดที่ใดก็ได้เพื่อปิดหน้าต่างนี้';
+  overlay.onclick = ()=>{ overlay.style.display='none'; overlay.onclick=null; bar.style.background='#2F7A46'; };
+
   refreshList();
 }
 
