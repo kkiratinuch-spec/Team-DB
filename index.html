@@ -517,7 +517,17 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>B.6 — Vol by customer — Air Freight (kg) — <span id="volYearAirFreight">—</span></h3>
+      <h3>B.6 — Vol by Tradelane (Destination) — Total MAWB — <span id="volYearTradelane">—</span></h3>
+      <div style="overflow-x:auto;">
+        <table class="dash-table" style="min-width:900px;">
+          <thead><tr id="volHeaderRowTradelane"></tr></thead>
+          <tbody id="volByTradelaneBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bar-section">
+      <h3>B.7 — Vol by customer — Air Freight (kg) — <span id="volYearAirFreight">—</span></h3>
       <div style="overflow-x:auto;">
         <table class="dash-table" style="min-width:820px;">
           <thead><tr id="volHeaderRowAirFreight"><th>Customer</th></tr></thead>
@@ -527,7 +537,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>B.7 — Vol by customer — Air Express (kg) — <span id="volYearAirExpress">—</span></h3>
+      <h3>B.8 — Vol by customer — Air Express (kg) — <span id="volYearAirExpress">—</span></h3>
       <div style="overflow-x:auto;">
         <table class="dash-table" style="min-width:820px;">
           <thead><tr id="volHeaderRowAirExpress"><th>Customer</th></tr></thead>
@@ -537,7 +547,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>B.8 — Vol by customer — Sea Freight (Container) — <span id="volYearSeaFreight">—</span></h3>
+      <h3>B.9 — Vol by customer — Sea Freight (Container) — <span id="volYearSeaFreight">—</span></h3>
       <div style="overflow-x:auto;">
         <table class="dash-table" style="min-width:820px;">
           <thead><tr id="volHeaderRowSeaFreight"><th>Customer</th></tr></thead>
@@ -3654,6 +3664,37 @@ async function renderMonthlyDashboard(){
       }).join('') + `<td>${fmtNum(grandTotal,dec)}</td><td>100%</td></tr>`;
     }
   }
+
+  function renderVolByTradelane(idx, year){
+    document.getElementById('volYearTradelane').textContent = year;
+    document.getElementById('volHeaderRowTradelane').innerHTML = '<th>Destination</th>' + monthShortNames.map(m=>`<th>${m}</th>`).join('') + `<th>Total MAWB</th><th>Vol %</th>`;
+
+    const volMap = {};
+    let grandTotal = 0;
+    idx.filter(i=>i.type==='booking' && i.etd && i.mawb).forEach(i=>{
+      const d = new Date(i.etd+'T00:00:00');
+      if(d.getFullYear()!==year) return;
+      const k = i.dest || '—';
+      if(!volMap[k]) volMap[k] = new Array(12).fill(0);
+      volMap[k][d.getMonth()] += 1;
+      grandTotal += 1;
+    });
+    const volEntries = Object.entries(volMap).sort((a,b)=>b[1].reduce((s,v)=>s+v,0)-a[1].reduce((s,v)=>s+v,0));
+    const volBody = document.getElementById('volByTradelaneBody');
+    if(volEntries.length===0){
+      volBody.innerHTML = `<tr><td colspan="15" class="empty">No data yet for ${year}</td></tr>`;
+    }else{
+      volBody.innerHTML = volEntries.map(([dest,months])=>{
+        const total = months.reduce((s,v)=>s+v,0);
+        const pct = grandTotal>0 ? (total/grandTotal*100) : 0;
+        return `<tr><td>${dest}</td>` + months.map(v=>`<td>${fmtNum(v)}</td>`).join('') + `<td>${fmtNum(total)}</td><td>${pct.toFixed(1)}%</td></tr>`;
+      }).join('') + `<tr style="font-weight:500;"><td>Grand total</td>` + monthShortNames.map((_,mi)=>{
+        const s = volEntries.reduce((acc,[,months])=>acc+months[mi],0);
+        return `<td>${fmtNum(s)}</td>`;
+      }).join('') + `<td>${fmtNum(grandTotal)}</td><td>100%</td></tr>`;
+    }
+  }
+  renderVolByTradelane(idx, year);
 
   renderVolTable('volHeaderRowAirFreight', 'volByCustomerBodyAirFreight', 'volYearAirFreight', airFreightRecords, 'weight', 'kg');
   renderVolTable('volHeaderRowAirExpress', 'volByCustomerBodyAirExpress', 'volYearAirExpress', airExpressRecords, 'weight', 'kg');
