@@ -2993,6 +2993,15 @@ function renderARAging(idx, now){
 
   const ruleFor = customer => CUSTOMER_AR_RULES.hasOwnProperty(customer) ? CUSTOMER_AR_RULES[customer] : DEFAULT_AR_RULE;
 
+  const allBookings = idx.filter(i=>{
+    if(i.type!=='booking' || !i.etd) return false;
+    if(monthFilter!==''){
+      const d = new Date(i.etd+'T00:00:00');
+      if(d.getMonth()!==parseInt(monthFilter,10)) return false;
+    }
+    return (i.status||'').toLowerCase()!=='cancelled';
+  });
+
   let bookings = idx.filter(i=>{
     if(i.type!=='booking' || !i.etd) return false;
     if(monthFilter!==''){
@@ -3049,12 +3058,12 @@ function renderARAging(idx, now){
 
   const sum = arr => arr.reduce((s,i)=>s+(parseFloat(i.revAmount)||0),0);
 
-  function renderSummaryCards(suffix, records, reconcileRecs, invoicedRecs){
+  function renderSummaryCards(suffix, allRecs, records, reconcileRecs, invoicedRecs){
     const nInv = records;
     const oTrack = nInv.filter(i=>!i.isOverdue);
     const oDue = nInv.filter(i=>i.isOverdue);
-    document.getElementById('arTotalCount'+suffix).textContent = fmtNum(nInv.length);
-    document.getElementById('arTotalRev'+suffix).textContent = fmtMoney(sum(nInv));
+    document.getElementById('arTotalCount'+suffix).textContent = fmtNum(allRecs.length);
+    document.getElementById('arTotalRev'+suffix).textContent = fmtMoney(sum(allRecs));
     document.getElementById('arOnTrackCount'+suffix).textContent = fmtNum(oTrack.length);
     document.getElementById('arOnTrackRev'+suffix).textContent = fmtMoney(sum(oTrack));
     document.getElementById('arOverdueCount'+suffix).textContent = fmtNum(oDue.length);
@@ -3064,8 +3073,8 @@ function renderARAging(idx, now){
     document.getElementById('arInvoicedCount'+suffix).textContent = fmtNum(invoicedRecs.length);
     document.getElementById('arInvoicedRev'+suffix).textContent = fmtMoney(sum(invoicedRecs));
   }
-  renderSummaryCards('FF', notInvoiced.filter(i=>i.cargoService==='Freight Forwarding'), reconcileRecords.filter(i=>i.cargoService==='Freight Forwarding'), invoicedRecords.filter(i=>i.cargoService==='Freight Forwarding'));
-  renderSummaryCards('Express', notInvoiced.filter(i=>i.cargoService==='Express'), reconcileRecords.filter(i=>i.cargoService==='Express'), invoicedRecords.filter(i=>i.cargoService==='Express'));
+  renderSummaryCards('FF', allBookings.filter(i=>i.cargoService==='Freight Forwarding'), notInvoiced.filter(i=>i.cargoService==='Freight Forwarding'), reconcileRecords.filter(i=>i.cargoService==='Freight Forwarding'), invoicedRecords.filter(i=>i.cargoService==='Freight Forwarding'));
+  renderSummaryCards('Express', allBookings.filter(i=>i.cargoService==='Express'), notInvoiced.filter(i=>i.cargoService==='Express'), reconcileRecords.filter(i=>i.cargoService==='Express'), invoicedRecords.filter(i=>i.cargoService==='Express'));
 
   // Aging buckets — On track (light green) / Due soon (orange) / Overdue tiers (red shades) / Reconcile (blue) / INV Issued (bright green)
   const chartDataBase = chartCustomerFilter ? notInvoiced.filter(i=>i.customer===chartCustomerFilter) : notInvoiced;
