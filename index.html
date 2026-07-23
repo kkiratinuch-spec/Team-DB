@@ -517,7 +517,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>B.6 — Vol by Tradelane (Destination) — Total MAWB — <span id="volYearTradelane">—</span></h3>
+      <h3>B.6 — Vol by Tradelane (Destination) — Chargeable Weight (kg) — <span id="volYearTradelane">—</span></h3>
       <div style="overflow-x:auto;">
         <table class="dash-table" style="min-width:900px;">
           <thead><tr id="volHeaderRowTradelane"></tr></thead>
@@ -3667,7 +3667,7 @@ async function renderMonthlyDashboard(){
 
   function renderVolByTradelane(idx, year){
     document.getElementById('volYearTradelane').textContent = year;
-    document.getElementById('volHeaderRowTradelane').innerHTML = '<th>Destination</th>' + monthShortNames.map(m=>`<th>${m}</th>`).join('') + `<th>Total MAWB</th><th>Vol %</th>`;
+    document.getElementById('volHeaderRowTradelane').innerHTML = '<th>Destination</th>' + monthShortNames.map(m=>`<th>${m}</th>`).join('') + `<th>Total (kg)</th><th>Vol %</th>`;
 
     const volMap = {};
     let grandTotal = 0;
@@ -3676,8 +3676,9 @@ async function renderMonthlyDashboard(){
       if(d.getFullYear()!==year) return;
       const k = i.dest || '—';
       if(!volMap[k]) volMap[k] = new Array(12).fill(0);
-      volMap[k][d.getMonth()] += 1;
-      grandTotal += 1;
+      const w = parseFloat(i.weight)||0;
+      volMap[k][d.getMonth()] += w;
+      grandTotal += w;
     });
     const volEntries = Object.entries(volMap).sort((a,b)=>b[1].reduce((s,v)=>s+v,0)-a[1].reduce((s,v)=>s+v,0));
     const volBody = document.getElementById('volByTradelaneBody');
