@@ -1532,15 +1532,15 @@ function lookupMAWB(){
         // pull the editable A.2–A.4 fields back into the form so the user is editing the
         // existing numbers, not starting from blank.
         if(match.revAmount || match.costAmount){
-          const simpleFieldMap = {f_costperkg:'costPerKg', f_sellingperkg:'sellingPerKg'};
+          const simpleFieldMap = {f_costperkg:'costPerKg', f_sellingperkg:'sellingPerKg', f_invoiceissuedate:'invoiceIssueDate'};
           Object.keys(simpleFieldMap).forEach(id=>{
             const el = document.getElementById(id);
             const key = simpleFieldMap[id];
             if(el && match[key]!==undefined && match[key]!==''){ el.value = match[key]; }
           });
-          const vendorFields = {vendor:'Vendor', trucktype:'TruckType', truckusage:'TruckUsage',
-            ratepertruck:'RatePerTruck', customs:'Customs', terminal:'Terminal', document:'Document',
-            airlinesother:'AirlinesOther', packing:'Packing', other:'Other', otherremark:'OtherRemark'};
+          const vendorFields = {vendor:'Vendor', service:'Service', trucktype:'TruckType', truckusage:'TruckUsage',
+            ratepertruck:'RatePerTruck', customs:'Customs', handling:'Handling', terminal:'Terminal', document:'Document',
+            airlinesother:'AirlinesOther', packing:'Packing', ot:'OT', other:'Other', otherremark:'OtherRemark'};
           ['lc','lcr'].forEach(prefix=>{
             Object.keys(vendorFields).forEach(f_=>{
               for(let vi=1; vi<=4; vi++){
