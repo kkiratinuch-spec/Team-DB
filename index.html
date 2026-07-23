@@ -656,6 +656,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
             <option value="">All</option>
             <option value="dueLater">On track (4+ days left)</option>
             <option value="due3">Due in 1–3 days</option>
+            <option value="dueToday">Today</option>
             <option value="od7">Overdue 1–7d</option>
             <option value="od14">Overdue 8–14d</option>
             <option value="od30">Overdue 15–30d</option>
@@ -3042,7 +3043,8 @@ function renderARAging(idx, now){
     const isOverdue = daysUntilDue < 0;
     let bucket;
     if(daysUntilDue >= 4) bucket = 'dueLater';
-    else if(daysUntilDue >= 0) bucket = 'due3';
+    else if(daysUntilDue >= 1) bucket = 'due3';
+    else if(daysUntilDue === 0) bucket = 'dueToday';
     else if(daysOverdue <= 7) bucket = 'od7';
     else if(daysOverdue <= 14) bucket = 'od14';
     else if(daysOverdue <= 30) bucket = 'od30';
@@ -3082,7 +3084,8 @@ function renderARAging(idx, now){
   const invoicedChartBase = chartCustomerFilter ? invoicedRecords.filter(i=>i.customer===chartCustomerFilter) : invoicedRecords;
   const buckets = [
     {key:'dueLater', label:'On track', color:'#8FD9A0'},
-    {key:'due3', label:'Due in 1–3 days', color:'#F0A050'},
+    {key:'due3', label:'Due in 1–3 days', color:'#F0D050'},
+    {key:'dueToday', label:'Today', color:'#F0A050'},
     {key:'od7', label:'Overdue 1–7d', color:'#C0392B'},
     {key:'od14', label:'Overdue 8–14d', color:'#A32D2D'},
     {key:'od30', label:'Overdue 15–30d', color:'#7A1F1F'},
@@ -3142,7 +3145,8 @@ function renderARAging(idx, now){
 
   const bucketStyle = {
     dueLater:{bg:'', txt:'#333', label:'On track'},
-    due3:{bg:'#FCE4CC', txt:'#B85C1E', label:'Due soon'},
+    due3:{bg:'#FBF0C8', txt:'#8A6D0E', label:'Due soon'},
+    dueToday:{bg:'#FCE4CC', txt:'#B85C1E', label:'Due today'},
     od7:{bg:'#FBE4E1', txt:'#A32D2D', label:'Overdue'},
     od14:{bg:'#FBE4E1', txt:'#A32D2D', label:'Overdue'},
     od30:{bg:'#FBE4E1', txt:'#A32D2D', label:'Overdue'},
