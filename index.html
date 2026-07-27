@@ -754,6 +754,65 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       </table>
       <div id="billingDetailPager" style="margin-top:10px; text-align:center;"></div>
     </div>
+
+    <div class="bar-section">
+      <h3>D.5 — AP AGING OVERVIEW (VENDOR &amp; COLOADER PAYABLES)</h3>
+      <div style="font-size:11px; color:#999; margin-bottom:12px;">1 MAWB อาจมีหลาย Vendor พร้อมกัน (Local Charge / Destination Charge / Coloader) — แต่ละแถวด้านล่างคือ 1 รายการที่ต้องจ่ายแยกตาม Vendor</div>
+      <div class="filters" style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
+        <label style="font-size:12px; color:var(--steel);">Month (by ETD)<br>
+          <select id="apMonthFilter" onchange="renderAPAging()" style="margin-top:2px;">
+            <option value="">All months</option>
+            <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
+            <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
+            <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
+            <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
+          </select>
+        </label>
+        <label style="font-size:12px; color:var(--steel);">Default cutoff (days after Month-End)<br>
+          <input type="number" id="apCutoffDays" value="5" min="0" style="width:70px; margin-top:2px;" onchange="renderAPAging()">
+        </label>
+      </div>
+
+      <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:6px;">Summary — All Vendor Types</div>
+      <div class="grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:8px; margin-bottom:18px;">
+        <div class="metric-sm" style="background:#EAEAEA;"><div class="num" id="apTotalCount" style="color:#555;">—</div><div class="lbl">Total Bills</div></div>
+        <div class="metric-sm" style="background:#EAEAEA;"><div class="num" id="apTotalAmt" style="color:#555;">—</div><div class="lbl">Total Payable</div></div>
+        <div class="metric-sm" style="background:#E2EFDA;"><div class="num" id="apOnTrackCount" style="color:#1E6B3C;">—</div><div class="lbl">On Track — Bills</div></div>
+        <div class="metric-sm" style="background:#E2EFDA;"><div class="num" id="apOnTrackAmt" style="color:#1E6B3C;">—</div><div class="lbl">On Track — Amount</div></div>
+        <div class="metric-sm" style="background:#FBE4E1;"><div class="num" id="apOverdueCount" style="color:#A32D2D;">—</div><div class="lbl">Overdue — Bills</div></div>
+        <div class="metric-sm" style="background:#FBE4E1;"><div class="num" id="apOverdueAmt" style="color:#A32D2D;">—</div><div class="lbl">Overdue — Amount</div></div>
+      </div>
+
+      <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Aging Breakdown</div>
+      <div id="apAgingChart" style="margin-bottom:20px;"></div>
+
+      <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">AP Detail — All Outstanding Shipments (sorted by most urgent first)</div>
+      <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; align-items:flex-end;">
+        <label style="font-size:12px; color:var(--steel);">Search Vendor/MAWB<br>
+          <input type="text" id="apSearch" placeholder="Vendor / MAWB..." oninput="apDetailPage=1; renderAPAging()" style="margin-top:2px;">
+        </label>
+        <label style="font-size:12px; color:var(--steel);">Vendor Type<br>
+          <select id="apVendorTypeFilter" onchange="apDetailPage=1; renderAPAging()" style="margin-top:2px;">
+            <option value="">All</option>
+            <option value="Local Charge">Local Charge</option>
+            <option value="Destination Charge">Destination Charge</option>
+            <option value="Coloader">Coloader</option>
+          </select>
+        </label>
+        <label style="font-size:12px; color:var(--steel);">Vendor<br>
+          <select id="apVendorFilter" onchange="apDetailPage=1; renderAPAging()" style="margin-top:2px;">
+            <option value="">All Vendors</option>
+          </select>
+        </label>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="dash-table">
+          <thead><tr><th>Vendor</th><th>Vendor Type</th><th>MAWB</th><th>ETD</th><th>Due Date</th><th>Status</th><th>Amount (THB)</th></tr></thead>
+          <tbody id="apDetailBody"></tbody>
+        </table>
+      </div>
+      <div id="apDetailPager" style="margin-top:10px; text-align:center;"></div>
+    </div>
   </div>
 
   <div class="dash" id="opsDashPanel" style="display:none;">
@@ -2984,6 +3043,164 @@ function computeDueDate(etdStr, ruleType, cutoffDays){
 }
 
 let arDetailPage = 1;
+let apDetailPage = 1;
+function apDetailGoToPage(p){
+  apDetailPage = p;
+  renderAPAging();
+}
+
+function renderAPAging(){
+  const idx = window.billingIdx || [];
+  const monthFilter = document.getElementById('apMonthFilter').value;
+  const defaultCutoff = parseInt(document.getElementById('apCutoffDays').value, 10) || 5;
+  const search = (document.getElementById('apSearch').value || '').trim().toLowerCase();
+  const vendorTypeFilterEl = document.getElementById('apVendorTypeFilter');
+  const vendorFilterEl = document.getElementById('apVendorFilter');
+  const now = new Date();
+  const todayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+  const LC_COST_FIELDS = ['Customs','Handling','Terminal','Document','AirlinesOther','Packing','OT','Other'];
+  const DC_COST_FIELDS = ['Handling','Customs','Delivery'];
+
+  function computeApDueDate(etdStr, cutoffDays){
+    const etd = new Date(etdStr+'T00:00:00');
+    const monthEnd = new Date(etd.getFullYear(), etd.getMonth()+1, 0);
+    return new Date(monthEnd.getTime() + (cutoffDays||0)*86400000);
+  }
+
+  // Flatten each booking's vendor cost lines (Local Charge / Destination Charge / Coloader)
+  let apLines = [];
+  idx.filter(i=>i.type==='booking' && i.etd && (i.status||'').toLowerCase()!=='cancelled').forEach(rec=>{
+    if(monthFilter!==''){
+      const d = new Date(rec.etd+'T00:00:00');
+      if(d.getMonth()!==parseInt(monthFilter,10)) return;
+    }
+    const dueDate = computeApDueDate(rec.etd, defaultCutoff);
+    const dueMs = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()).getTime();
+    const daysUntilDue = Math.round((dueMs - todayMs) / 86400000);
+    const isOverdue = daysUntilDue < 0;
+
+    for(let vi=1; vi<=4; vi++){
+      const vendor = rec['lcVendor'+vi];
+      if(!vendor) continue;
+      let cost = (parseFloat(rec['lcRatePerTruck'+vi])||0) * (parseFloat(rec['lcTruckUsage'+vi])||0);
+      LC_COST_FIELDS.forEach(f=>{ cost += parseFloat(rec['lc'+f+vi])||0; });
+      if(cost<=0) continue;
+      apLines.push({vendor, vendorType:'Local Charge', mawb:rec.mawb, etd:rec.etd, dueDate:formatDateStr(dueDate), daysUntilDue, isOverdue, amount:cost, jobNo:rec.jobNo});
+    }
+    for(let vi=1; vi<=4; vi++){
+      const vendor = rec['dcVendor'+vi];
+      if(!vendor) continue;
+      let cost = (parseFloat(rec['dcRatePerTruck'+vi])||0) * (parseFloat(rec['dcTruckUsage'+vi])||0);
+      DC_COST_FIELDS.forEach(f=>{ cost += parseFloat(rec['dc'+f+vi])||0; });
+      if(cost<=0) continue;
+      apLines.push({vendor, vendorType:'Destination Charge', mawb:rec.mawb, etd:rec.etd, dueDate:formatDateStr(dueDate), daysUntilDue, isOverdue, amount:cost, jobNo:rec.jobNo});
+    }
+    if(rec.coloader && parseFloat(rec.frCostAmount)>0){
+      apLines.push({vendor:rec.coloader, vendorType:'Coloader', mawb:rec.mawb, etd:rec.etd, dueDate:formatDateStr(dueDate), daysUntilDue, isOverdue, amount:parseFloat(rec.frCostAmount)||0, jobNo:rec.jobNo});
+    }
+  });
+
+  const sumAmt = arr => arr.reduce((s,i)=>s+(i.amount||0),0);
+  const onTrack = apLines.filter(i=>!i.isOverdue);
+  const overdue = apLines.filter(i=>i.isOverdue);
+
+  document.getElementById('apTotalCount').textContent = fmtNum(apLines.length);
+  document.getElementById('apTotalAmt').textContent = fmtMoney(sumAmt(apLines));
+  document.getElementById('apOnTrackCount').textContent = fmtNum(onTrack.length);
+  document.getElementById('apOnTrackAmt').textContent = fmtMoney(sumAmt(onTrack));
+  document.getElementById('apOverdueCount').textContent = fmtNum(overdue.length);
+  document.getElementById('apOverdueAmt').textContent = fmtMoney(sumAmt(overdue));
+
+  // Aging buckets
+  function apBucket(i){
+    if(!i.isOverdue) return i.daysUntilDue>=4 ? 'dueLater' : (i.daysUntilDue>=1 ? 'due3' : 'dueToday');
+    const od = -i.daysUntilDue;
+    if(od<=7) return 'od7';
+    if(od<=14) return 'od14';
+    if(od<=30) return 'od30';
+    return 'od30plus';
+  }
+  const apBuckets = [
+    {key:'dueLater', label:'On track', color:'#8FD9A0'},
+    {key:'due3', label:'Due in 1–3 days', color:'#F0D050'},
+    {key:'dueToday', label:'Today', color:'#F0A050'},
+    {key:'od7', label:'Overdue 1–7d', color:'#C0392B'},
+    {key:'od14', label:'Overdue 8–14d', color:'#A32D2D'},
+    {key:'od30', label:'Overdue 15–30d', color:'#7A1F1F'},
+    {key:'od30plus', label:'Overdue 30d+', color:'#4A1010'},
+  ];
+  apLines.forEach(i=>{ i.bucket = apBucket(i); });
+  const apBucketData = apBuckets.map(b=>{
+    const matches = apLines.filter(i=>i.bucket===b.key);
+    return {label:b.label, color:b.color, count:matches.length, amt:sumAmt(matches)};
+  });
+  const apMaxCount = Math.max(1, ...apBucketData.map(b=>b.count));
+  document.getElementById('apAgingChart').innerHTML = apBucketData.map(b=>`
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+      <div style="width:130px; font-size:11px; color:#555; text-align:right;">${b.label}</div>
+      <div style="flex:1; background:#EDEDED; border-radius:3px; height:20px; position:relative;">
+        <div style="width:${(b.count/apMaxCount*100)}%; background:${b.color}; height:100%; border-radius:3px; min-width:${b.count>0?'2px':'0'};"></div>
+      </div>
+      <div style="width:150px; font-size:11px; color:#333; white-space:nowrap;">${fmtNum(b.count)} Bills · ${fmtMoney(b.amt)} THB</div>
+    </div>
+  `).join('');
+
+  // Populate Vendor filter dropdown (once)
+  if(vendorFilterEl.options.length<=1 || vendorFilterEl.dataset.stale==='1'){
+    const vendors = Array.from(new Set(apLines.map(i=>i.vendor))).sort();
+    const cur = vendorFilterEl.value;
+    vendorFilterEl.innerHTML = '<option value="">All Vendors</option>' + vendors.map(v=>`<option value="${v}">${v}</option>`).join('');
+    vendorFilterEl.value = cur;
+    vendorFilterEl.dataset.stale = '0';
+  }
+
+  // Filter + sort + paginate
+  let filtered = apLines.filter(i=>{
+    if(search && !((i.vendor||'').toLowerCase().includes(search) || (i.mawb||'').toLowerCase().includes(search))) return false;
+    if(vendorTypeFilterEl.value && i.vendorType!==vendorTypeFilterEl.value) return false;
+    if(vendorFilterEl.value && i.vendor!==vendorFilterEl.value) return false;
+    return true;
+  });
+  filtered.sort((a,b)=>a.daysUntilDue-b.daysUntilDue);
+
+  const apBucketStyle = {
+    dueLater:{bg:'', txt:'#333', label:'On track'},
+    due3:{bg:'#FBF0C8', txt:'#8A6D0E', label:'Due soon'},
+    dueToday:{bg:'#FCE4CC', txt:'#B85C1E', label:'Due today'},
+    od7:{bg:'#FBE4E1', txt:'#A32D2D', label:'Overdue'},
+    od14:{bg:'#FBE4E1', txt:'#A32D2D', label:'Overdue'},
+    od30:{bg:'#FBE4E1', txt:'#A32D2D', label:'Overdue'},
+    od30plus:{bg:'#F5D0D0', txt:'#7A1F1F', label:'Overdue (30d+)'},
+  };
+
+  const AP_PAGE_SIZE = 10;
+  const apTotalPages = Math.max(1, Math.ceil(filtered.length / AP_PAGE_SIZE));
+  apDetailPage = Math.min(Math.max(1, apDetailPage), apTotalPages);
+  const apStart = (apDetailPage-1) * AP_PAGE_SIZE;
+  const apPageRows = filtered.slice(apStart, apStart+AP_PAGE_SIZE);
+
+  document.getElementById('apDetailBody').innerHTML = apPageRows.length ? apPageRows.map(i=>{
+    const bs = apBucketStyle[i.bucket];
+    const statusText = i.isOverdue ? `${bs.label} ${-i.daysUntilDue}d` : (i.daysUntilDue===0 ? 'Due today' : `${bs.label} (${i.daysUntilDue}d left)`);
+    return `<tr style="cursor:pointer; background:${bs.bg};" onclick="loadFromDash('${i.jobNo}')">
+      <td>${i.vendor}</td>
+      <td>${i.vendorType}</td>
+      <td class="mono">${i.mawb||'—'}</td>
+      <td>${i.etd||''}</td>
+      <td>${i.dueDate}</td>
+      <td style="color:${bs.txt}; font-weight:600;">${statusText}</td>
+      <td>${fmtMoney(i.amount)}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="7" style="text-align:center; color:#999;">No AP bills matching this filter 🎉</td></tr>';
+
+  document.getElementById('apDetailPager').innerHTML = `
+    <button onclick="apDetailGoToPage(${apDetailPage-1})" ${apDetailPage<=1?'disabled':''}>‹ Prev</button>
+    <span style="margin:0 10px; font-size:12px;">Page ${apDetailPage} of ${apTotalPages} (${filtered.length} total)</span>
+    <button onclick="apDetailGoToPage(${apDetailPage+1})" ${apDetailPage>=apTotalPages?'disabled':''}>Next ›</button>
+  `;
+}
+
 function arDetailGoToPage(p){
   arDetailPage = p;
   renderARAging(window.billingIdx, new Date());
@@ -3242,6 +3459,7 @@ async function renderPodCrDashboard(){
   const year = parseInt(yearPicker.value, 10);
 
   renderARAging(idx, now);
+  renderAPAging();
 
   function buildMonthly(records){
     const monthly = Array.from({length:12}, ()=>({total:0, pod:0, cancelled:0, completed:0, reconcile:0, invoiced:0}));
