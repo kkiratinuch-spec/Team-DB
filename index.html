@@ -812,6 +812,13 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         </table>
       </div>
       <div id="apDetailPager" style="margin-top:10px; text-align:center;"></div>
+
+      <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin:20px 0 8px;">Vendor Logic Reference — Due Date Rule per Vendor</div>
+      <table class="dash-table">
+        <thead><tr><th>Vendor</th><th>Rule</th></tr></thead>
+        <tbody id="apLogicRefBody"></tbody>
+      </table>
+      <div id="apLogicRefPager" style="margin-top:10px; text-align:center;"></div>
     </div>
   </div>
 
@@ -3044,6 +3051,8 @@ function computeDueDate(etdStr, ruleType, cutoffDays){
 
 let arDetailPage = 1;
 let apDetailPage = 1;
+let apLogicRefPage = 1;
+const AP_LOGIC_REF_PAGE_SIZE = 10;
 function apDetailGoToPage(p){
   apDetailPage = p;
   renderAPAging();
@@ -3199,6 +3208,35 @@ function renderAPAging(){
     <span style="margin:0 10px; font-size:12px;">Page ${apDetailPage} of ${apTotalPages} (${filtered.length} total)</span>
     <button onclick="apDetailGoToPage(${apDetailPage+1})" ${apDetailPage>=apTotalPages?'disabled':''}>Next ›</button>
   `;
+
+  const allVendors = Array.from(new Set(apLines.map(i=>i.vendor))).sort();
+  renderApLogicRef(allVendors, defaultCutoff);
+}
+
+function renderApLogicRef(allVendors, defaultCutoff){
+  window._apLogicRefCache = {allVendors, defaultCutoff};
+  const total = allVendors.length;
+  const totalPages = Math.max(1, Math.ceil(total / AP_LOGIC_REF_PAGE_SIZE));
+  apLogicRefPage = Math.min(Math.max(1, apLogicRefPage), totalPages);
+  const start = (apLogicRefPage-1) * AP_LOGIC_REF_PAGE_SIZE;
+  const pageVendors = allVendors.slice(start, start+AP_LOGIC_REF_PAGE_SIZE);
+
+  document.getElementById('apLogicRefBody').innerHTML = pageVendors.map(v=>
+    `<tr><td>${v}</td><td style="font-size:11px;">Month-end + ${defaultCutoff} days (default — ยังไม่ได้ตั้งค่าเฉพาะราย)</td></tr>`
+  ).join('') || '<tr><td colspan="2" style="text-align:center; color:#999;">No vendors yet</td></tr>';
+
+  const pager = document.getElementById('apLogicRefPager');
+  pager.innerHTML = `
+    <button onclick="apLogicRefGoToPage(${apLogicRefPage-1})" ${apLogicRefPage<=1?'disabled':''}>‹ Prev</button>
+    <span style="margin:0 10px; font-size:12px;">Page ${apLogicRefPage} of ${totalPages}</span>
+    <button onclick="apLogicRefGoToPage(${apLogicRefPage+1})" ${apLogicRefPage>=totalPages?'disabled':''}>Next ›</button>
+  `;
+}
+
+function apLogicRefGoToPage(p){
+  apLogicRefPage = p;
+  const c = window._apLogicRefCache;
+  if(c) renderApLogicRef(c.allVendors, c.defaultCutoff);
 }
 
 function arDetailGoToPage(p){
