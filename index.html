@@ -2603,6 +2603,21 @@ function showToast(message){
 
 async function saveSheet(){
   if(!currentJobNo){ await newSheet(); }
+
+  // Safety: if editing Cost & Revenue and Save is clicked before the debounced MAWB
+  // lookup has finished resolving (or resolved to a different MAWB), force it to
+  // resolve now. Without this, gatherRecord() could fall back to currentJobNo and
+  // create a brand-new row instead of merging into the existing Booking.
+  if(currentType==='finance'){
+    const mawbVal = (document.getElementById('f_cr_mawb').value||'').trim();
+    if(mawbVal && (!window.crMergeTarget || String(window.crMergeTarget.mawb||'').trim()!==mawbVal)){
+      clearTimeout(mawbLookupTimer);
+      const all = await dataGetAll();
+      const match = all.find(r=>r.type==='booking' && r.mawb && String(r.mawb).trim()===mawbVal);
+      if(match) window.crMergeTarget = match;
+    }
+  }
+
   const rec = gatherRecord();
 
   if(!rec.jobNo || !String(rec.jobNo).trim()){
