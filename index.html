@@ -969,7 +969,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <div class="section-label finance-only">A.4.1 — Destination Charge (Cost)</div>
       <div class="finance-only" style="overflow-x:auto; margin-bottom:14px;">
         <table class="dash-table" style="min-width:860px;">
-<thead><tr><th>Vendor</th><th>Truck Type</th><th>Usage</th><th>Rate/Truck</th><th>Handling</th><th>Customs</th><th>Delivery</th><th>Remark</th></tr></thead><tbody><tr><td><input type="text" id="f_dc_vendor1" style="width:100px;" oninput="document.getElementById('f_dcr_vendor1').value=this.value;"></td><td><select id="f_dc_trucktype1" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dc_truckusage1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_ratepertruck1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_handling1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_customs1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_delivery1" style="width:75px;" oninput="updateGP()"></td><td><input type="text" id="f_dc_remark1" style="width:100px;"></td></tr><tr><td><input type="text" id="f_dc_vendor2" style="width:100px;" oninput="document.getElementById('f_dcr_vendor2').value=this.value;"></td><td><select id="f_dc_trucktype2" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dc_truckusage2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_ratepertruck2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_handling2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_customs2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_delivery2" style="width:75px;" oninput="updateGP()"></td><td><input type="text" id="f_dc_remark2" style="width:100px;"></td></tr><tr><td><input type="text" id="f_dc_vendor3" style="width:100px;" oninput="document.getElementById('f_dcr_vendor3').value=this.value;"></td><td><select id="f_dc_trucktype3" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dc_truckusage3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_ratepertruck3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_handling3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_customs3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_delivery3" style="width:75px;" oninput="updateGP()"></td><td><input type="text" id="f_dc_remark3" style="width:100px;"></td></tr><tr><td><input type="text" id="f_dc_vendor4" style="width:100px;" oninput="document.getElementById('f_dcr_vendor4').value=this.value;"></td><td><select id="f_dc_trucktype4" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dc_truckusage4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_ratepertruck4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_handling4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_customs4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_delivery4" style="width:75px;" oninput="updateGP()"></td><td><input type="text" id="f_dc_remark4" style="width:100px;"></td></tr></tbody>
+<thead><tr><th>Vendor</th><th>Truck Type</th><th>Usage</th><th>Rate/Truck</th><th>Handling</th><th>Customs</th><th>Delivery</th><th>Terminal Charges</th><th>Transfer Fee</th><th>Overtime</th><th>Storage Charges</th><th>Breakbulk</th><th>Other</th><th>Remark</th></tr></thead><tbody><tr><td><input type="text" id="f_dc_vendor1" style="width:100px;" oninput="document.getElementById('f_dcr_vendor1').value=this.value;"></td><td><select id="f_dc_trucktype1" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dc_truckusage1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_ratepertruck1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_handling1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_customs1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_delivery1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_terminalcharges1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_transferfee1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_overtime1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_storagecharges1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_breakbulk1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_other1" style="width:75px;" oninput="updateGP()"></td><td><input type="text" id="f_dc_remark1" style="width:100px;"></td></tr><tr><td><input type="text" id="f_dc_vendor2" style="width:100px;" oninput="document.getElementById('f_dcr_vendor2').value=this.value;"></td><td><select id="f_dc_trucktype2" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dc_truckusage2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_ratepertruck2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_handling2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_customs2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_delivery2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_terminalcharges2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_transferfee2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_overtime2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_storagecharges2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_breakbulk2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_other2" style="width:75px;" oninput="updateGP()"></td><td><input type="text" id="f_dc_remark2" style="width:100px;"></td></tr><tr><td><input type="text" id="f_dc_vendor3" style="width:100px;" oninput="document.getElementById('f_dcr_vendor3').value=this.value;"></td><td><select id="f_dc_trucktype3" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dc_truckusage3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_ratepertruck3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_handling3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_customs3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_delivery3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_terminalcharges3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_transferfee3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_overtime3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_storagecharges3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_breakbulk3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_other3" style="width:75px;" oninput="updateGP()"></td><td><input type="text" id="f_dc_remark3" style="width:100px;"></td></tr><tr><td><input type="text" id="f_dc_vendor4" style="width:100px;" oninput="document.getElementById('f_dcr_vendor4').value=this.value;"></td><td><select id="f_dc_trucktype4" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dc_truckusage4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_ratepertruck4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_handling4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_customs4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_delivery4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_terminalcharges4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_transferfee4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_overtime4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_storagecharges4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_breakbulk4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dc_other4" style="width:75px;" oninput="updateGP()"></td><td><input type="text" id="f_dc_remark4" style="width:100px;"></td></tr></tbody>
         </table>
       </div>
       <div class="grid finance-only" id="a4DestChargeCost">
@@ -979,7 +979,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <div class="section-label finance-only">A.4.2 — Destination Charge (Selling)</div>
       <div class="finance-only" style="overflow-x:auto; margin-bottom:14px;">
         <table class="dash-table" style="min-width:860px;">
-<thead><tr><th>Vendor</th><th>Truck Type</th><th>Usage</th><th>Rate/Truck</th><th>Handling</th><th>Customs</th><th>Delivery</th><th>Remark</th></tr></thead><tbody><tr><td><input type="text" id="f_dcr_vendor1" style="width:100px;" oninput=""></td><td><select id="f_dcr_trucktype1" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dcr_truckusage1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_ratepertruck1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_handling1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_customs1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_delivery1" style="width:75px;" oninput="updateGP()"></td><td><input type="text" id="f_dcr_remark1" style="width:100px;"></td></tr><tr><td><input type="text" id="f_dcr_vendor2" style="width:100px;" oninput=""></td><td><select id="f_dcr_trucktype2" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dcr_truckusage2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_ratepertruck2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_handling2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_customs2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_delivery2" style="width:75px;" oninput="updateGP()"></td><td><input type="text" id="f_dcr_remark2" style="width:100px;"></td></tr><tr><td><input type="text" id="f_dcr_vendor3" style="width:100px;" oninput=""></td><td><select id="f_dcr_trucktype3" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dcr_truckusage3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_ratepertruck3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_handling3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_customs3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_delivery3" style="width:75px;" oninput="updateGP()"></td><td><input type="text" id="f_dcr_remark3" style="width:100px;"></td></tr><tr><td><input type="text" id="f_dcr_vendor4" style="width:100px;" oninput=""></td><td><select id="f_dcr_trucktype4" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dcr_truckusage4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_ratepertruck4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_handling4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_customs4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_delivery4" style="width:75px;" oninput="updateGP()"></td><td><input type="text" id="f_dcr_remark4" style="width:100px;"></td></tr></tbody>
+<thead><tr><th>Vendor</th><th>Truck Type</th><th>Usage</th><th>Rate/Truck</th><th>Handling</th><th>Customs</th><th>Delivery</th><th>Terminal Charges</th><th>Transfer Fee</th><th>Overtime</th><th>Storage Charges</th><th>Breakbulk</th><th>Other</th><th>Remark</th></tr></thead><tbody><tr><td><input type="text" id="f_dcr_vendor1" style="width:100px;" oninput=""></td><td><select id="f_dcr_trucktype1" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dcr_truckusage1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_ratepertruck1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_handling1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_customs1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_delivery1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_terminalcharges1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_transferfee1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_overtime1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_storagecharges1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_breakbulk1" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_other1" style="width:75px;" oninput="updateGP()"></td><td><input type="text" id="f_dcr_remark1" style="width:100px;"></td></tr><tr><td><input type="text" id="f_dcr_vendor2" style="width:100px;" oninput=""></td><td><select id="f_dcr_trucktype2" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dcr_truckusage2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_ratepertruck2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_handling2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_customs2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_delivery2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_terminalcharges2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_transferfee2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_overtime2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_storagecharges2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_breakbulk2" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_other2" style="width:75px;" oninput="updateGP()"></td><td><input type="text" id="f_dcr_remark2" style="width:100px;"></td></tr><tr><td><input type="text" id="f_dcr_vendor3" style="width:100px;" oninput=""></td><td><select id="f_dcr_trucktype3" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dcr_truckusage3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_ratepertruck3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_handling3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_customs3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_delivery3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_terminalcharges3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_transferfee3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_overtime3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_storagecharges3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_breakbulk3" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_other3" style="width:75px;" oninput="updateGP()"></td><td><input type="text" id="f_dcr_remark3" style="width:100px;"></td></tr><tr><td><input type="text" id="f_dcr_vendor4" style="width:100px;" oninput=""></td><td><select id="f_dcr_trucktype4" onchange="updateGP()" style="width:64px;"><option value="">—</option><option>4W</option><option>6W</option><option>10W</option><option>20&quot;</option><option>40&quot;</option></select></td><td><input type="number" id="f_dcr_truckusage4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_ratepertruck4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_handling4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_customs4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_delivery4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_terminalcharges4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_transferfee4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_overtime4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_storagecharges4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_breakbulk4" style="width:75px;" oninput="updateGP()"></td><td><input type="number" id="f_dcr_other4" style="width:75px;" oninput="updateGP()"></td><td><input type="text" id="f_dcr_remark4" style="width:100px;"></td></tr></tbody>
         </table>
       </div>
       <div class="grid finance-only" id="a4DestChargeRev">
@@ -1534,7 +1534,13 @@ function updateGP(){
     dcCost += (rate * usage)
       + (parseFloat(document.getElementById('f_dc_handling'+vi).value) || 0)
       + (parseFloat(document.getElementById('f_dc_customs'+vi).value) || 0)
-      + (parseFloat(document.getElementById('f_dc_delivery'+vi).value) || 0);
+      + (parseFloat(document.getElementById('f_dc_delivery'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_dc_terminalcharges'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_dc_transferfee'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_dc_overtime'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_dc_storagecharges'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_dc_breakbulk'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_dc_other'+vi).value) || 0);
   }
   const dcCostHasData = dcCost>0;
   document.getElementById('f_dc_totalcost').textContent = dcCostHasData ? fmtMoney(dcCost) : '—';
@@ -1547,7 +1553,13 @@ function updateGP(){
     dcRev += (rate * usage)
       + (parseFloat(document.getElementById('f_dcr_handling'+vi).value) || 0)
       + (parseFloat(document.getElementById('f_dcr_customs'+vi).value) || 0)
-      + (parseFloat(document.getElementById('f_dcr_delivery'+vi).value) || 0);
+      + (parseFloat(document.getElementById('f_dcr_delivery'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_dcr_terminalcharges'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_dcr_transferfee'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_dcr_overtime'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_dcr_storagecharges'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_dcr_breakbulk'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_dcr_other'+vi).value) || 0);
   }
   const dcRevHasData = dcRev>0;
   document.getElementById('f_dc_totalrev').textContent = dcRevHasData ? fmtMoney(dcRev) : '—';
@@ -1627,7 +1639,7 @@ function lookupMAWB(){
               }
             });
           });
-          const dcFields = {vendor:'Vendor', trucktype:'TruckType', truckusage:'TruckUsage', ratepertruck:'RatePerTruck', handling:'Handling', customs:'Customs', delivery:'Delivery'};
+          const dcFields = {vendor:'Vendor', trucktype:'TruckType', truckusage:'TruckUsage', ratepertruck:'RatePerTruck', handling:'Handling', customs:'Customs', delivery:'Delivery', terminalcharges:'TerminalCharges', transferfee:'TransferFee', overtime:'Overtime', storagecharges:'StorageCharges', breakbulk:'Breakbulk', other:'Other'};
           ['dc','dcr'].forEach(prefix=>{
             Object.keys(dcFields).forEach(f_=>{
               for(let vi=1; vi<=4; vi++){
@@ -1912,6 +1924,30 @@ async function newSheet(type){
   document.getElementById('f_dc_delivery2').value = '';
   document.getElementById('f_dc_delivery3').value = '';
   document.getElementById('f_dc_delivery4').value = '';
+  document.getElementById('f_dc_terminalcharges1').value = '';
+  document.getElementById('f_dc_terminalcharges2').value = '';
+  document.getElementById('f_dc_terminalcharges3').value = '';
+  document.getElementById('f_dc_terminalcharges4').value = '';
+  document.getElementById('f_dc_transferfee1').value = '';
+  document.getElementById('f_dc_transferfee2').value = '';
+  document.getElementById('f_dc_transferfee3').value = '';
+  document.getElementById('f_dc_transferfee4').value = '';
+  document.getElementById('f_dc_overtime1').value = '';
+  document.getElementById('f_dc_overtime2').value = '';
+  document.getElementById('f_dc_overtime3').value = '';
+  document.getElementById('f_dc_overtime4').value = '';
+  document.getElementById('f_dc_storagecharges1').value = '';
+  document.getElementById('f_dc_storagecharges2').value = '';
+  document.getElementById('f_dc_storagecharges3').value = '';
+  document.getElementById('f_dc_storagecharges4').value = '';
+  document.getElementById('f_dc_breakbulk1').value = '';
+  document.getElementById('f_dc_breakbulk2').value = '';
+  document.getElementById('f_dc_breakbulk3').value = '';
+  document.getElementById('f_dc_breakbulk4').value = '';
+  document.getElementById('f_dc_other1').value = '';
+  document.getElementById('f_dc_other2').value = '';
+  document.getElementById('f_dc_other3').value = '';
+  document.getElementById('f_dc_other4').value = '';
   document.getElementById('f_dc_remark1').value = '';
   document.getElementById('f_dc_remark2').value = '';
   document.getElementById('f_dc_remark3').value = '';
@@ -1944,6 +1980,30 @@ async function newSheet(type){
   document.getElementById('f_dcr_delivery2').value = '';
   document.getElementById('f_dcr_delivery3').value = '';
   document.getElementById('f_dcr_delivery4').value = '';
+  document.getElementById('f_dcr_terminalcharges1').value = '';
+  document.getElementById('f_dcr_terminalcharges2').value = '';
+  document.getElementById('f_dcr_terminalcharges3').value = '';
+  document.getElementById('f_dcr_terminalcharges4').value = '';
+  document.getElementById('f_dcr_transferfee1').value = '';
+  document.getElementById('f_dcr_transferfee2').value = '';
+  document.getElementById('f_dcr_transferfee3').value = '';
+  document.getElementById('f_dcr_transferfee4').value = '';
+  document.getElementById('f_dcr_overtime1').value = '';
+  document.getElementById('f_dcr_overtime2').value = '';
+  document.getElementById('f_dcr_overtime3').value = '';
+  document.getElementById('f_dcr_overtime4').value = '';
+  document.getElementById('f_dcr_storagecharges1').value = '';
+  document.getElementById('f_dcr_storagecharges2').value = '';
+  document.getElementById('f_dcr_storagecharges3').value = '';
+  document.getElementById('f_dcr_storagecharges4').value = '';
+  document.getElementById('f_dcr_breakbulk1').value = '';
+  document.getElementById('f_dcr_breakbulk2').value = '';
+  document.getElementById('f_dcr_breakbulk3').value = '';
+  document.getElementById('f_dcr_breakbulk4').value = '';
+  document.getElementById('f_dcr_other1').value = '';
+  document.getElementById('f_dcr_other2').value = '';
+  document.getElementById('f_dcr_other3').value = '';
+  document.getElementById('f_dcr_other4').value = '';
   document.getElementById('f_dcr_remark1').value = '';
   document.getElementById('f_dcr_remark2').value = '';
   document.getElementById('f_dcr_remark3').value = '';
@@ -2174,6 +2234,30 @@ function gatherRecord(){
     dcDelivery2: document.getElementById('f_dc_delivery2').value,
     dcDelivery3: document.getElementById('f_dc_delivery3').value,
     dcDelivery4: document.getElementById('f_dc_delivery4').value,
+    dcTerminalCharges1: document.getElementById('f_dc_terminalcharges1').value,
+    dcTerminalCharges2: document.getElementById('f_dc_terminalcharges2').value,
+    dcTerminalCharges3: document.getElementById('f_dc_terminalcharges3').value,
+    dcTerminalCharges4: document.getElementById('f_dc_terminalcharges4').value,
+    dcTransferFee1: document.getElementById('f_dc_transferfee1').value,
+    dcTransferFee2: document.getElementById('f_dc_transferfee2').value,
+    dcTransferFee3: document.getElementById('f_dc_transferfee3').value,
+    dcTransferFee4: document.getElementById('f_dc_transferfee4').value,
+    dcOvertime1: document.getElementById('f_dc_overtime1').value,
+    dcOvertime2: document.getElementById('f_dc_overtime2').value,
+    dcOvertime3: document.getElementById('f_dc_overtime3').value,
+    dcOvertime4: document.getElementById('f_dc_overtime4').value,
+    dcStorageCharges1: document.getElementById('f_dc_storagecharges1').value,
+    dcStorageCharges2: document.getElementById('f_dc_storagecharges2').value,
+    dcStorageCharges3: document.getElementById('f_dc_storagecharges3').value,
+    dcStorageCharges4: document.getElementById('f_dc_storagecharges4').value,
+    dcBreakbulk1: document.getElementById('f_dc_breakbulk1').value,
+    dcBreakbulk2: document.getElementById('f_dc_breakbulk2').value,
+    dcBreakbulk3: document.getElementById('f_dc_breakbulk3').value,
+    dcBreakbulk4: document.getElementById('f_dc_breakbulk4').value,
+    dcOther1: document.getElementById('f_dc_other1').value,
+    dcOther2: document.getElementById('f_dc_other2').value,
+    dcOther3: document.getElementById('f_dc_other3').value,
+    dcOther4: document.getElementById('f_dc_other4').value,
     dcRemark1: document.getElementById('f_dc_remark1').value,
     dcRemark2: document.getElementById('f_dc_remark2').value,
     dcRemark3: document.getElementById('f_dc_remark3').value,
@@ -2206,6 +2290,30 @@ function gatherRecord(){
     dcrDelivery2: document.getElementById('f_dcr_delivery2').value,
     dcrDelivery3: document.getElementById('f_dcr_delivery3').value,
     dcrDelivery4: document.getElementById('f_dcr_delivery4').value,
+    dcrTerminalCharges1: document.getElementById('f_dcr_terminalcharges1').value,
+    dcrTerminalCharges2: document.getElementById('f_dcr_terminalcharges2').value,
+    dcrTerminalCharges3: document.getElementById('f_dcr_terminalcharges3').value,
+    dcrTerminalCharges4: document.getElementById('f_dcr_terminalcharges4').value,
+    dcrTransferFee1: document.getElementById('f_dcr_transferfee1').value,
+    dcrTransferFee2: document.getElementById('f_dcr_transferfee2').value,
+    dcrTransferFee3: document.getElementById('f_dcr_transferfee3').value,
+    dcrTransferFee4: document.getElementById('f_dcr_transferfee4').value,
+    dcrOvertime1: document.getElementById('f_dcr_overtime1').value,
+    dcrOvertime2: document.getElementById('f_dcr_overtime2').value,
+    dcrOvertime3: document.getElementById('f_dcr_overtime3').value,
+    dcrOvertime4: document.getElementById('f_dcr_overtime4').value,
+    dcrStorageCharges1: document.getElementById('f_dcr_storagecharges1').value,
+    dcrStorageCharges2: document.getElementById('f_dcr_storagecharges2').value,
+    dcrStorageCharges3: document.getElementById('f_dcr_storagecharges3').value,
+    dcrStorageCharges4: document.getElementById('f_dcr_storagecharges4').value,
+    dcrBreakbulk1: document.getElementById('f_dcr_breakbulk1').value,
+    dcrBreakbulk2: document.getElementById('f_dcr_breakbulk2').value,
+    dcrBreakbulk3: document.getElementById('f_dcr_breakbulk3').value,
+    dcrBreakbulk4: document.getElementById('f_dcr_breakbulk4').value,
+    dcrOther1: document.getElementById('f_dcr_other1').value,
+    dcrOther2: document.getElementById('f_dcr_other2').value,
+    dcrOther3: document.getElementById('f_dcr_other3').value,
+    dcrOther4: document.getElementById('f_dcr_other4').value,
     dcrRemark1: document.getElementById('f_dcr_remark1').value,
     dcrRemark2: document.getElementById('f_dcr_remark2').value,
     dcrRemark3: document.getElementById('f_dcr_remark3').value,
@@ -2481,6 +2589,30 @@ function applyRecord(rec){
   document.getElementById('f_dc_delivery2').value = rec.dcDelivery2 || '';
   document.getElementById('f_dc_delivery3').value = rec.dcDelivery3 || '';
   document.getElementById('f_dc_delivery4').value = rec.dcDelivery4 || '';
+  document.getElementById('f_dc_terminalcharges1').value = rec.dcTerminalCharges1 || '';
+  document.getElementById('f_dc_terminalcharges2').value = rec.dcTerminalCharges2 || '';
+  document.getElementById('f_dc_terminalcharges3').value = rec.dcTerminalCharges3 || '';
+  document.getElementById('f_dc_terminalcharges4').value = rec.dcTerminalCharges4 || '';
+  document.getElementById('f_dc_transferfee1').value = rec.dcTransferFee1 || '';
+  document.getElementById('f_dc_transferfee2').value = rec.dcTransferFee2 || '';
+  document.getElementById('f_dc_transferfee3').value = rec.dcTransferFee3 || '';
+  document.getElementById('f_dc_transferfee4').value = rec.dcTransferFee4 || '';
+  document.getElementById('f_dc_overtime1').value = rec.dcOvertime1 || '';
+  document.getElementById('f_dc_overtime2').value = rec.dcOvertime2 || '';
+  document.getElementById('f_dc_overtime3').value = rec.dcOvertime3 || '';
+  document.getElementById('f_dc_overtime4').value = rec.dcOvertime4 || '';
+  document.getElementById('f_dc_storagecharges1').value = rec.dcStorageCharges1 || '';
+  document.getElementById('f_dc_storagecharges2').value = rec.dcStorageCharges2 || '';
+  document.getElementById('f_dc_storagecharges3').value = rec.dcStorageCharges3 || '';
+  document.getElementById('f_dc_storagecharges4').value = rec.dcStorageCharges4 || '';
+  document.getElementById('f_dc_breakbulk1').value = rec.dcBreakbulk1 || '';
+  document.getElementById('f_dc_breakbulk2').value = rec.dcBreakbulk2 || '';
+  document.getElementById('f_dc_breakbulk3').value = rec.dcBreakbulk3 || '';
+  document.getElementById('f_dc_breakbulk4').value = rec.dcBreakbulk4 || '';
+  document.getElementById('f_dc_other1').value = rec.dcOther1 || '';
+  document.getElementById('f_dc_other2').value = rec.dcOther2 || '';
+  document.getElementById('f_dc_other3').value = rec.dcOther3 || '';
+  document.getElementById('f_dc_other4').value = rec.dcOther4 || '';
   document.getElementById('f_dc_remark1').value = rec.dcRemark1 || '';
   document.getElementById('f_dc_remark2').value = rec.dcRemark2 || '';
   document.getElementById('f_dc_remark3').value = rec.dcRemark3 || '';
@@ -2513,6 +2645,30 @@ function applyRecord(rec){
   document.getElementById('f_dcr_delivery2').value = rec.dcrDelivery2 || '';
   document.getElementById('f_dcr_delivery3').value = rec.dcrDelivery3 || '';
   document.getElementById('f_dcr_delivery4').value = rec.dcrDelivery4 || '';
+  document.getElementById('f_dcr_terminalcharges1').value = rec.dcrTerminalCharges1 || '';
+  document.getElementById('f_dcr_terminalcharges2').value = rec.dcrTerminalCharges2 || '';
+  document.getElementById('f_dcr_terminalcharges3').value = rec.dcrTerminalCharges3 || '';
+  document.getElementById('f_dcr_terminalcharges4').value = rec.dcrTerminalCharges4 || '';
+  document.getElementById('f_dcr_transferfee1').value = rec.dcrTransferFee1 || '';
+  document.getElementById('f_dcr_transferfee2').value = rec.dcrTransferFee2 || '';
+  document.getElementById('f_dcr_transferfee3').value = rec.dcrTransferFee3 || '';
+  document.getElementById('f_dcr_transferfee4').value = rec.dcrTransferFee4 || '';
+  document.getElementById('f_dcr_overtime1').value = rec.dcrOvertime1 || '';
+  document.getElementById('f_dcr_overtime2').value = rec.dcrOvertime2 || '';
+  document.getElementById('f_dcr_overtime3').value = rec.dcrOvertime3 || '';
+  document.getElementById('f_dcr_overtime4').value = rec.dcrOvertime4 || '';
+  document.getElementById('f_dcr_storagecharges1').value = rec.dcrStorageCharges1 || '';
+  document.getElementById('f_dcr_storagecharges2').value = rec.dcrStorageCharges2 || '';
+  document.getElementById('f_dcr_storagecharges3').value = rec.dcrStorageCharges3 || '';
+  document.getElementById('f_dcr_storagecharges4').value = rec.dcrStorageCharges4 || '';
+  document.getElementById('f_dcr_breakbulk1').value = rec.dcrBreakbulk1 || '';
+  document.getElementById('f_dcr_breakbulk2').value = rec.dcrBreakbulk2 || '';
+  document.getElementById('f_dcr_breakbulk3').value = rec.dcrBreakbulk3 || '';
+  document.getElementById('f_dcr_breakbulk4').value = rec.dcrBreakbulk4 || '';
+  document.getElementById('f_dcr_other1').value = rec.dcrOther1 || '';
+  document.getElementById('f_dcr_other2').value = rec.dcrOther2 || '';
+  document.getElementById('f_dcr_other3').value = rec.dcrOther3 || '';
+  document.getElementById('f_dcr_other4').value = rec.dcrOther4 || '';
   document.getElementById('f_dcr_remark1').value = rec.dcrRemark1 || '';
   document.getElementById('f_dcr_remark2').value = rec.dcrRemark2 || '';
   document.getElementById('f_dcr_remark3').value = rec.dcrRemark3 || '';
@@ -3168,7 +3324,7 @@ function renderAPAging(){
   const todayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
   const LC_COST_FIELDS = ['Customs','Handling','Terminal','Document','AirlinesOther','Packing','OT','Other'];
-  const DC_COST_FIELDS = ['Handling','Customs','Delivery'];
+  const DC_COST_FIELDS = ['Handling','Customs','Delivery','TerminalCharges','TransferFee','Overtime','StorageCharges','Breakbulk','Other'];
 
   function computeApDueDate(etdStr, cutoffDays){
     const etd = new Date(etdStr+'T00:00:00');
@@ -4370,16 +4526,22 @@ const csvTemplateCols = [
   'lcrOtherRemark5','dcVendor1','dcVendor2','dcVendor3','dcVendor4','dcTruckType1','dcTruckType2','dcTruckType3',
   'dcTruckType4','dcTruckUsage1','dcTruckUsage2','dcTruckUsage3','dcTruckUsage4','dcRatePerTruck1','dcRatePerTruck2','dcRatePerTruck3',
   'dcRatePerTruck4','dcHandling1','dcHandling2','dcHandling3','dcHandling4','dcCustoms1','dcCustoms2','dcCustoms3',
-  'dcCustoms4','dcDelivery1','dcDelivery2','dcDelivery3','dcDelivery4','dcRemark1','dcRemark2','dcRemark3',
+  'dcCustoms4','dcDelivery1','dcDelivery2','dcDelivery3','dcDelivery4','dcTerminalCharges1','dcTerminalCharges2','dcTerminalCharges3',
+  'dcTerminalCharges4','dcTransferFee1','dcTransferFee2','dcTransferFee3','dcTransferFee4','dcOvertime1','dcOvertime2','dcOvertime3',
+  'dcOvertime4','dcStorageCharges1','dcStorageCharges2','dcStorageCharges3','dcStorageCharges4','dcBreakbulk1','dcBreakbulk2','dcBreakbulk3',
+  'dcBreakbulk4','dcOther1','dcOther2','dcOther3','dcOther4','dcRemark1','dcRemark2','dcRemark3',
   'dcRemark4','dcrVendor1','dcrVendor2','dcrVendor3','dcrVendor4','dcrTruckType1','dcrTruckType2','dcrTruckType3',
   'dcrTruckType4','dcrTruckUsage1','dcrTruckUsage2','dcrTruckUsage3','dcrTruckUsage4','dcrRatePerTruck1','dcrRatePerTruck2','dcrRatePerTruck3',
   'dcrRatePerTruck4','dcrHandling1','dcrHandling2','dcrHandling3','dcrHandling4','dcrCustoms1','dcrCustoms2','dcrCustoms3',
-  'dcrCustoms4','dcrDelivery1','dcrDelivery2','dcrDelivery3','dcrDelivery4','dcrRemark1','dcrRemark2','dcrRemark3',
+  'dcrCustoms4','dcrDelivery1','dcrDelivery2','dcrDelivery3','dcrDelivery4','dcrTerminalCharges1','dcrTerminalCharges2','dcrTerminalCharges3',
+  'dcrTerminalCharges4','dcrTransferFee1','dcrTransferFee2','dcrTransferFee3','dcrTransferFee4','dcrOvertime1','dcrOvertime2','dcrOvertime3',
+  'dcrOvertime4','dcrStorageCharges1','dcrStorageCharges2','dcrStorageCharges3','dcrStorageCharges4','dcrBreakbulk1','dcrBreakbulk2','dcrBreakbulk3',
+  'dcrBreakbulk4','dcrOther1','dcrOther2','dcrOther3','dcrOther4','dcrRemark1','dcrRemark2','dcrRemark3',
   'dcrRemark4'
 ];
 
 function downloadCSVTemplate(){
-        const sampleRow = [
+          const sampleRow = [
     'booking','057-4969 2672','2026-07-08','EOPTOLINK','Freight Forwarding','Air','Export','P2P',
     'BKK','ORD','2026-07-08','2026-07-09','Optical modules','4998','4998','',
     '12','','','','','','','',
@@ -4405,10 +4567,16 @@ function downloadCSVTemplate(){
     '','1','','','','','','',
     '','500','','','','300','','',
     '','400','','','','','','',
+    '','','','','','','','',
+    '','','','','','','','',
+    '','','','','','','','',
     '','Bangkok Cartage','','','','4W','','',
     '','1','','','','','','',
     '','800','','','','450','','',
     '','600','','','','','','',
+    '','','','','','','','',
+    '','','','','','','','',
+    '','','','','','','','',
     ''
   ];
   const csv = csvTemplateCols.join(',') + '\n' + sampleRow.map(csvEscape).join(',');
@@ -4509,7 +4677,7 @@ function importCSV(file){
 
       const allBookings = await dataGetAll();
       const lcFields = ['Vendor','Service','TruckType','TruckUsage','RatePerTruck','Customs','Handling','Terminal','Document','AirlinesOther','Packing','OT','Other','OtherRemark'];
-      const dcFields = ['Vendor','TruckType','TruckUsage','RatePerTruck','Handling','Customs','Delivery','Remark'];
+      const dcFields = ['Vendor','TruckType','TruckUsage','RatePerTruck','Handling','Customs','Delivery','TerminalCharges','TransferFee','Overtime','StorageCharges','Breakbulk','Other','Remark'];
 
       let createdCount = 0, updatedCount = 0;
       for(const cols of dataRows){
@@ -4613,10 +4781,10 @@ function importCSV(file){
             dcFields.forEach(f_=>{ rec['dc'+f_+vi]=obj['dc'+f_+vi]||''; rec['dcr'+f_+vi]=obj['dcr'+f_+vi]||''; });
 
             const dcTruck = (parseFloat(obj['dcRatePerTruck'+vi])||0)*(parseFloat(obj['dcTruckUsage'+vi])||0);
-            dcCostAmount += dcTruck + (parseFloat(obj['dcHandling'+vi])||0)+(parseFloat(obj['dcCustoms'+vi])||0)+(parseFloat(obj['dcDelivery'+vi])||0);
+            dcCostAmount += dcTruck + (parseFloat(obj['dcHandling'+vi])||0)+(parseFloat(obj['dcCustoms'+vi])||0)+(parseFloat(obj['dcDelivery'+vi])||0)+(parseFloat(obj['dcTerminalCharges'+vi])||0)+(parseFloat(obj['dcTransferFee'+vi])||0)+(parseFloat(obj['dcOvertime'+vi])||0)+(parseFloat(obj['dcStorageCharges'+vi])||0)+(parseFloat(obj['dcBreakbulk'+vi])||0)+(parseFloat(obj['dcOther'+vi])||0);
 
             const dcrTruck = (parseFloat(obj['dcrRatePerTruck'+vi])||0)*(parseFloat(obj['dcrTruckUsage'+vi])||0);
-            dcRevAmount += dcrTruck + (parseFloat(obj['dcrHandling'+vi])||0)+(parseFloat(obj['dcrCustoms'+vi])||0)+(parseFloat(obj['dcrDelivery'+vi])||0);
+            dcRevAmount += dcrTruck + (parseFloat(obj['dcrHandling'+vi])||0)+(parseFloat(obj['dcrCustoms'+vi])||0)+(parseFloat(obj['dcrDelivery'+vi])||0)+(parseFloat(obj['dcrTerminalCharges'+vi])||0)+(parseFloat(obj['dcrTransferFee'+vi])||0)+(parseFloat(obj['dcrOvertime'+vi])||0)+(parseFloat(obj['dcrStorageCharges'+vi])||0)+(parseFloat(obj['dcrBreakbulk'+vi])||0)+(parseFloat(obj['dcrOther'+vi])||0);
           }
           const costPerKg = parseFloat(obj.costPerKg)||0, sellingPerKg = parseFloat(obj.sellingPerKg)||0;
           const frCostAmount = w*costPerKg, frRevAmount = w*sellingPerKg;
