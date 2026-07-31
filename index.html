@@ -951,16 +951,28 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       </div>
 
       <div class="section-label finance-only">A.3.1 — Freight Charge (Cost)</div>
-      <div class="grid finance-only" id="a3FreightCost">
+      <div class="grid finance-only mode-air-only" id="a3FreightCostAir">
         <div class="field"><label>Chargeable weight (kg)</label><div class="readout mono" id="f_cr_chargeableweight">—</div></div>
         <div class="field"><label>Cost per KG</label><input type="number" id="f_costperkg" oninput="updateGP()"></div>
+      </div>
+      <div class="grid finance-only mode-sea-only" id="a3FreightCostSea" style="display:none;">
+        <div class="field"><label>Container(s)</label><div class="readout mono" id="f_cr_containers">—</div></div>
+        <div class="field"><label>Cost per Container</label><input type="number" id="f_costpercontainer" oninput="updateGP()"></div>
+      </div>
+      <div class="grid finance-only" id="a3FreightCost">
         <div class="field"><label>Total Freight Cost</label><div class="readout mono" id="f_summarycost" style="background:#FBE8C7; color:#3A3A3A;">—</div></div>
       </div>
 
       <div class="section-label finance-only">A.3.2 — Freight Charge (Selling)</div>
-      <div class="grid finance-only" id="a3FreightRev">
+      <div class="grid finance-only mode-air-only" id="a3FreightRevAir">
         <div class="field"><label>Chargeable weight (kg)</label><div class="readout mono" id="f_cr_chargeableweight2">—</div></div>
         <div class="field"><label>Selling per KG</label><input type="number" id="f_sellingperkg" oninput="updateGP()"></div>
+      </div>
+      <div class="grid finance-only mode-sea-only" id="a3FreightRevSea" style="display:none;">
+        <div class="field"><label>Container(s)</label><div class="readout mono" id="f_cr_containers2">—</div></div>
+        <div class="field"><label>Selling per Container</label><input type="number" id="f_sellingpercontainer" oninput="updateGP()"></div>
+      </div>
+      <div class="grid finance-only" id="a3FreightRev">
         <div class="field"><label>Total Freight Revenue</label><div class="readout mono" id="f_summaryrev" style="background:#FBE8C7; color:#3A3A3A;">—</div></div>
         <div class="field" style="display:none;"><label>GP THB</label><div class="readout mono" id="f_gpamount">—</div></div>
         <div class="field" style="display:none;"><label>GP %</label><div class="readout mono" id="f_gppercent">—</div></div>
@@ -1511,16 +1523,30 @@ function updateGP(){
   const lcGP = lcRev - lcCost;
   document.getElementById('f_lc_gp').textContent = (lcCostHasData || lcRevHasData) ? fmtMoney(lcGP) : '—';
 
-  // A.3 — Freight
+  // A.3 — Freight (mode-aware: Air uses weight × rate/kg, Sea uses containers × rate/container)
+  const crMode = document.getElementById('f_cr_mode').textContent;
+  const isSea = crMode === 'Sea';
   const chargeableWeight = parseFloat(document.getElementById('f_cr_chargeableweight').textContent) || 0;
   document.getElementById('f_cr_chargeableweight2').textContent = document.getElementById('f_cr_chargeableweight').textContent;
+  const containersVal = document.getElementById('f_cr_containers').textContent;
+  document.getElementById('f_cr_containers2').textContent = containersVal;
+  const containers = parseFloat(containersVal) || 0;
   const costPerKg = parseFloat(document.getElementById('f_costperkg').value) || 0;
   const sellingPerKg = parseFloat(document.getElementById('f_sellingperkg').value) || 0;
-  const frCost = chargeableWeight * costPerKg;
-  const frRev = chargeableWeight * sellingPerKg;
+  const costPerContainer = parseFloat(document.getElementById('f_costpercontainer').value) || 0;
+  const sellingPerContainer = parseFloat(document.getElementById('f_sellingpercontainer').value) || 0;
+  let frCost, frRev, frHasData;
+  if(isSea){
+    frCost = containers * costPerContainer;
+    frRev = containers * sellingPerContainer;
+    frHasData = containers > 0 && (costPerContainer > 0 || sellingPerContainer > 0);
+  }else{
+    frCost = chargeableWeight * costPerKg;
+    frRev = chargeableWeight * sellingPerKg;
+    frHasData = chargeableWeight > 0 && (costPerKg > 0 || sellingPerKg > 0);
+  }
   const frGP = frRev - frCost;
   const frGPPct = frRev > 0 ? (frGP / frRev * 100) : 0;
-  const frHasData = chargeableWeight > 0 && (costPerKg > 0 || sellingPerKg > 0);
   document.getElementById('f_summarycost').textContent = frHasData ? fmtMoney(frCost) : '—';
   document.getElementById('f_summaryrev').textContent = frHasData ? fmtMoney(frRev) : '—';
   document.getElementById('f_gpamount').textContent = frHasData ? fmtMoney(frGP) : '—';
@@ -1612,6 +1638,10 @@ function lookupMAWB(){
         document.getElementById('f_cr_dest').textContent = match.dest || '—';
         document.getElementById('f_cr_etd').textContent = match.etd || '—';
         document.getElementById('f_cr_chargeableweight').textContent = String(match.weight || 0);
+        document.getElementById('f_cr_containers').textContent = String(match.containers || 0);
+        const isSeaMode = match.mode === 'Sea';
+        document.querySelectorAll('.mode-air-only').forEach(el=>{ el.style.display = isSeaMode ? 'none' : ''; });
+        document.querySelectorAll('.mode-sea-only').forEach(el=>{ el.style.display = isSeaMode ? '' : 'none'; });
         statusEl.textContent = '✓ Will save into Booking '+match.jobNo;
         if(match.customer){
           const custSelect = document.getElementById('f_customer');
@@ -1621,7 +1651,7 @@ function lookupMAWB(){
         // pull the editable A.2–A.4 fields back into the form so the user is editing the
         // existing numbers, not starting from blank.
         if(match.revAmount || match.costAmount){
-          const simpleFieldMap = {f_costperkg:'costPerKg', f_sellingperkg:'sellingPerKg', f_invoiceissuedate:'invoiceIssueDate'};
+          const simpleFieldMap = {f_costperkg:'costPerKg', f_sellingperkg:'sellingPerKg', f_costpercontainer:'costPerContainer', f_sellingpercontainer:'sellingPerContainer', f_invoiceissuedate:'invoiceIssueDate'};
           Object.keys(simpleFieldMap).forEach(id=>{
             const el = document.getElementById(id);
             const key = simpleFieldMap[id];
@@ -1754,8 +1784,13 @@ async function newSheet(type){
   document.getElementById('f_cr_etd').textContent = '—';
   document.getElementById('f_cr_lookupstatus').textContent = '—';
   document.getElementById('f_cr_chargeableweight').textContent = '0';
+  document.getElementById('f_cr_containers').textContent = '0';
+  document.querySelectorAll('.mode-air-only').forEach(el=>{ el.style.display = ''; });
+  document.querySelectorAll('.mode-sea-only').forEach(el=>{ el.style.display = 'none'; });
   document.getElementById('f_costperkg').value = '';
   document.getElementById('f_sellingperkg').value = '';
+  document.getElementById('f_costpercontainer').value = '';
+  document.getElementById('f_sellingpercontainer').value = '';
   document.getElementById('f_lc_vendor1').value = '';
   document.getElementById('f_lc_service1').value = '';
   document.getElementById('f_lc_vendor2').value = '';
@@ -2206,6 +2241,8 @@ function gatherRecord(){
     lcrOtherRemark5: document.getElementById('f_lcr_otherremark5').value,
     costPerKg: document.getElementById('f_costperkg').value,
     sellingPerKg: document.getElementById('f_sellingperkg').value,
+    costPerContainer: document.getElementById('f_costpercontainer').value,
+    sellingPerContainer: document.getElementById('f_sellingpercontainer').value,
     dcVendor1: document.getElementById('f_dc_vendor1').value,
     dcVendor2: document.getElementById('f_dc_vendor2').value,
     dcVendor3: document.getElementById('f_dc_vendor3').value,
@@ -2561,6 +2598,8 @@ function applyRecord(rec){
   document.getElementById('f_lcr_otherremark5').value = rec.lcrOtherRemark5 || '';
   document.getElementById('f_costperkg').value = rec.costPerKg || '';
   document.getElementById('f_sellingperkg').value = rec.sellingPerKg || '';
+  document.getElementById('f_costpercontainer').value = rec.costPerContainer || '';
+  document.getElementById('f_sellingpercontainer').value = rec.sellingPerContainer || '';
   document.getElementById('f_dc_vendor1').value = rec.dcVendor1 || '';
   document.getElementById('f_dc_vendor2').value = rec.dcVendor2 || '';
   document.getElementById('f_dc_vendor3').value = rec.dcVendor3 || '';
@@ -2754,12 +2793,15 @@ function normalizeRecord(r){
   if(rec.crStatus){
     const costPerKg = parseFloat(rec.costPerKg)||0;
     const sellingPerKg = parseFloat(rec.sellingPerKg)||0;
+    const costPerContainer = parseFloat(rec.costPerContainer)||0;
+    const sellingPerContainer = parseFloat(rec.sellingPerContainer)||0;
+    const containers = parseFloat(rec.containers)||0;
     const lcCostAmount = parseFloat(rec.lcCostAmount)||0;
     const lcRevAmount = parseFloat(rec.lcRevAmount)||0;
     const dcCostAmount = parseFloat(rec.dcCostAmount)||0;
     const dcRevAmount = parseFloat(rec.dcRevAmount)||0;
-    const frCostAmount = weight * costPerKg;
-    const frRevAmount = weight * sellingPerKg;
+    const frCostAmount = rec.mode==='Sea' ? (containers * costPerContainer) : (weight * costPerKg);
+    const frRevAmount = rec.mode==='Sea' ? (containers * sellingPerContainer) : (weight * sellingPerKg);
     const costAmount = lcCostAmount + frCostAmount + dcCostAmount;
     const revAmount = lcRevAmount + frRevAmount + dcRevAmount;
     const gpAmount = revAmount - costAmount;
@@ -4492,7 +4534,7 @@ function csvEscape(val){
 async function exportCSV(){
   const records = (await dataGetAll()).filter(r=>r.type!=='arCustomerSetting');
   if(records.length===0){ alert('No job sheets to export yet.'); return; }
-  const cols = ['jobNo','type','date','month','customer','cargoService','mode','expImp','service','origin','dest','route','carrier','coloader','etd','eta','transit','containers','itemsJSON','vendorName','truckType','totalTruck','driverName','licensePlate','pickupDate','mawb','notes','status','savedAt','bookingWeight','chargeableWeight','remark','quotationRef','crStatus','invoiceIssueDate','cutoffDays','ruleType','refJobNo','lcCostAmount','lcRevAmount','frCostAmount','frRevAmount','dcCostAmount','dcRevAmount','revAmount','costAmount','gpAmount','gpPercent','crMawb','crCustomer','crMode','crCargoService','crExpImp','crOrigin','crDest','crEtd','crChargeableWeight','costPerKg','sellingPerKg','lcVendor1','lcVendor2','lcVendor3','lcVendor4','lcService1','lcService2','lcService3','lcService4','lcTruckType1','lcTruckType2','lcTruckType3','lcTruckType4','lcTruckUsage1','lcTruckUsage2','lcTruckUsage3','lcTruckUsage4','lcRatePerTruck1','lcRatePerTruck2','lcRatePerTruck3','lcRatePerTruck4','lcCustoms1','lcCustoms2','lcCustoms3','lcCustoms4','lcHandling1','lcHandling2','lcHandling3','lcHandling4','lcTerminal1','lcTerminal2','lcTerminal3','lcTerminal4','lcDocument1','lcDocument2','lcDocument3','lcDocument4','lcAirlinesOther1','lcAirlinesOther2','lcAirlinesOther3','lcAirlinesOther4','lcPacking1','lcPacking2','lcPacking3','lcPacking4','lcOT1','lcOT2','lcOT3','lcOT4','lcOther1','lcOther2','lcOther3','lcOther4','lcOtherRemark1','lcOtherRemark2','lcOtherRemark3','lcOtherRemark4','lcrVendor1','lcrVendor2','lcrVendor3','lcrVendor4','lcrService1','lcrService2','lcrService3','lcrService4','lcrTruckType1','lcrTruckType2','lcrTruckType3','lcrTruckType4','lcrTruckUsage1','lcrTruckUsage2','lcrTruckUsage3','lcrTruckUsage4','lcrRatePerTruck1','lcrRatePerTruck2','lcrRatePerTruck3','lcrRatePerTruck4','lcrCustoms1','lcrCustoms2','lcrCustoms3','lcrCustoms4','lcrHandling1','lcrHandling2','lcrHandling3','lcrHandling4','lcrTerminal1','lcrTerminal2','lcrTerminal3','lcrTerminal4','lcrDocument1','lcrDocument2','lcrDocument3','lcrDocument4','lcrAirlinesOther1','lcrAirlinesOther2','lcrAirlinesOther3','lcrAirlinesOther4','lcrPacking1','lcrPacking2','lcrPacking3','lcrPacking4','lcrOT1','lcrOT2','lcrOT3','lcrOT4','lcrOther1','lcrOther2','lcrOther3','lcrOther4','lcrOtherRemark1','lcrOtherRemark2','lcrOtherRemark3','lcrOtherRemark4','dcVendor1','dcVendor2','dcVendor3','dcVendor4','dcTruckType1','dcTruckType2','dcTruckType3','dcTruckType4','dcTruckUsage1','dcTruckUsage2','dcTruckUsage3','dcTruckUsage4','dcRatePerTruck1','dcRatePerTruck2','dcRatePerTruck3','dcRatePerTruck4','dcHandling1','dcHandling2','dcHandling3','dcHandling4','dcCustoms1','dcCustoms2','dcCustoms3','dcCustoms4','dcDelivery1','dcDelivery2','dcDelivery3','dcDelivery4','dcrVendor1','dcrVendor2','dcrVendor3','dcrVendor4','dcrTruckType1','dcrTruckType2','dcrTruckType3','dcrTruckType4','dcrTruckUsage1','dcrTruckUsage2','dcrTruckUsage3','dcrTruckUsage4','dcrRatePerTruck1','dcrRatePerTruck2','dcrRatePerTruck3','dcrRatePerTruck4','dcrHandling1','dcrHandling2','dcrHandling3','dcrHandling4','dcrCustoms1','dcrCustoms2','dcrCustoms3','dcrCustoms4','dcrDelivery1','dcrDelivery2','dcrDelivery3','dcrDelivery4','dcRemark1','dcRemark2','dcRemark3','dcRemark4','dcrRemark1','dcrRemark2','dcrRemark3','dcrRemark4'];
+  const cols = ['jobNo','type','date','month','customer','cargoService','mode','expImp','service','origin','dest','route','carrier','coloader','etd','eta','transit','containers','itemsJSON','vendorName','truckType','totalTruck','driverName','licensePlate','pickupDate','mawb','notes','status','savedAt','bookingWeight','chargeableWeight','remark','quotationRef','crStatus','invoiceIssueDate','cutoffDays','ruleType','refJobNo','lcCostAmount','lcRevAmount','frCostAmount','frRevAmount','dcCostAmount','dcRevAmount','revAmount','costAmount','gpAmount','gpPercent','crMawb','crCustomer','crMode','crCargoService','crExpImp','crOrigin','crDest','crEtd','crChargeableWeight','costPerKg','sellingPerKg','costPerContainer','sellingPerContainer','lcVendor1','lcVendor2','lcVendor3','lcVendor4','lcService1','lcService2','lcService3','lcService4','lcTruckType1','lcTruckType2','lcTruckType3','lcTruckType4','lcTruckUsage1','lcTruckUsage2','lcTruckUsage3','lcTruckUsage4','lcRatePerTruck1','lcRatePerTruck2','lcRatePerTruck3','lcRatePerTruck4','lcCustoms1','lcCustoms2','lcCustoms3','lcCustoms4','lcHandling1','lcHandling2','lcHandling3','lcHandling4','lcTerminal1','lcTerminal2','lcTerminal3','lcTerminal4','lcDocument1','lcDocument2','lcDocument3','lcDocument4','lcAirlinesOther1','lcAirlinesOther2','lcAirlinesOther3','lcAirlinesOther4','lcPacking1','lcPacking2','lcPacking3','lcPacking4','lcOT1','lcOT2','lcOT3','lcOT4','lcOther1','lcOther2','lcOther3','lcOther4','lcOtherRemark1','lcOtherRemark2','lcOtherRemark3','lcOtherRemark4','lcrVendor1','lcrVendor2','lcrVendor3','lcrVendor4','lcrService1','lcrService2','lcrService3','lcrService4','lcrTruckType1','lcrTruckType2','lcrTruckType3','lcrTruckType4','lcrTruckUsage1','lcrTruckUsage2','lcrTruckUsage3','lcrTruckUsage4','lcrRatePerTruck1','lcrRatePerTruck2','lcrRatePerTruck3','lcrRatePerTruck4','lcrCustoms1','lcrCustoms2','lcrCustoms3','lcrCustoms4','lcrHandling1','lcrHandling2','lcrHandling3','lcrHandling4','lcrTerminal1','lcrTerminal2','lcrTerminal3','lcrTerminal4','lcrDocument1','lcrDocument2','lcrDocument3','lcrDocument4','lcrAirlinesOther1','lcrAirlinesOther2','lcrAirlinesOther3','lcrAirlinesOther4','lcrPacking1','lcrPacking2','lcrPacking3','lcrPacking4','lcrOT1','lcrOT2','lcrOT3','lcrOT4','lcrOther1','lcrOther2','lcrOther3','lcrOther4','lcrOtherRemark1','lcrOtherRemark2','lcrOtherRemark3','lcrOtherRemark4','dcVendor1','dcVendor2','dcVendor3','dcVendor4','dcTruckType1','dcTruckType2','dcTruckType3','dcTruckType4','dcTruckUsage1','dcTruckUsage2','dcTruckUsage3','dcTruckUsage4','dcRatePerTruck1','dcRatePerTruck2','dcRatePerTruck3','dcRatePerTruck4','dcHandling1','dcHandling2','dcHandling3','dcHandling4','dcCustoms1','dcCustoms2','dcCustoms3','dcCustoms4','dcDelivery1','dcDelivery2','dcDelivery3','dcDelivery4','dcrVendor1','dcrVendor2','dcrVendor3','dcrVendor4','dcrTruckType1','dcrTruckType2','dcrTruckType3','dcrTruckType4','dcrTruckUsage1','dcrTruckUsage2','dcrTruckUsage3','dcrTruckUsage4','dcrRatePerTruck1','dcrRatePerTruck2','dcrRatePerTruck3','dcrRatePerTruck4','dcrHandling1','dcrHandling2','dcrHandling3','dcrHandling4','dcrCustoms1','dcrCustoms2','dcrCustoms3','dcrCustoms4','dcrDelivery1','dcrDelivery2','dcrDelivery3','dcrDelivery4','dcRemark1','dcRemark2','dcRemark3','dcRemark4','dcrRemark1','dcrRemark2','dcrRemark3','dcrRemark4'];
   const header = cols.join(',');
   const rows = records.map(r=>{
     return cols.map(c=>csvEscape(r[c])).join(',');
@@ -4505,79 +4547,79 @@ const csvTemplateCols = [
   'type','mawb','date','customer','cargoService','mode','expImp','service',
   'origin','dest','etd','eta','product','bookingWeight','chargeableWeight','container',
   'pieces','remarks','vendorName','truckType','totalTruck','driverName','licensePlate','pickupDate',
-  'notes','status','crstatus','costPerKg','sellingPerKg','lcVendor1','lcVendor2','lcVendor3',
-  'lcVendor4','lcService1','lcService2','lcService3','lcService4','lcTruckType1','lcTruckType2','lcTruckType3',
-  'lcTruckType4','lcTruckUsage1','lcTruckUsage2','lcTruckUsage3','lcTruckUsage4','lcRatePerTruck1','lcRatePerTruck2','lcRatePerTruck3',
-  'lcRatePerTruck4','lcCustoms1','lcCustoms2','lcCustoms3','lcCustoms4','lcHandling1','lcHandling2','lcHandling3',
-  'lcHandling4','lcTerminal1','lcTerminal2','lcTerminal3','lcTerminal4','lcDocument1','lcDocument2','lcDocument3',
-  'lcDocument4','lcAirlinesOther1','lcAirlinesOther2','lcAirlinesOther3','lcAirlinesOther4','lcPacking1','lcPacking2','lcPacking3',
-  'lcPacking4','lcOT1','lcOT2','lcOT3','lcOT4','lcOther1','lcOther2','lcOther3',
-  'lcOther4','lcOtherRemark1','lcOtherRemark2','lcOtherRemark3','lcOtherRemark4','lcVendor5','lcService5','lcTruckType5',
-  'lcTruckUsage5','lcRatePerTruck5','lcCustoms5','lcHandling5','lcTerminal5','lcDocument5','lcAirlinesOther5','lcPacking5',
-  'lcOT5','lcOther5','lcOtherRemark5','lcrVendor1','lcrVendor2','lcrVendor3','lcrVendor4','lcrService1',
-  'lcrService2','lcrService3','lcrService4','lcrTruckType1','lcrTruckType2','lcrTruckType3','lcrTruckType4','lcrTruckUsage1',
-  'lcrTruckUsage2','lcrTruckUsage3','lcrTruckUsage4','lcrRatePerTruck1','lcrRatePerTruck2','lcrRatePerTruck3','lcrRatePerTruck4','lcrCustoms1',
-  'lcrCustoms2','lcrCustoms3','lcrCustoms4','lcrHandling1','lcrHandling2','lcrHandling3','lcrHandling4','lcrTerminal1',
-  'lcrTerminal2','lcrTerminal3','lcrTerminal4','lcrDocument1','lcrDocument2','lcrDocument3','lcrDocument4','lcrAirlinesOther1',
-  'lcrAirlinesOther2','lcrAirlinesOther3','lcrAirlinesOther4','lcrPacking1','lcrPacking2','lcrPacking3','lcrPacking4','lcrOT1',
-  'lcrOT2','lcrOT3','lcrOT4','lcrOther1','lcrOther2','lcrOther3','lcrOther4','lcrOtherRemark1',
-  'lcrOtherRemark2','lcrOtherRemark3','lcrOtherRemark4','lcrVendor5','lcrService5','lcrTruckType5','lcrTruckUsage5','lcrRatePerTruck5',
-  'lcrCustoms5','lcrHandling5','lcrTerminal5','lcrDocument5','lcrAirlinesOther5','lcrPacking5','lcrOT5','lcrOther5',
-  'lcrOtherRemark5','dcVendor1','dcVendor2','dcVendor3','dcVendor4','dcTruckType1','dcTruckType2','dcTruckType3',
-  'dcTruckType4','dcTruckUsage1','dcTruckUsage2','dcTruckUsage3','dcTruckUsage4','dcRatePerTruck1','dcRatePerTruck2','dcRatePerTruck3',
-  'dcRatePerTruck4','dcHandling1','dcHandling2','dcHandling3','dcHandling4','dcCustoms1','dcCustoms2','dcCustoms3',
-  'dcCustoms4','dcDelivery1','dcDelivery2','dcDelivery3','dcDelivery4','dcTerminalCharges1','dcTerminalCharges2','dcTerminalCharges3',
-  'dcTerminalCharges4','dcTransferFee1','dcTransferFee2','dcTransferFee3','dcTransferFee4','dcOvertime1','dcOvertime2','dcOvertime3',
-  'dcOvertime4','dcStorageCharges1','dcStorageCharges2','dcStorageCharges3','dcStorageCharges4','dcBreakbulk1','dcBreakbulk2','dcBreakbulk3',
-  'dcBreakbulk4','dcOther1','dcOther2','dcOther3','dcOther4','dcRemark1','dcRemark2','dcRemark3',
-  'dcRemark4','dcrVendor1','dcrVendor2','dcrVendor3','dcrVendor4','dcrTruckType1','dcrTruckType2','dcrTruckType3',
-  'dcrTruckType4','dcrTruckUsage1','dcrTruckUsage2','dcrTruckUsage3','dcrTruckUsage4','dcrRatePerTruck1','dcrRatePerTruck2','dcrRatePerTruck3',
-  'dcrRatePerTruck4','dcrHandling1','dcrHandling2','dcrHandling3','dcrHandling4','dcrCustoms1','dcrCustoms2','dcrCustoms3',
-  'dcrCustoms4','dcrDelivery1','dcrDelivery2','dcrDelivery3','dcrDelivery4','dcrTerminalCharges1','dcrTerminalCharges2','dcrTerminalCharges3',
-  'dcrTerminalCharges4','dcrTransferFee1','dcrTransferFee2','dcrTransferFee3','dcrTransferFee4','dcrOvertime1','dcrOvertime2','dcrOvertime3',
-  'dcrOvertime4','dcrStorageCharges1','dcrStorageCharges2','dcrStorageCharges3','dcrStorageCharges4','dcrBreakbulk1','dcrBreakbulk2','dcrBreakbulk3',
-  'dcrBreakbulk4','dcrOther1','dcrOther2','dcrOther3','dcrOther4','dcrRemark1','dcrRemark2','dcrRemark3',
-  'dcrRemark4'
+  'notes','status','crstatus','costPerKg','sellingPerKg','costPerContainer','sellingPerContainer','lcVendor1',
+  'lcVendor2','lcVendor3','lcVendor4','lcService1','lcService2','lcService3','lcService4','lcTruckType1',
+  'lcTruckType2','lcTruckType3','lcTruckType4','lcTruckUsage1','lcTruckUsage2','lcTruckUsage3','lcTruckUsage4','lcRatePerTruck1',
+  'lcRatePerTruck2','lcRatePerTruck3','lcRatePerTruck4','lcCustoms1','lcCustoms2','lcCustoms3','lcCustoms4','lcHandling1',
+  'lcHandling2','lcHandling3','lcHandling4','lcTerminal1','lcTerminal2','lcTerminal3','lcTerminal4','lcDocument1',
+  'lcDocument2','lcDocument3','lcDocument4','lcAirlinesOther1','lcAirlinesOther2','lcAirlinesOther3','lcAirlinesOther4','lcPacking1',
+  'lcPacking2','lcPacking3','lcPacking4','lcOT1','lcOT2','lcOT3','lcOT4','lcOther1',
+  'lcOther2','lcOther3','lcOther4','lcOtherRemark1','lcOtherRemark2','lcOtherRemark3','lcOtherRemark4','lcVendor5',
+  'lcService5','lcTruckType5','lcTruckUsage5','lcRatePerTruck5','lcCustoms5','lcHandling5','lcTerminal5','lcDocument5',
+  'lcAirlinesOther5','lcPacking5','lcOT5','lcOther5','lcOtherRemark5','lcrVendor1','lcrVendor2','lcrVendor3',
+  'lcrVendor4','lcrService1','lcrService2','lcrService3','lcrService4','lcrTruckType1','lcrTruckType2','lcrTruckType3',
+  'lcrTruckType4','lcrTruckUsage1','lcrTruckUsage2','lcrTruckUsage3','lcrTruckUsage4','lcrRatePerTruck1','lcrRatePerTruck2','lcrRatePerTruck3',
+  'lcrRatePerTruck4','lcrCustoms1','lcrCustoms2','lcrCustoms3','lcrCustoms4','lcrHandling1','lcrHandling2','lcrHandling3',
+  'lcrHandling4','lcrTerminal1','lcrTerminal2','lcrTerminal3','lcrTerminal4','lcrDocument1','lcrDocument2','lcrDocument3',
+  'lcrDocument4','lcrAirlinesOther1','lcrAirlinesOther2','lcrAirlinesOther3','lcrAirlinesOther4','lcrPacking1','lcrPacking2','lcrPacking3',
+  'lcrPacking4','lcrOT1','lcrOT2','lcrOT3','lcrOT4','lcrOther1','lcrOther2','lcrOther3',
+  'lcrOther4','lcrOtherRemark1','lcrOtherRemark2','lcrOtherRemark3','lcrOtherRemark4','lcrVendor5','lcrService5','lcrTruckType5',
+  'lcrTruckUsage5','lcrRatePerTruck5','lcrCustoms5','lcrHandling5','lcrTerminal5','lcrDocument5','lcrAirlinesOther5','lcrPacking5',
+  'lcrOT5','lcrOther5','lcrOtherRemark5','dcVendor1','dcVendor2','dcVendor3','dcVendor4','dcTruckType1',
+  'dcTruckType2','dcTruckType3','dcTruckType4','dcTruckUsage1','dcTruckUsage2','dcTruckUsage3','dcTruckUsage4','dcRatePerTruck1',
+  'dcRatePerTruck2','dcRatePerTruck3','dcRatePerTruck4','dcHandling1','dcHandling2','dcHandling3','dcHandling4','dcCustoms1',
+  'dcCustoms2','dcCustoms3','dcCustoms4','dcDelivery1','dcDelivery2','dcDelivery3','dcDelivery4','dcTerminalCharges1',
+  'dcTerminalCharges2','dcTerminalCharges3','dcTerminalCharges4','dcTransferFee1','dcTransferFee2','dcTransferFee3','dcTransferFee4','dcOvertime1',
+  'dcOvertime2','dcOvertime3','dcOvertime4','dcStorageCharges1','dcStorageCharges2','dcStorageCharges3','dcStorageCharges4','dcBreakbulk1',
+  'dcBreakbulk2','dcBreakbulk3','dcBreakbulk4','dcOther1','dcOther2','dcOther3','dcOther4','dcRemark1',
+  'dcRemark2','dcRemark3','dcRemark4','dcrVendor1','dcrVendor2','dcrVendor3','dcrVendor4','dcrTruckType1',
+  'dcrTruckType2','dcrTruckType3','dcrTruckType4','dcrTruckUsage1','dcrTruckUsage2','dcrTruckUsage3','dcrTruckUsage4','dcrRatePerTruck1',
+  'dcrRatePerTruck2','dcrRatePerTruck3','dcrRatePerTruck4','dcrHandling1','dcrHandling2','dcrHandling3','dcrHandling4','dcrCustoms1',
+  'dcrCustoms2','dcrCustoms3','dcrCustoms4','dcrDelivery1','dcrDelivery2','dcrDelivery3','dcrDelivery4','dcrTerminalCharges1',
+  'dcrTerminalCharges2','dcrTerminalCharges3','dcrTerminalCharges4','dcrTransferFee1','dcrTransferFee2','dcrTransferFee3','dcrTransferFee4','dcrOvertime1',
+  'dcrOvertime2','dcrOvertime3','dcrOvertime4','dcrStorageCharges1','dcrStorageCharges2','dcrStorageCharges3','dcrStorageCharges4','dcrBreakbulk1',
+  'dcrBreakbulk2','dcrBreakbulk3','dcrBreakbulk4','dcrOther1','dcrOther2','dcrOther3','dcrOther4','dcrRemark1',
+  'dcrRemark2','dcrRemark3','dcrRemark4'
 ];
 
 function downloadCSVTemplate(){
-          const sampleRow = [
+            const sampleRow = [
     'booking','057-4969 2672','2026-07-08','EOPTOLINK','Freight Forwarding','Air','Export','P2P',
     'BKK','ORD','2026-07-08','2026-07-09','Optical modules','4998','4998','',
     '12','','','','','','','',
-    '','pod','cost-rev-input-completed','8.5','12','NP, FM','','',
+    '','pod','cost-rev-input-completed','8.5','12','','','NP, FM',
+    '','','','','','','','6W',
+    '','','','1','','','','5000',
+    '','','','750','','','','',
+    '','','','','','','','200',
+    '','','','1200','','','','',
+    '','','','','','','','',
+    '','','','','','','','',
+    '','','','','','','','',
+    '','','','','','NP, FM','','',
     '','','','','','6W','','',
-    '','1','','','','5000','','',
-    '','750','','','','','','',
-    '','','','','','200','','',
-    '','1200','','','','','','',
+    '','1','','','','6500','','',
+    '','900','','','','','','',
+    '','','','','','250','','',
+    '','1400','','','','','','',
     '','','','','','','','',
     '','','','','','','','',
     '','','','','','','','',
-    '','','','NP, FM','','','','',
-    '','','','6W','','','','1',
-    '','','','6500','','','','900',
-    '','','','','','','','',
-    '','','','250','','','','1400',
-    '','','','','','','','',
+    '','','','Bangkok Cartage','','','','4W',
+    '','','','1','','','','',
+    '','','','500','','','','300',
+    '','','','400','','','','',
     '','','','','','','','',
     '','','','','','','','',
     '','','','','','','','',
-    '','Bangkok Cartage','','','','4W','','',
-    '','1','','','','','','',
-    '','500','','','','300','','',
-    '','400','','','','','','',
+    '','','','Bangkok Cartage','','','','4W',
+    '','','','1','','','','',
+    '','','','800','','','','450',
+    '','','','600','','','','',
     '','','','','','','','',
     '','','','','','','','',
     '','','','','','','','',
-    '','Bangkok Cartage','','','','4W','','',
-    '','1','','','','','','',
-    '','800','','','','450','','',
-    '','600','','','','','','',
-    '','','','','','','','',
-    '','','','','','','','',
-    '','','','','','','','',
-    ''
+    '','',''
   ];
   const csv = csvTemplateCols.join(',') + '\n' + sampleRow.map(csvEscape).join(',');
   downloadFile('job-sheet-import-template.csv', csv, 'text/csv');
@@ -4787,7 +4829,11 @@ function importCSV(file){
             dcRevAmount += dcrTruck + (parseFloat(obj['dcrHandling'+vi])||0)+(parseFloat(obj['dcrCustoms'+vi])||0)+(parseFloat(obj['dcrDelivery'+vi])||0)+(parseFloat(obj['dcrTerminalCharges'+vi])||0)+(parseFloat(obj['dcrTransferFee'+vi])||0)+(parseFloat(obj['dcrOvertime'+vi])||0)+(parseFloat(obj['dcrStorageCharges'+vi])||0)+(parseFloat(obj['dcrBreakbulk'+vi])||0)+(parseFloat(obj['dcrOther'+vi])||0);
           }
           const costPerKg = parseFloat(obj.costPerKg)||0, sellingPerKg = parseFloat(obj.sellingPerKg)||0;
-          const frCostAmount = w*costPerKg, frRevAmount = w*sellingPerKg;
+          const costPerContainer = parseFloat(obj.costPerContainer)||0, sellingPerContainer = parseFloat(obj.sellingPerContainer)||0;
+          const containersVal = parseFloat(obj.containers)||0;
+          const isSeaMode = obj.mode==='Sea';
+          const frCostAmount = isSeaMode ? (containersVal*costPerContainer) : (w*costPerKg);
+          const frRevAmount = isSeaMode ? (containersVal*sellingPerContainer) : (w*sellingPerKg);
           const totalCost = lcCostAmount+frCostAmount+dcCostAmount;
           const totalRev = lcRevAmount+frRevAmount+dcRevAmount;
           rec.lcCostAmount=round2(lcCostAmount); rec.lcRevAmount=round2(lcRevAmount);
