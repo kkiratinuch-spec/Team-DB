@@ -1536,10 +1536,11 @@ function updateGP(){
   const costPerContainer = parseFloat(document.getElementById('f_costpercontainer').value) || 0;
   const sellingPerContainer = parseFloat(document.getElementById('f_sellingpercontainer').value) || 0;
   let frCost, frRev, frHasData;
-  if(isSea){
+  const useContainerCalc = isSea && containers > 0 && (costPerContainer > 0 || sellingPerContainer > 0);
+  if(useContainerCalc){
     frCost = containers * costPerContainer;
     frRev = containers * sellingPerContainer;
-    frHasData = containers > 0 && (costPerContainer > 0 || sellingPerContainer > 0);
+    frHasData = true;
   }else{
     frCost = chargeableWeight * costPerKg;
     frRev = chargeableWeight * sellingPerKg;
@@ -2823,8 +2824,13 @@ function normalizeRecord(r){
     const costPerContainer = num(rec.costPerContainer);
     const sellingPerContainer = num(rec.sellingPerContainer);
     const containers = num(rec.containers);
-    const frCostAmount = rec.mode==='Sea' ? (containers * costPerContainer) : (weight * costPerKg);
-    const frRevAmount = rec.mode==='Sea' ? (containers * sellingPerContainer) : (weight * sellingPerKg);
+    // Sea freight normally bills per container, but older/incomplete records may only
+    // have a weight-based rate filled in (no container count yet). Only use the
+    // container-based calculation when there's actually container data to use;
+    // otherwise fall back to the weight-based rate so existing revenue isn't lost.
+    const useContainerCalc = rec.mode==='Sea' && containers>0 && (costPerContainer>0 || sellingPerContainer>0);
+    const frCostAmount = useContainerCalc ? (containers * costPerContainer) : (weight * costPerKg);
+    const frRevAmount = useContainerCalc ? (containers * sellingPerContainer) : (weight * sellingPerKg);
 
     const costAmount = lcCostAmount + frCostAmount + dcCostAmount;
     const revAmount = lcRevAmount + frRevAmount + dcRevAmount;
@@ -4859,9 +4865,9 @@ function importCSV(file){
           const costPerKg = parseFloat(obj.costPerKg)||0, sellingPerKg = parseFloat(obj.sellingPerKg)||0;
           const costPerContainer = parseFloat(obj.costPerContainer)||0, sellingPerContainer = parseFloat(obj.sellingPerContainer)||0;
           const containersVal = parseFloat(obj.containers)||0;
-          const isSeaMode = obj.mode==='Sea';
-          const frCostAmount = isSeaMode ? (containersVal*costPerContainer) : (w*costPerKg);
-          const frRevAmount = isSeaMode ? (containersVal*sellingPerContainer) : (w*sellingPerKg);
+          const useContainerCalcImport = obj.mode==='Sea' && containersVal>0 && (costPerContainer>0 || sellingPerContainer>0);
+          const frCostAmount = useContainerCalcImport ? (containersVal*costPerContainer) : (w*costPerKg);
+          const frRevAmount = useContainerCalcImport ? (containersVal*sellingPerContainer) : (w*sellingPerKg);
           const totalCost = lcCostAmount+frCostAmount+dcCostAmount;
           const totalRev = lcRevAmount+frRevAmount+dcRevAmount;
           rec.lcCostAmount=round2(lcCostAmount); rec.lcRevAmount=round2(lcRevAmount);
