@@ -2784,29 +2784,57 @@ function normalizeRecord(r){
   const containers = items.length ? items.reduce((s,it)=>s+itemContainer(it),0) : (parseFloat(r.containers)||0);
   const rec = Object.assign({}, r, {weight, bookingWeight, containers});
 
-  // If this record has Cost & Revenue attached, recompute the Freight amounts (and
-  // therefore the Grand Total) using the Booking's CURRENT chargeable weight, rather
-  // than trusting whatever was stored the last time the Cost & Revenue form was saved.
-  // This means editing the Booking's weight is reflected immediately everywhere
-  // (Dashboard, Grand Total, Saved Job Sheets) without needing to reopen and re-save
-  // the Cost & Revenue form.
+  // If this record has Cost & Revenue attached, recompute EVERY charge amount (Local
+  // Charge across up to 5 vendors, Destination Charge across up to 4 vendors, and
+  // mode-aware Freight) from the underlying per-field values, rather than trusting
+  // whatever totals were stored the last time the Cost & Revenue form was saved.
+  // This guarantees the Dashboard is always accurate — even for older records saved
+  // before a new vendor slot or charge field existed, or rows edited directly in the
+  // raw sheet — without needing to reopen and re-save the Cost & Revenue form.
   if(rec.crStatus){
-    const costPerKg = parseFloat(rec.costPerKg)||0;
-    const sellingPerKg = parseFloat(rec.sellingPerKg)||0;
-    const costPerContainer = parseFloat(rec.costPerContainer)||0;
-    const sellingPerContainer = parseFloat(rec.sellingPerContainer)||0;
-    const containers = parseFloat(rec.containers)||0;
-    const lcCostAmount = parseFloat(rec.lcCostAmount)||0;
-    const lcRevAmount = parseFloat(rec.lcRevAmount)||0;
-    const dcCostAmount = parseFloat(rec.dcCostAmount)||0;
-    const dcRevAmount = parseFloat(rec.dcRevAmount)||0;
+    const num = v => parseFloat(v) || 0;
+
+    const LC_CHARGE_FIELDS = ['Customs','Handling','Terminal','Document','AirlinesOther','Packing','OT','Other'];
+    function sumLocalCharge(prefix){
+      let total = 0;
+      for(let vi=1; vi<=5; vi++){
+        total += num(rec[prefix+'RatePerTruck'+vi]) * num(rec[prefix+'TruckUsage'+vi]);
+        LC_CHARGE_FIELDS.forEach(f=>{ total += num(rec[prefix+f+vi]); });
+      }
+      return total;
+    }
+    const lcCostAmount = sumLocalCharge('lc');
+    const lcRevAmount = sumLocalCharge('lcr');
+
+    const DC_CHARGE_FIELDS = ['Handling','Customs','Delivery','TerminalCharges','TransferFee','Overtime','StorageCharges','Breakbulk','Other'];
+    function sumDestCharge(prefix){
+      let total = 0;
+      for(let vi=1; vi<=4; vi++){
+        total += num(rec[prefix+'RatePerTruck'+vi]) * num(rec[prefix+'TruckUsage'+vi]);
+        DC_CHARGE_FIELDS.forEach(f=>{ total += num(rec[prefix+f+vi]); });
+      }
+      return total;
+    }
+    const dcCostAmount = sumDestCharge('dc');
+    const dcRevAmount = sumDestCharge('dcr');
+
+    const costPerKg = num(rec.costPerKg);
+    const sellingPerKg = num(rec.sellingPerKg);
+    const costPerContainer = num(rec.costPerContainer);
+    const sellingPerContainer = num(rec.sellingPerContainer);
+    const containers = num(rec.containers);
     const frCostAmount = rec.mode==='Sea' ? (containers * costPerContainer) : (weight * costPerKg);
     const frRevAmount = rec.mode==='Sea' ? (containers * sellingPerContainer) : (weight * sellingPerKg);
+
     const costAmount = lcCostAmount + frCostAmount + dcCostAmount;
     const revAmount = lcRevAmount + frRevAmount + dcRevAmount;
     const gpAmount = revAmount - costAmount;
     const gpPercent = revAmount>0 ? (gpAmount/revAmount*100) : 0;
     rec.crChargeableWeight = String(weight);
+    rec.lcCostAmount = lcCostAmount;
+    rec.lcRevAmount = lcRevAmount;
+    rec.dcCostAmount = dcCostAmount;
+    rec.dcRevAmount = dcRevAmount;
     rec.frCostAmount = frCostAmount;
     rec.frRevAmount = frRevAmount;
     rec.costAmount = costAmount;
