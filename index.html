@@ -1489,7 +1489,8 @@ function updateGP(){
       + (parseFloat(document.getElementById('f_lc_airlinesother'+vi).value) || 0)
       + (parseFloat(document.getElementById('f_lc_packing'+vi).value) || 0)
       + (parseFloat(document.getElementById('f_lc_ot'+vi).value) || 0)
-      + (parseFloat(document.getElementById('f_lc_other'+vi).value) || 0);
+      + (parseFloat(document.getElementById('f_lc_other'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_lc_service'+vi).value) || 0);
   }
   const lcHandling = lcPickup + lcHandlingSum;
   const lcCost = lcHandling;
@@ -1511,7 +1512,8 @@ function updateGP(){
       + (parseFloat(document.getElementById('f_lcr_airlinesother'+vi).value) || 0)
       + (parseFloat(document.getElementById('f_lcr_packing'+vi).value) || 0)
       + (parseFloat(document.getElementById('f_lcr_ot'+vi).value) || 0)
-      + (parseFloat(document.getElementById('f_lcr_other'+vi).value) || 0);
+      + (parseFloat(document.getElementById('f_lcr_other'+vi).value) || 0)
+      + (parseFloat(document.getElementById('f_lcr_service'+vi).value) || 0);
   }
   const lcHandlingRev = lcrPickup + lcHandlingRevSum;
   const lcRev = lcHandlingRev;
@@ -2373,7 +2375,7 @@ function gatherRecord(){
       const lcCost = parseFloat(document.getElementById('f_lc_totalcost').textContent.replace(/,/g,''))||0;
       const w = parseFloat(document.getElementById('f_cr_chargeableweight').textContent)||0;
       const c = parseFloat(document.getElementById('f_costperkg').value)||0;
-      const dcCost = [1,2,3,4].reduce((s,vi)=>s+((parseFloat(document.getElementById('f_dc_ratepertruck'+vi).value)||0)*(parseFloat(document.getElementById('f_dc_truckusage'+vi).value)||0))+(parseFloat(document.getElementById('f_dc_handling'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_customs'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_delivery'+vi).value)||0),0);
+      const dcCost = parseFloat(document.getElementById('f_dc_totalcost').textContent.replace(/,/g,''))||0;
       return lcCost + (w*c) + dcCost;
     })(),
     gpAmount: (function(){
@@ -2382,7 +2384,7 @@ function gatherRecord(){
       const w = parseFloat(document.getElementById('f_cr_chargeableweight').textContent)||0;
       const s = parseFloat(document.getElementById('f_sellingperkg').value)||0;
       const c = parseFloat(document.getElementById('f_costperkg').value)||0;
-      const dcCost = [1,2,3,4].reduce((s,vi)=>s+((parseFloat(document.getElementById('f_dc_ratepertruck'+vi).value)||0)*(parseFloat(document.getElementById('f_dc_truckusage'+vi).value)||0))+(parseFloat(document.getElementById('f_dc_handling'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_customs'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_delivery'+vi).value)||0),0);
+      const dcCost = parseFloat(document.getElementById('f_dc_totalcost').textContent.replace(/,/g,''))||0;
       const dcRev = parseFloat(document.getElementById('f_dc_totalrev').textContent.replace(/,/g,''))||0;
       const totalCost = lcCost + (w*c) + dcCost;
       const totalRev = lcRev + (w*s) + dcRev;
@@ -2394,7 +2396,7 @@ function gatherRecord(){
       const w = parseFloat(document.getElementById('f_cr_chargeableweight').textContent)||0;
       const s = parseFloat(document.getElementById('f_sellingperkg').value)||0;
       const c = parseFloat(document.getElementById('f_costperkg').value)||0;
-      const dcCost = [1,2,3,4].reduce((s,vi)=>s+((parseFloat(document.getElementById('f_dc_ratepertruck'+vi).value)||0)*(parseFloat(document.getElementById('f_dc_truckusage'+vi).value)||0))+(parseFloat(document.getElementById('f_dc_handling'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_customs'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_delivery'+vi).value)||0),0);
+      const dcCost = parseFloat(document.getElementById('f_dc_totalcost').textContent.replace(/,/g,''))||0;
       const dcRev = parseFloat(document.getElementById('f_dc_totalrev').textContent.replace(/,/g,''))||0;
       const totalCost = lcCost + (w*c) + dcCost;
       const totalRev = lcRev + (w*s) + dcRev;
@@ -2795,7 +2797,7 @@ function normalizeRecord(r){
   if(rec.crStatus){
     const num = v => parseFloat(v) || 0;
 
-    const LC_CHARGE_FIELDS = ['Customs','Handling','Terminal','Document','AirlinesOther','Packing','OT','Other'];
+    const LC_CHARGE_FIELDS = ['Customs','Handling','Terminal','Document','AirlinesOther','Packing','OT','Other','Service'];
     function sumLocalCharge(prefix){
       let total = 0;
       for(let vi=1; vi<=5; vi++){
