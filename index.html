@@ -1059,7 +1059,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
               <option>FRA</option><option>MUC</option><option>AMS</option><option>BRU</option><option>MAD</option>
               <option>BCN</option><option>FCO</option><option>MXP</option><option>ZRH</option><option>GVA</option>
               <option>VIE</option><option>CPH</option><option>ARN</option><option>OSL</option><option>HEL</option>
-              <option>WAW</option><option>PRG</option><option>BUD</option><option>ATH</option><option>LIS</option>
+              <option>WAW</option><option>PRG</option><option>BUD</option><option>ATH</option><option>LIS</option><option>OTO</option>
               <option>DUB</option><option>SVO</option><option>DME</option><option>LED</option>
             </optgroup>
             <optgroup label="North America">
@@ -1146,7 +1146,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
               <option>FRA</option><option>MUC</option><option>AMS</option><option>BRU</option><option>MAD</option>
               <option>BCN</option><option>FCO</option><option>MXP</option><option>ZRH</option><option>GVA</option>
               <option>VIE</option><option>CPH</option><option>ARN</option><option>OSL</option><option>HEL</option>
-              <option>WAW</option><option>PRG</option><option>BUD</option><option>ATH</option><option>LIS</option>
+              <option>WAW</option><option>PRG</option><option>BUD</option><option>ATH</option><option>LIS</option><option>OTO</option>
               <option>DUB</option><option>SVO</option><option>DME</option><option>LED</option>
             </optgroup>
             <optgroup label="North America">
@@ -1489,8 +1489,7 @@ function updateGP(){
       + (parseFloat(document.getElementById('f_lc_airlinesother'+vi).value) || 0)
       + (parseFloat(document.getElementById('f_lc_packing'+vi).value) || 0)
       + (parseFloat(document.getElementById('f_lc_ot'+vi).value) || 0)
-      + (parseFloat(document.getElementById('f_lc_other'+vi).value) || 0)
-      + (parseFloat(document.getElementById('f_lc_service'+vi).value) || 0);
+      + (parseFloat(document.getElementById('f_lc_other'+vi).value) || 0);
   }
   const lcHandling = lcPickup + lcHandlingSum;
   const lcCost = lcHandling;
@@ -1512,8 +1511,7 @@ function updateGP(){
       + (parseFloat(document.getElementById('f_lcr_airlinesother'+vi).value) || 0)
       + (parseFloat(document.getElementById('f_lcr_packing'+vi).value) || 0)
       + (parseFloat(document.getElementById('f_lcr_ot'+vi).value) || 0)
-      + (parseFloat(document.getElementById('f_lcr_other'+vi).value) || 0)
-      + (parseFloat(document.getElementById('f_lcr_service'+vi).value) || 0);
+      + (parseFloat(document.getElementById('f_lcr_other'+vi).value) || 0);
   }
   const lcHandlingRev = lcrPickup + lcHandlingRevSum;
   const lcRev = lcHandlingRev;
@@ -2375,7 +2373,7 @@ function gatherRecord(){
       const lcCost = parseFloat(document.getElementById('f_lc_totalcost').textContent.replace(/,/g,''))||0;
       const w = parseFloat(document.getElementById('f_cr_chargeableweight').textContent)||0;
       const c = parseFloat(document.getElementById('f_costperkg').value)||0;
-      const dcCost = parseFloat(document.getElementById('f_dc_totalcost').textContent.replace(/,/g,''))||0;
+      const dcCost = [1,2,3,4].reduce((s,vi)=>s+((parseFloat(document.getElementById('f_dc_ratepertruck'+vi).value)||0)*(parseFloat(document.getElementById('f_dc_truckusage'+vi).value)||0))+(parseFloat(document.getElementById('f_dc_handling'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_customs'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_delivery'+vi).value)||0),0);
       return lcCost + (w*c) + dcCost;
     })(),
     gpAmount: (function(){
@@ -2384,7 +2382,7 @@ function gatherRecord(){
       const w = parseFloat(document.getElementById('f_cr_chargeableweight').textContent)||0;
       const s = parseFloat(document.getElementById('f_sellingperkg').value)||0;
       const c = parseFloat(document.getElementById('f_costperkg').value)||0;
-      const dcCost = parseFloat(document.getElementById('f_dc_totalcost').textContent.replace(/,/g,''))||0;
+      const dcCost = [1,2,3,4].reduce((s,vi)=>s+((parseFloat(document.getElementById('f_dc_ratepertruck'+vi).value)||0)*(parseFloat(document.getElementById('f_dc_truckusage'+vi).value)||0))+(parseFloat(document.getElementById('f_dc_handling'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_customs'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_delivery'+vi).value)||0),0);
       const dcRev = parseFloat(document.getElementById('f_dc_totalrev').textContent.replace(/,/g,''))||0;
       const totalCost = lcCost + (w*c) + dcCost;
       const totalRev = lcRev + (w*s) + dcRev;
@@ -2396,7 +2394,7 @@ function gatherRecord(){
       const w = parseFloat(document.getElementById('f_cr_chargeableweight').textContent)||0;
       const s = parseFloat(document.getElementById('f_sellingperkg').value)||0;
       const c = parseFloat(document.getElementById('f_costperkg').value)||0;
-      const dcCost = parseFloat(document.getElementById('f_dc_totalcost').textContent.replace(/,/g,''))||0;
+      const dcCost = [1,2,3,4].reduce((s,vi)=>s+((parseFloat(document.getElementById('f_dc_ratepertruck'+vi).value)||0)*(parseFloat(document.getElementById('f_dc_truckusage'+vi).value)||0))+(parseFloat(document.getElementById('f_dc_handling'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_customs'+vi).value)||0)+(parseFloat(document.getElementById('f_dc_delivery'+vi).value)||0),0);
       const dcRev = parseFloat(document.getElementById('f_dc_totalrev').textContent.replace(/,/g,''))||0;
       const totalCost = lcCost + (w*c) + dcCost;
       const totalRev = lcRev + (w*s) + dcRev;
@@ -2797,7 +2795,7 @@ function normalizeRecord(r){
   if(rec.crStatus){
     const num = v => parseFloat(v) || 0;
 
-    const LC_CHARGE_FIELDS = ['Customs','Handling','Terminal','Document','AirlinesOther','Packing','OT','Other','Service'];
+    const LC_CHARGE_FIELDS = ['Customs','Handling','Terminal','Document','AirlinesOther','Packing','OT','Other'];
     function sumLocalCharge(prefix){
       let total = 0;
       for(let vi=1; vi<=5; vi++){
@@ -2965,6 +2963,25 @@ async function saveSheet(){
     document.getElementById('savedTime').textContent = new Date(rec.savedAt).toLocaleString('en-GB');
     isDirty = false;
     showToast('✓ Save successful');
+
+    // Auto-sync: if this MAWB has Cost & Revenue attached, immediately recompute every
+    // charge amount from the current underlying data (same logic as normalizeRecord/
+    // Sync-Recalculate-All) and write it straight back to the raw sheet. This keeps
+    // Raw Data in sync with what the Dashboard shows on every save — for a Booking
+    // edit (e.g. changing weight) as much as a Cost & Revenue edit — instead of only
+    // updating live in the app until someone reopens Cost & Revenue or runs Sync
+    // Recalculate All by hand.
+    try{
+      const targetJobNo = (currentType==='finance' && window.crMergeTarget) ? window.crMergeTarget.jobNo : rec.jobNo;
+      const freshAll = await dataGetAll();
+      const freshRec = freshAll.find(r=>r.jobNo===targetJobNo);
+      if(freshRec && freshRec.crStatus){
+        await dataSave(freshRec);
+      }
+    }catch(syncErr){
+      console.error('Auto-sync of Cost & Revenue totals failed (non-blocking):', syncErr);
+    }
+
     refreshList();
   }catch(e){
     alert('Save failed, please try again.');
