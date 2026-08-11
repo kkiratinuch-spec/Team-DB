@@ -42,7 +42,7 @@ body{
 }
 .mono{font-family:'IBM Plex Mono',monospace;}
 
-.wrap{max-width:960px; margin:0 auto; padding:24px 20px 60px;}
+.wrap{max-width:1400px; margin:0 auto; padding:24px 20px 60px;}
 
 .toolbar{
   display:flex; gap:10px; flex-wrap:wrap; align-items:center;
@@ -603,28 +603,67 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:8px; margin-bottom:14px;">
         <div class="metric-sm" style="background:#EAEAEA;"><div class="num" id="arTotalCountFF" style="color:#555;">—</div><div class="lbl">Total MAWB</div></div>
         <div class="metric-sm" style="background:#EAEAEA;"><div class="num" id="arTotalRevFF" style="color:#555;">—</div><div class="lbl">Estimate Revenue</div></div>
+        <div class="metric-sm" style="background:#FBD9EA;"><div class="num" id="arInvoicedCountFF" style="color:#A3266B;">—</div><div class="lbl">INV Issued — MAWB</div></div>
+        <div class="metric-sm" style="background:#FBD9EA;"><div class="num" id="arInvoicedRevFF" style="color:#A3266B;">—</div><div class="lbl">INV Issued — Revenue</div></div>
+        <div class="metric-sm" style="background:#D6EBF7;"><div class="num" id="arReconcileCountFF" style="color:#1B5A82;">—</div><div class="lbl">Reconcile — MAWB</div></div>
+        <div class="metric-sm" style="background:#D6EBF7;"><div class="num" id="arReconcileRevFF" style="color:#1B5A82;">—</div><div class="lbl">Reconcile — Revenue</div></div>
         <div class="metric-sm" style="background:#E2EFDA;"><div class="num" id="arOnTrackCountFF" style="color:#1E6B3C;">—</div><div class="lbl">On Track — MAWB</div></div>
         <div class="metric-sm" style="background:#E2EFDA;"><div class="num" id="arOnTrackRevFF" style="color:#1E6B3C;">—</div><div class="lbl">On Track — Revenue</div></div>
         <div class="metric-sm" style="background:#FBE4E1;"><div class="num" id="arOverdueCountFF" style="color:#A32D2D;">—</div><div class="lbl">Overdue — MAWB</div></div>
         <div class="metric-sm" style="background:#FBE4E1;"><div class="num" id="arOverdueRevFF" style="color:#A32D2D;">—</div><div class="lbl">Overdue — Revenue</div></div>
-        <div class="metric-sm" style="background:#D6EBF7;"><div class="num" id="arReconcileCountFF" style="color:#1B5A82;">—</div><div class="lbl">Reconcile — MAWB</div></div>
-        <div class="metric-sm" style="background:#D6EBF7;"><div class="num" id="arReconcileRevFF" style="color:#1B5A82;">—</div><div class="lbl">Reconcile — Revenue</div></div>
-        <div class="metric-sm" style="background:#FBD9EA;"><div class="num" id="arInvoicedCountFF" style="color:#A3266B;">—</div><div class="lbl">INV Issued — MAWB</div></div>
-        <div class="metric-sm" style="background:#FBD9EA;"><div class="num" id="arInvoicedRevFF" style="color:#A3266B;">—</div><div class="lbl">INV Issued — Revenue</div></div>
       </div>
 
       <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:6px;">Summary — Express</div>
       <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:8px; margin-bottom:18px;">
         <div class="metric-sm" style="background:#EAEAEA;"><div class="num" id="arTotalCountExpress" style="color:#555;">—</div><div class="lbl">Total MAWB</div></div>
         <div class="metric-sm" style="background:#EAEAEA;"><div class="num" id="arTotalRevExpress" style="color:#555;">—</div><div class="lbl">Estimate Revenue</div></div>
+        <div class="metric-sm" style="background:#FBD9EA;"><div class="num" id="arInvoicedCountExpress" style="color:#A3266B;">—</div><div class="lbl">INV Issued — MAWB</div></div>
+        <div class="metric-sm" style="background:#FBD9EA;"><div class="num" id="arInvoicedRevExpress" style="color:#A3266B;">—</div><div class="lbl">INV Issued — Revenue</div></div>
+        <div class="metric-sm" style="background:#D6EBF7;"><div class="num" id="arReconcileCountExpress" style="color:#1B5A82;">—</div><div class="lbl">Reconcile — MAWB</div></div>
+        <div class="metric-sm" style="background:#D6EBF7;"><div class="num" id="arReconcileRevExpress" style="color:#1B5A82;">—</div><div class="lbl">Reconcile — Revenue</div></div>
         <div class="metric-sm" style="background:#E2EFDA;"><div class="num" id="arOnTrackCountExpress" style="color:#1E6B3C;">—</div><div class="lbl">On Track — MAWB</div></div>
         <div class="metric-sm" style="background:#E2EFDA;"><div class="num" id="arOnTrackRevExpress" style="color:#1E6B3C;">—</div><div class="lbl">On Track — Revenue</div></div>
         <div class="metric-sm" style="background:#FBE4E1;"><div class="num" id="arOverdueCountExpress" style="color:#A32D2D;">—</div><div class="lbl">Overdue — MAWB</div></div>
         <div class="metric-sm" style="background:#FBE4E1;"><div class="num" id="arOverdueRevExpress" style="color:#A32D2D;">—</div><div class="lbl">Overdue — Revenue</div></div>
-        <div class="metric-sm" style="background:#D6EBF7;"><div class="num" id="arReconcileCountExpress" style="color:#1B5A82;">—</div><div class="lbl">Reconcile — MAWB</div></div>
-        <div class="metric-sm" style="background:#D6EBF7;"><div class="num" id="arReconcileRevExpress" style="color:#1B5A82;">—</div><div class="lbl">Reconcile — Revenue</div></div>
-        <div class="metric-sm" style="background:#FBD9EA;"><div class="num" id="arInvoicedCountExpress" style="color:#A3266B;">—</div><div class="lbl">INV Issued — MAWB</div></div>
-        <div class="metric-sm" style="background:#FBD9EA;"><div class="num" id="arInvoicedRevExpress" style="color:#A3266B;">—</div><div class="lbl">INV Issued — Revenue</div></div>
+      </div>
+
+      <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Summary by Customer</div>
+      <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; align-items:flex-end;">
+        <label style="font-size:12px; color:var(--steel);">Month (by ETD)<br>
+          <select id="arCustSummaryMonthFilter" onchange="renderPodCrDashboard()" style="margin-top:2px;">
+            <option value="">All months</option>
+            <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
+            <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
+            <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
+            <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
+          </select>
+        </label>
+        <label style="font-size:12px; color:var(--steel);">Customer<br>
+          <select id="arCustSummaryCustomerFilter" onchange="renderPodCrDashboard()" style="margin-top:2px;">
+            <option value="">All Customers</option>
+          </select>
+        </label>
+        <label style="font-size:12px; color:var(--steel);">Cargo Service<br>
+          <select id="arCustSummaryCargoFilter" onchange="renderPodCrDashboard()" style="margin-top:2px;">
+            <option value="">All</option>
+            <option value="Freight Forwarding">Freight Forwarding</option>
+            <option value="Express">Express</option>
+          </select>
+        </label>
+      </div>
+      <div style="overflow-x:auto; margin-bottom:20px;">
+        <table class="dash-table" style="min-width:1100px;">
+          <thead><tr>
+            <th>Customer</th><th>Logic Reference</th>
+            <th style="border-left:2px solid #D5D5D5;">Total MAWB</th><th>Rev (Total)</th>
+            <th style="border-left:2px solid #D5D5D5;">INV Issued</th><th>Rev (INV Issued)</th>
+            <th style="border-left:2px solid #D5D5D5;">Reconcile</th><th>Rev (Reconcile)</th>
+            <th style="border-left:2px solid #D5D5D5;">On Track</th><th>Rev (On Track)</th>
+            <th style="border-left:2px solid #D5D5D5;">Overdue</th><th>Rev (Overdue)</th>
+            <th style="border-left:2px solid #D5D5D5;">Remark</th>
+          </tr></thead>
+          <tbody id="arCustSummaryBody"></tbody>
+        </table>
       </div>
 
       <div style="margin-bottom:12px;">
@@ -643,6 +682,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
           </label>
         </div>
       </div>
+
 
       <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">AR Detail — All Outstanding Shipments (sorted by most urgent first)</div>
       <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; align-items:flex-end;">
@@ -3207,7 +3247,7 @@ async function refreshList(){
     document.getElementById('typeTabBooking').classList.remove('active');
     document.getElementById('typeTabFinance').classList.remove('active');
   }
-  allListRecords = (await dataGetAll()).filter(r=>r.type!=='arCustomerSetting');
+  allListRecords = (await dataGetAll()).filter(r=>r.type!=='arCustomerSetting' && r.type!=='arCustomerRemark');
   const customerSelect = document.getElementById('listCustomerFilter');
   if(customerSelect){
     const currentVal = customerSelect.value;
@@ -3843,6 +3883,147 @@ function renderARAging(idx, now){
 
   const allCustomers = Array.from(new Set(idx.filter(i=>i.type==='booking' && i.customer).map(i=>i.customer))).sort();
   renderArLogicRef(allCustomers, CUSTOMER_AR_RULES, DEFAULT_AR_RULE);
+  renderCustomerSummaryTable(idx);
+}
+
+function renderCustomerSummaryTable(idx, notInvoiced, reconcileRecords, invoicedRecords){
+  const monthFilter = document.getElementById('arCustSummaryMonthFilter').value;
+  const customerFilterEl = document.getElementById('arCustSummaryCustomerFilter');
+  const cargoFilter = document.getElementById('arCustSummaryCargoFilter').value;
+
+  // Populate the customer filter dropdown once
+  if(customerFilterEl.options.length<=1 || customerFilterEl.dataset.stale==='1'){
+    const custs = Array.from(new Set(idx.filter(i=>i.type==='booking' && i.customer).map(i=>i.customer))).sort();
+    const cur = customerFilterEl.value;
+    customerFilterEl.innerHTML = '<option value="">All Customers</option>' + custs.map(c=>`<option value="${c}">${c}</option>`).join('');
+    customerFilterEl.value = cur;
+    customerFilterEl.dataset.stale = '0';
+  }
+  const customerFilter = customerFilterEl.value;
+
+  // This table has its own Month/Customer/Cargo Service filters, independent of the
+  // main D.1 filter above (which may be scoped to a different month) — so categorize
+  // directly from the raw index rather than reusing the already-filtered sets.
+  function inScope(i){
+    if(i.type!=='booking' || !i.etd) return false;
+    if((i.status||'').toLowerCase()==='cancelled') return false;
+    if(monthFilter!==''){
+      const d = new Date(i.etd+'T00:00:00');
+      if(d.getMonth()!==parseInt(monthFilter,10)) return false;
+    }
+    if(customerFilter && i.customer!==customerFilter) return false;
+    if(cargoFilter && i.cargoService!==cargoFilter) return false;
+    return true;
+  }
+
+  const scoped = idx.filter(inScope);
+  const sum = arr => arr.reduce((s,i)=>s+(parseFloat(i.revAmount)||0),0);
+  const nowForDue = new Date();
+  const todayMsForDue = new Date(nowForDue.getFullYear(), nowForDue.getMonth(), nowForDue.getDate()).getTime();
+  function isOverdue(rec){
+    const rule = CUSTOMER_AR_RULES.hasOwnProperty(rec.customer) ? CUSTOMER_AR_RULES[rec.customer] : DEFAULT_AR_RULE;
+    const dueDate = computeDueDate(rec.etd, rule.ruleType, rule.cutoffDays);
+    const dueMs = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()).getTime();
+    return dueMs < todayMsForDue;
+  }
+
+  function summarize(records){
+    const p = records.filter(i=>{ const cr=(i.crStatus||'').toLowerCase(); return cr!=='reconcile' && cr!=='invoice-issued'; });
+    const r = records.filter(i=>(i.crStatus||'').toLowerCase()==='reconcile');
+    const v = records.filter(i=>(i.crStatus||'').toLowerCase()==='invoice-issued');
+    const overdueList = p.filter(isOverdue);
+    const onTrackList = p.filter(i=>!isOverdue(i));
+    return {
+      totalCount: records.length, totalRev: sum(records),
+      onTrackCount: onTrackList.length, onTrackRev: sum(onTrackList),
+      overdueCount: overdueList.length, overdueRev: sum(overdueList),
+      reconcileCount: r.length, reconcileRev: sum(r),
+      invoicedCount: v.length, invoicedRev: sum(v),
+    };
+  }
+
+  function ruleFor(cust){
+    return CUSTOMER_AR_RULES.hasOwnProperty(cust) ? CUSTOMER_AR_RULES[cust] : DEFAULT_AR_RULE;
+  }
+  function ruleText(cust){
+    const rule = CUSTOMER_AR_RULES[cust];
+    if(!rule) return `Month-end + ${DEFAULT_AR_RULE.cutoffDays} days (default)`;
+    if(rule.ruleType==='bimonthly-split') return 'Bi-monthly split (15th / month-end)';
+    if(rule.ruleType==='days-after-month-end') return `Month-end + ${rule.cutoffDays||0} days`;
+    if(rule.ruleType==='due-on-etd') return 'Due on ETD date';
+    return `${rule.cutoffDays||7} days after ETD`;
+  }
+
+  // Customers billed on a bi-monthly split (any customer using that rule, not just one
+  // hardcoded name) get split into two adjacent sub-rows — Shipment 1–15 and 16–31 of
+  // the month — grouped by ETD day. Sorting is by each customer's combined total, so
+  // the two sub-rows always stay together as one block.
+  const customers = Array.from(new Set(scoped.map(i=>i.customer))).filter(Boolean);
+  const blocks = customers.map(cust=>{
+    const custRecords = scoped.filter(i=>i.customer===cust);
+    const isSplit = ruleFor(cust).ruleType==='bimonthly-split';
+    if(!isSplit){
+      return { customer:cust, isSplit:false, combinedCount:custRecords.length, subRows:[{label:null, remarkKey:cust, ...summarize(custRecords)}] };
+    }
+    const half1 = custRecords.filter(i=>new Date(i.etd+'T00:00:00').getDate()<=15);
+    const half2 = custRecords.filter(i=>new Date(i.etd+'T00:00:00').getDate()>15);
+    return {
+      customer:cust, isSplit:true, combinedCount:custRecords.length,
+      subRows:[
+        {label:'Shipment 1–15', remarkKey:cust+'_H1', ...summarize(half1)},
+        {label:'Shipment 16–31', remarkKey:cust+'_H2', ...summarize(half2)},
+      ]
+    };
+  }).sort((a,b)=>b.combinedCount-a.combinedCount);
+
+  // Remark records: type='arCustomerRemark', keyed by remarkKey (customer, or
+  // customer_H1/_H2 for split rows) + year + month scope. When "All months" is
+  // selected, remarks use the current calendar month as the key.
+  const now = new Date();
+  const remarkYear = document.getElementById('billingYearPicker') ? parseInt(document.getElementById('billingYearPicker').value,10)||now.getFullYear() : now.getFullYear();
+  const remarkMonth = monthFilter!=='' ? parseInt(monthFilter,10) : now.getMonth();
+  const remarkRecords = idx.filter(i=>i.type==='arCustomerRemark' && i.remarkYear==String(remarkYear) && i.remarkMonth==String(remarkMonth));
+  const remarkMap = {};
+  remarkRecords.forEach(r=>{ remarkMap[r.customer] = r.remarkText || ''; });
+
+  const DL = 'border-left:2px solid #D5D5D5;'; // column-group divider
+  const CELL_FONT = 'font-size:12px;'; // consistent size across every count/revenue cell in this table
+  const countCell = (v, bg, color) => `<td style="${DL} ${CELL_FONT} background:${bg}; color:${color}; font-weight:700;">${fmtNum(v)}</td>`;
+  const revCell = (v) => `<td style="${CELL_FONT} color:#555; font-weight:400;">${fmtMoney(v)}</td>`;
+
+  let html = '';
+  blocks.forEach(block=>{
+    block.subRows.forEach((row, si)=>{
+      const esc = row.remarkKey.replace(/'/g,"\\'");
+      const remarkVal = (remarkMap[row.remarkKey]||'').replace(/"/g,'&quot;');
+      html += '<tr>';
+      if(si===0){
+        html += `<td rowspan="${block.subRows.length}" style="${CELL_FONT} font-weight:700; vertical-align:top; border-right:1px solid #eee;">${block.customer}</td>`;
+        html += `<td rowspan="${block.subRows.length}" style="font-size:10px; vertical-align:top; border-right:1px solid #eee;">${ruleText(block.customer)}</td>`;
+      }
+      const labelPrefix = row.label ? `<span style="color:#999; font-size:10.5px;">${row.label}</span><br>` : '';
+      html += `<td style="${DL} ${CELL_FONT} font-weight:700; color:#1B2A44;">${labelPrefix}${fmtNum(row.totalCount)}</td>`;
+      html += revCell(row.totalRev);
+      html += countCell(row.invoicedCount, '#FBD9EA', '#A3266B');
+      html += revCell(row.invoicedRev);
+      html += countCell(row.reconcileCount, '#D6EBF7', '#1B5A82');
+      html += revCell(row.reconcileRev);
+      html += countCell(row.onTrackCount, '#E2EFDA', '#1E6B3C');
+      html += revCell(row.onTrackRev);
+      html += countCell(row.overdueCount, '#FBE4E1', '#A32D2D');
+      html += revCell(row.overdueRev);
+      html += `<td style="${DL}"><input type="text" value="${remarkVal}" placeholder="พิมพ์ Remark..." style="width:140px; ${CELL_FONT}"
+        onchange="saveCustomerRemark('${esc}', ${remarkYear}, ${remarkMonth}, this.value)"></td>`;
+      html += '</tr>';
+    });
+  });
+
+  document.getElementById('arCustSummaryBody').innerHTML = blocks.length ? html : '<tr><td colspan="13" style="text-align:center; color:#999;">No data for this filter</td></tr>';
+}
+
+async function saveCustomerRemark(customer, year, month, text){
+  const jobNo = 'ARREMARK-' + customer + '-' + year + '-' + month;
+  await dataSave({ jobNo, type:'arCustomerRemark', customer, remarkYear:String(year), remarkMonth:String(month), remarkText: text });
 }
 
 let arLogicRefPage = 1;
@@ -4631,7 +4812,7 @@ function csvEscape(val){
 }
 
 async function exportCSV(){
-  const records = (await dataGetAll()).filter(r=>r.type!=='arCustomerSetting');
+  const records = (await dataGetAll()).filter(r=>r.type!=='arCustomerSetting' && r.type!=='arCustomerRemark');
   if(records.length===0){ alert('No job sheets to export yet.'); return; }
   const cols = ['jobNo','type','date','month','customer','cargoService','mode','expImp','service','origin','dest','route','carrier','coloader','etd','eta','transit','containers','itemsJSON','vendorName','truckType','totalTruck','driverName','licensePlate','pickupDate','mawb','notes','status','savedAt','bookingWeight','chargeableWeight','remark','quotationRef','crStatus','invoiceIssueDate','cutoffDays','ruleType','refJobNo','lcCostAmount','lcRevAmount','frCostAmount','frRevAmount','dcCostAmount','dcRevAmount','revAmount','costAmount','gpAmount','gpPercent','crMawb','crCustomer','crMode','crCargoService','crExpImp','crOrigin','crDest','crEtd','crChargeableWeight','costPerKg','sellingPerKg','costPerContainer','sellingPerContainer','lcVendor1','lcVendor2','lcVendor3','lcVendor4','lcService1','lcService2','lcService3','lcService4','lcTruckType1','lcTruckType2','lcTruckType3','lcTruckType4','lcTruckUsage1','lcTruckUsage2','lcTruckUsage3','lcTruckUsage4','lcRatePerTruck1','lcRatePerTruck2','lcRatePerTruck3','lcRatePerTruck4','lcCustoms1','lcCustoms2','lcCustoms3','lcCustoms4','lcHandling1','lcHandling2','lcHandling3','lcHandling4','lcTerminal1','lcTerminal2','lcTerminal3','lcTerminal4','lcDocument1','lcDocument2','lcDocument3','lcDocument4','lcAirlinesOther1','lcAirlinesOther2','lcAirlinesOther3','lcAirlinesOther4','lcPacking1','lcPacking2','lcPacking3','lcPacking4','lcOT1','lcOT2','lcOT3','lcOT4','lcOther1','lcOther2','lcOther3','lcOther4','lcOtherRemark1','lcOtherRemark2','lcOtherRemark3','lcOtherRemark4','lcrVendor1','lcrVendor2','lcrVendor3','lcrVendor4','lcrService1','lcrService2','lcrService3','lcrService4','lcrTruckType1','lcrTruckType2','lcrTruckType3','lcrTruckType4','lcrTruckUsage1','lcrTruckUsage2','lcrTruckUsage3','lcrTruckUsage4','lcrRatePerTruck1','lcrRatePerTruck2','lcrRatePerTruck3','lcrRatePerTruck4','lcrCustoms1','lcrCustoms2','lcrCustoms3','lcrCustoms4','lcrHandling1','lcrHandling2','lcrHandling3','lcrHandling4','lcrTerminal1','lcrTerminal2','lcrTerminal3','lcrTerminal4','lcrDocument1','lcrDocument2','lcrDocument3','lcrDocument4','lcrAirlinesOther1','lcrAirlinesOther2','lcrAirlinesOther3','lcrAirlinesOther4','lcrPacking1','lcrPacking2','lcrPacking3','lcrPacking4','lcrOT1','lcrOT2','lcrOT3','lcrOT4','lcrOther1','lcrOther2','lcrOther3','lcrOther4','lcrOtherRemark1','lcrOtherRemark2','lcrOtherRemark3','lcrOtherRemark4','dcVendor1','dcVendor2','dcVendor3','dcVendor4','dcTruckType1','dcTruckType2','dcTruckType3','dcTruckType4','dcTruckUsage1','dcTruckUsage2','dcTruckUsage3','dcTruckUsage4','dcRatePerTruck1','dcRatePerTruck2','dcRatePerTruck3','dcRatePerTruck4','dcHandling1','dcHandling2','dcHandling3','dcHandling4','dcCustoms1','dcCustoms2','dcCustoms3','dcCustoms4','dcDelivery1','dcDelivery2','dcDelivery3','dcDelivery4','dcrVendor1','dcrVendor2','dcrVendor3','dcrVendor4','dcrTruckType1','dcrTruckType2','dcrTruckType3','dcrTruckType4','dcrTruckUsage1','dcrTruckUsage2','dcrTruckUsage3','dcrTruckUsage4','dcrRatePerTruck1','dcrRatePerTruck2','dcrRatePerTruck3','dcrRatePerTruck4','dcrHandling1','dcrHandling2','dcrHandling3','dcrHandling4','dcrCustoms1','dcrCustoms2','dcrCustoms3','dcrCustoms4','dcrDelivery1','dcrDelivery2','dcrDelivery3','dcrDelivery4','dcRemark1','dcRemark2','dcRemark3','dcRemark4','dcrRemark1','dcrRemark2','dcrRemark3','dcrRemark4'];
   const header = cols.join(',');
