@@ -889,14 +889,13 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <div id="arFollowupMeta" style="font-size:11px; color:#888; margin-top:8px;">ยังไม่มีข้อมูลอัปโหลด</div>
     </div>
 
-    <div style="display:flex; gap:10px; margin-bottom:16px; align-items:flex-end; flex-wrap:wrap;">
-      <label style="font-size:12px; color:var(--steel);">AR อัปเดตวันไหน<br>
-        <select id="arFollowupSnapshotPicker" onchange="renderARFollowupTable()" style="margin-top:2px; min-width:160px;">
-          <option value="">— ยังไม่มีข้อมูล —</option>
-        </select>
+    <div style="display:flex; gap:10px; margin-bottom:6px; align-items:flex-end; flex-wrap:wrap;">
+      <label style="font-size:12px; color:var(--steel);">AR อัปเดตวันไหน (เลือกวันไหนก็ได้)<br>
+        <input type="date" id="arFollowupSnapshotPicker" onchange="renderARFollowupTable()" style="margin-top:2px; padding:6px;">
       </label>
       <button onclick="deleteARFollowupSnapshot()" style="background:#FBE4E1; color:#A32D2D; border:1px solid #F0B8B8;">ลบ Snapshot นี้</button>
     </div>
+    <div id="arFollowupAvailableDates" style="font-size:11px; color:#888; margin-bottom:16px;"></div>
 
     <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin:20px 0 10px;">Summary</div>
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:8px; margin-bottom:18px;">
@@ -913,8 +912,8 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
           <th>Customer</th>
           <th style="border-left:2px solid #D5D5D5;">Current</th>
           <th style="border-left:2px solid #D5D5D5;">1–30</th><th>31–60</th><th>61–90</th><th>91–180</th><th>181+</th>
-          <th style="border-left:2px solid #D5D5D5;">Total</th>
-          <th style="border-left:2px solid #D5D5D5;">Payment Date</th><th>Remark</th><th>PIC</th><th>Timeline</th>
+          <th style="border-left:2px solid #D5D5D5;">Total Aging Amount</th>
+          <th style="border-left:2px solid #D5D5D5;">Payment Date</th><th>Remark</th><th>PIC</th><th>Timeline</th><th></th>
         </tr></thead>
         <tbody id="arFollowupBody"></tbody>
         <tfoot id="arFollowupFoot"></tfoot>
@@ -3258,13 +3257,14 @@ async function renderARFollowupDash(){
 
   const picker = document.getElementById('arFollowupSnapshotPicker');
   const dates = Array.from(new Set(data.snapshots.map(s=>s.snapshotDate))).sort().reverse();
-  const cur = picker.value;
-  if(dates.length===0){
-    picker.innerHTML = '<option value="">— ยังไม่มีข้อมูล —</option>';
-  }else{
-    picker.innerHTML = dates.map(d=>`<option value="${d}">${d}</option>`).join('');
-    picker.value = dates.includes(cur) ? cur : dates[0];
+  if(!picker.value && dates.length){
+    picker.value = dates[0]; // default to the most recent snapshot on first load only
   }
+
+  const availEl = document.getElementById('arFollowupAvailableDates');
+  availEl.innerHTML = dates.length
+    ? 'มีข้อมูลของวันที่: ' + dates.map(d=>`<a href="#" onclick="document.getElementById('arFollowupSnapshotPicker').value='${d}'; renderARFollowupTable(); return false;" style="color:var(--steel); margin-right:8px;">${d}</a>`).join('')
+    : 'ยังไม่มี Snapshot วันไหนเลย';
 
   const latestUpload = data.snapshots.length ? data.snapshots.reduce((a,b)=> a.uploadedAt > b.uploadedAt ? a : b) : null;
   document.getElementById('arFollowupMeta').textContent = latestUpload
@@ -3279,16 +3279,29 @@ function renderARFollowupTable(){
   if(!data) return;
   const snapshotDate = document.getElementById('arFollowupSnapshotPicker').value;
   const num = v => parseFloat(v)||0;
-  const overdueAmount = r => num(r.total) - num(r.current);
+  // Sort by AGE priority, not total amount: whoever has money sitting in the
+  // OLDEST bucket ranks first, regardless of how large their total is. Ties
+  // within a bucket are broken by that bucket's amount, then fall through to
+  // the next-oldest bucket.
+  function agingKey(r){
+    const b181plus = num(r.d181_270)+num(r.d271_360)+num(r.d360plus);
+    return [b181plus, num(r.d91_180), num(r.d61_90), num(r.d31_60), num(r.d1_30)];
+  }
   const rows = data.snapshots.filter(s=>s.snapshotDate===snapshotDate)
-    .sort((a,b)=> overdueAmount(b) - overdueAmount(a)); // most aging (overdue) first
+    .sort((a,b)=>{
+      const ka = agingKey(a), kb = agingKey(b);
+      for(let i=0;i<ka.length;i++){
+        if(kb[i]!==ka[i]) return kb[i]-ka[i];
+      }
+      return 0;
+    });
   const notesMap = {};
   data.notes.forEach(n=>{ notesMap[n.customer] = n; });
 
   let totalOutstanding=0, totalOverdue=0, totalCurrent=0;
   const bucketTotals = {current:0, d1_30:0, d31_60:0, d61_90:0, d91_180:0, d181plus:0};
 
-  const bodyHtml = rows.map(r=>{
+  const bodyHtml = rows.map((r, idx)=>{
     const current = num(r.current), b30=num(r.d1_30), b60=num(r.d31_60), b90=num(r.d61_90), b180=num(r.d91_180);
     const b181plus = num(r.d181_270)+num(r.d271_360)+num(r.d360plus);
     const total = num(r.total);
@@ -3309,11 +3322,12 @@ function renderARFollowupTable(){
       <td style="background:#FBE4E1; color:#A32D2D; font-weight:700;">${fmt(b90)}</td>
       <td style="background:#F5D0D0; color:#7A1F1F; font-weight:700;">${fmt(b180)}</td>
       <td style="background:#E8B8B8; color:#5A1414; font-weight:700;">${fmt(b181plus)}</td>
-      <td style="border-left:2px solid #D5D5D5; font-weight:700;">${fmtMoney(total)}</td>
-      <td style="border-left:2px solid #D5D5D5;"><input type="date" value="${note.paymentDate||''}" style="width:130px; font-size:11px;" onchange="saveARFollowupNote('${esc}','paymentDate',this.value)"></td>
-      <td><input type="text" value="${(note.remark||'').replace(/"/g,'&quot;')}" placeholder="พิมพ์ Remark..." style="width:130px; font-size:11px;" onchange="saveARFollowupNote('${esc}','remark',this.value)"></td>
-      <td><input type="text" value="${(note.pic||'').replace(/"/g,'&quot;')}" placeholder="ชื่อ PIC" style="width:90px; font-size:11px;" onchange="saveARFollowupNote('${esc}','pic',this.value)"></td>
-      <td><input type="text" value="${(note.timeline||'').replace(/"/g,'&quot;')}" placeholder="Timeline..." style="width:130px; font-size:11px;" onchange="saveARFollowupNote('${esc}','timeline',this.value)"></td>
+      <td style="border-left:2px solid #D5D5D5; font-weight:700;">${fmtMoney(total - current)}</td>
+      <td style="border-left:2px solid #D5D5D5;"><input type="date" id="arfu-paymentdate-${idx}" value="${note.paymentDate||''}" style="width:130px; font-size:11px;"></td>
+      <td><input type="text" id="arfu-remark-${idx}" value="${(note.remark||'').replace(/"/g,'&quot;')}" placeholder="พิมพ์ Remark..." style="width:130px; font-size:11px;"></td>
+      <td><input type="text" id="arfu-pic-${idx}" value="${(note.pic||'').replace(/"/g,'&quot;')}" placeholder="ชื่อ PIC" style="width:90px; font-size:11px;"></td>
+      <td><input type="text" id="arfu-timeline-${idx}" value="${(note.timeline||'').replace(/"/g,'&quot;')}" placeholder="Timeline..." style="width:130px; font-size:11px;"></td>
+      <td><button onclick="saveARFollowupNoteRow('${esc}', ${idx})" style="background:#1B2A44; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-size:11px; cursor:pointer;">Save</button></td>
     </tr>`;
   }).join('');
 
@@ -3326,8 +3340,8 @@ function renderARFollowupTable(){
     <td>${fmtMoney(bucketTotals.d61_90)}</td>
     <td>${fmtMoney(bucketTotals.d91_180)}</td>
     <td>${fmtMoney(bucketTotals.d181plus)}</td>
-    <td style="border-left:2px solid #D5D5D5;">${fmtMoney(totalOutstanding)}</td>
-    <td style="border-left:2px solid #D5D5D5;" colspan="4"></td>
+    <td style="border-left:2px solid #D5D5D5;">${fmtMoney(totalOverdue)}</td>
+    <td style="border-left:2px solid #D5D5D5;" colspan="5"></td>
   </tr>` : '';
 
   document.getElementById('arFollowupTotalCustomers').textContent = fmtNum(rows.length);
@@ -3336,18 +3350,21 @@ function renderARFollowupTable(){
   document.getElementById('arFollowupTotalCurrent').textContent = fmtMoney(totalCurrent);
 }
 
-async function saveARFollowupNote(customer, field, value){
+async function saveARFollowupNoteRow(customer, idx){
   if(!AR_FOLLOWUP_API_URL){ alert('ยังไม่ได้ตั้งค่า AR_FOLLOWUP_API_URL'); return; }
+  const paymentDate = document.getElementById('arfu-paymentdate-'+idx).value;
+  const remark = document.getElementById('arfu-remark-'+idx).value;
+  const pic = document.getElementById('arfu-pic-'+idx).value;
+  const timeline = document.getElementById('arfu-timeline-'+idx).value;
   const data = window._arFollowupData;
-  const existing = data.notes.find(n=>n.customer===customer) || {customer, paymentDate:'', remark:'', pic:'', timeline:''};
-  existing[field] = value;
+  const note = {customer, paymentDate, remark, pic, timeline};
   try{
     await fetch(AR_FOLLOWUP_API_URL, {
       method: 'POST',
-      body: JSON.stringify({action:'saveNote', customer, paymentDate:existing.paymentDate, remark:existing.remark, pic:existing.pic, timeline:existing.timeline})
+      body: JSON.stringify({action:'saveNote', ...note})
     });
-    const idx = data.notes.findIndex(n=>n.customer===customer);
-    if(idx===-1) data.notes.push(existing); else data.notes[idx] = existing;
+    const existingIdx = data.notes.findIndex(n=>n.customer===customer);
+    if(existingIdx===-1) data.notes.push(note); else data.notes[existingIdx] = note;
     showToast('✓ Save successful');
   }catch(e){
     alert('บันทึกไม่สำเร็จ กรุณาลองใหม่');
