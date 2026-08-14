@@ -883,17 +883,17 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       ⚠️ ยังไม่ได้ตั้งค่า AR Follow-up API URL — แก้ที่ตัวแปร <code>AR_FOLLOWUP_API_URL</code> ในโค้ดให้เป็น URL ของ Apps Script Web App ที่ deploy จาก Google Sheet แยกต่างหาก (ดูวิธีทำใน ARFollowupBackend.gs)
     </div>
 
-    <div style="border:2px dashed #C9C9C9; border-radius:8px; padding:20px; text-align:center; margin-bottom:16px; background:#FAFAFA;">
-      <button onclick="document.getElementById('arFollowupFileInput').click()" style="background:var(--navy); color:#fff; border:none; padding:9px 18px; border-radius:5px; font-size:13px; cursor:pointer;">📤 Upload Aging Report (CSV / Excel)</button>
-      <input type="file" id="arFollowupFileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleARFollowupUpload(this.files[0])">
-      <div id="arFollowupMeta" style="font-size:11px; color:#888; margin-top:8px;">ยังไม่มีข้อมูลอัปโหลด</div>
-    </div>
-
-    <div style="display:flex; gap:10px; margin-bottom:6px; align-items:flex-end; flex-wrap:wrap;">
-      <label style="font-size:12px; color:var(--steel);">AR อัปเดตวันไหน (เลือกวันไหนก็ได้)<br>
-        <input type="date" id="arFollowupSnapshotPicker" onchange="renderARFollowupTable()" style="margin-top:2px; padding:6px;">
-      </label>
-      <button onclick="deleteARFollowupSnapshot()" style="background:#FBE4E1; color:#A32D2D; border:1px solid #F0B8B8;">ลบ Snapshot นี้</button>
+    <div style="background:#F5F1E8; border:1px solid #E2D5B8; border-radius:8px; padding:14px 18px; margin-bottom:18px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+      <div>
+        <div style="font-size:10px; color:#8A6D0E; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:2px;">กำลังแสดงข้อมูล ณ วันที่</div>
+        <div id="arFollowupCurrentDateBig" style="font-size:24px; font-weight:700; color:#1B2A44;">—</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <label style="font-size:12px; color:var(--steel);">ดูข้อมูลวันอื่น<br>
+          <input type="date" id="arFollowupSnapshotPicker" onchange="renderARFollowupTable()" style="margin-top:2px; padding:6px;">
+        </label>
+        <button onclick="deleteARFollowupSnapshot()" style="background:#FBE4E1; color:#A32D2D; border:1px solid #F0B8B8; align-self:flex-end;">ลบ Snapshot นี้</button>
+      </div>
     </div>
     <div id="arFollowupAvailableDates" style="font-size:11px; color:#888; margin-bottom:16px;"></div>
 
@@ -906,7 +906,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:10px;">AR Aging by Customer</div>
-    <div style="overflow-x:auto;">
+    <div style="overflow-x:auto; margin-bottom:20px;">
       <table class="dash-table" style="min-width:1300px;">
         <thead><tr>
           <th>Customer</th>
@@ -918,6 +918,18 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <tbody id="arFollowupBody"></tbody>
         <tfoot id="arFollowupFoot"></tfoot>
       </table>
+    </div>
+
+    <div style="border:2px dashed #C9C9C9; border-radius:8px; padding:20px; text-align:center; background:#FAFAFA;">
+      <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:12px;">อัปโหลดข้อมูลใหม่</div>
+      <div style="display:flex; align-items:flex-end; justify-content:center; gap:12px; flex-wrap:wrap;">
+        <label style="font-size:12px; color:var(--steel); text-align:left;">วันที่ของข้อมูลนี้<br>
+          <input type="date" id="arFollowupUploadDate" style="margin-top:4px; padding:7px 10px; font-size:13px;">
+        </label>
+        <button onclick="document.getElementById('arFollowupFileInput').click()" style="background:var(--navy); color:#fff; border:none; padding:9px 18px; border-radius:5px; font-size:13px; cursor:pointer;">📤 Upload Aging Report (CSV / Excel)</button>
+      </div>
+      <input type="file" id="arFollowupFileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleARFollowupUpload(this.files[0])">
+      <div id="arFollowupMeta" style="font-size:11px; color:#888; margin-top:10px;">ยังไม่มีข้อมูลอัปโหลด</div>
     </div>
   </div>
 
@@ -3274,10 +3286,18 @@ async function renderARFollowupDash(){
   renderARFollowupTable();
 }
 
+function formatThaiDateBig(dateStr){
+  if(!dateStr) return '—';
+  const d = new Date(dateStr+'T00:00:00');
+  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
 function renderARFollowupTable(){
   const data = window._arFollowupData;
   if(!data) return;
   const snapshotDate = document.getElementById('arFollowupSnapshotPicker').value;
+  document.getElementById('arFollowupCurrentDateBig').textContent = formatThaiDateBig(snapshotDate);
   const num = v => parseFloat(v)||0;
   // Sort by AGE priority, not total amount: whoever has money sitting in the
   // OLDEST bucket ranks first, regardless of how large their total is. Ties
@@ -3393,12 +3413,18 @@ async function deleteARFollowupSnapshot(){
 // new dated snapshot (keyed by the file's "As of Date").
 async function handleARFollowupUpload(file){
   if(!file) return;
+  const snapshotDate = document.getElementById('arFollowupUploadDate').value;
+  if(!snapshotDate){
+    alert('กรุณาเลือก "วันที่ของข้อมูลนี้" ก่อนอัปโหลดไฟล์');
+    document.getElementById('arFollowupFileInput').value = '';
+    return;
+  }
   if(!AR_FOLLOWUP_API_URL){ alert('ยังไม่ได้ตั้งค่า AR_FOLLOWUP_API_URL ในโค้ดก่อน'); return; }
   if(typeof XLSX === 'undefined'){
     alert('โหลด Library สำหรับอ่านไฟล์ Excel ไม่สำเร็จ (XLSX ไม่พร้อมใช้งาน)\n\nสาเหตุที่เป็นไปได้: อินเทอร์เน็ตช้า / Firewall บริษัทบล็อก cdnjs.cloudflare.com / Ad-blocker บล็อก\n\nลองรีเฟรชหน้าใหม่ หรือลองเปลี่ยนเครือข่าย/ปิด Ad-blocker แล้วลองอีกครั้ง');
     return;
   }
-  let asOfDate, rows, sheetName;
+  let rows, sheetName;
   try{
     const buf = await file.arrayBuffer();
     const wb = XLSX.read(buf, {type:'array', cellDates:true});
@@ -3406,12 +3432,6 @@ async function handleARFollowupUpload(file){
     sheetName = wb.SheetNames.find(n=>/global freight|aging|freight/i.test(n)) || wb.SheetNames[0];
     const ws = wb.Sheets[sheetName];
     const grid = XLSX.utils.sheet_to_json(ws, {header:1, defval:'', raw:false});
-
-    // The Snapshot date is always chosen explicitly by the user in the confirm
-    // modal below — never guessed or auto-filled from the file's own "As of
-    // Date" line, since the same report may be uploaded to represent a
-    // different week than what's printed inside it.
-    asOfDate = '';
 
     // Find the header row (contains 'Customer/Payer')
     let headerRowIdx = grid.findIndex(row => row.some(c => /customer\/payer/i.test(c)));
@@ -3458,27 +3478,10 @@ async function handleARFollowupUpload(file){
     return;
   }
 
-  // Stash the parsed data and show the confirm modal. The Snapshot date field
-  // is left blank on purpose — the user picks it explicitly every time (never
-  // guessed from the file's own "As of Date" line), since the same report may
-  // be uploaded to represent a different week than what's printed inside it.
-  window._arFollowupPendingUpload = {rows, sourceFileName: file.name};
-  document.getElementById('arFollowupConfirmCount').textContent = `พบข้อมูล ${rows.length} ลูกค้า`;
-  document.getElementById('arFollowupConfirmDate').value = '';
-  document.getElementById('arFollowupConfirmModal').style.display = 'flex';
-}
-
-async function arFollowupConfirmUpload(){
-  const pending = window._arFollowupPendingUpload;
-  if(!pending) return;
-  const snapshotDate = document.getElementById('arFollowupConfirmDate').value;
-  if(!snapshotDate){ alert('กรุณาเลือกวันที่ก่อน'); return; }
-  document.getElementById('arFollowupConfirmModal').style.display = 'none';
-
   try{
     const res = await fetch(AR_FOLLOWUP_API_URL, {
       method: 'POST',
-      body: JSON.stringify({action:'uploadSnapshot', snapshotDate, sourceFileName: pending.sourceFileName, rows: pending.rows})
+      body: JSON.stringify({action:'uploadSnapshot', snapshotDate, sourceFileName: file.name, rows})
     });
     const resultText = await res.text();
     let result;
@@ -3486,7 +3489,7 @@ async function arFollowupConfirmUpload(){
     if(!result.ok) throw new Error(result.error || 'Unknown server error');
     showToast('✓ Save successful');
     document.getElementById('arFollowupFileInput').value = '';
-    window._arFollowupPendingUpload = null;
+    document.getElementById('arFollowupSnapshotPicker').value = snapshotDate;
     renderARFollowupDash();
   }catch(e){
     alert('อัปโหลดขึ้น Google Sheet ไม่สำเร็จ (ขั้นตอนส่งข้อมูล): ' + (e.message || e) + '\n\nเช็คว่า AR_FOLLOWUP_API_URL ถูกต้อง และตอน Deploy เลือก "Who has access: Anyone with the link" หรือยัง');
@@ -5483,21 +5486,6 @@ updateConnStatus();
 toggleDailyDash();
 refreshList();
 </script>
-
-<div id="arFollowupConfirmModal" style="display:none; position:fixed; inset:0; background:rgba(27,42,68,0.5); z-index:999; align-items:center; justify-content:center;">
-  <div style="background:#fff; border-radius:8px; padding:28px; max-width:380px; width:90%; box-shadow:0 8px 30px rgba(0,0,0,0.25);">
-    <div style="font-weight:700; font-size:15px; color:#1B2A44; margin-bottom:4px; text-align:center;">ยืนยันการอัปโหลด</div>
-    <div id="arFollowupConfirmCount" style="font-size:13px; color:#6B6F76; margin-bottom:16px; text-align:center;"></div>
-    <label style="font-size:12px; color:var(--steel); display:block; margin-bottom:20px;">
-      Snapshot วันที่ (ต้องเลือกเองทุกครั้ง)<br>
-      <input type="date" id="arFollowupConfirmDate" style="margin-top:6px; width:100%; padding:8px; font-size:14px;">
-    </label>
-    <div style="display:flex; flex-direction:column; gap:10px;">
-      <button onclick="arFollowupConfirmUpload()" style="padding:11px; border-radius:6px; border:none; background:#7A1F1F; color:#fff; font-weight:600; cursor:pointer;">อัปโหลดเป็น Snapshot ใหม่</button>
-      <button onclick="document.getElementById('arFollowupConfirmModal').style.display='none';" style="padding:9px; border-radius:6px; border:1px solid #ccc; background:#fff; color:#666; cursor:pointer;">Cancel</button>
-    </div>
-  </div>
-</div>
 
 <div id="editChoiceModal" style="display:none; position:fixed; inset:0; background:rgba(27,42,68,0.5); z-index:999; align-items:center; justify-content:center;">
   <div style="background:#fff; border-radius:8px; padding:28px; max-width:380px; width:90%; text-align:center; box-shadow:0 8px 30px rgba(0,0,0,0.25);">
