@@ -3324,7 +3324,12 @@ function renderARFollowupTable(){
   const bodyHtml = rows.map((r, idx)=>{
     const current = num(r.current), b30=num(r.d1_30), b60=num(r.d31_60), b90=num(r.d61_90), b180=num(r.d91_180);
     const b181plus = num(r.d181_270)+num(r.d271_360)+num(r.d360plus);
-    const total = num(r.total);
+    // Computed from the buckets rather than trusting the source file's own
+    // "Total" column — that column comes back blank for rows with an
+    // "Outstanding" (not-yet-due) status in the accounting export, so relying
+    // on it silently drops real money for any customer with outstanding
+    // invoices mixed in with overdue ones.
+    const total = current + b30 + b60 + b90 + b180 + b181plus;
     totalOutstanding += total;
     totalCurrent += current;
     totalOverdue += (b30+b60+b90+b180+b181plus);
@@ -3342,7 +3347,7 @@ function renderARFollowupTable(){
       <td style="background:#FBE4E1; color:#A32D2D; font-weight:700;">${fmt(b90)}</td>
       <td style="background:#F5D0D0; color:#7A1F1F; font-weight:700;">${fmt(b180)}</td>
       <td style="background:#E8B8B8; color:#5A1414; font-weight:700;">${fmt(b181plus)}</td>
-      <td style="border-left:2px solid #D5D5D5; font-weight:700;">${fmtMoney(total - current)}</td>
+      <td style="border-left:2px solid #D5D5D5; font-weight:700;">${fmtMoney(total)}</td>
       <td style="border-left:2px solid #D5D5D5;"><input type="date" id="arfu-paymentdate-${idx}" value="${note.paymentDate||''}" style="width:130px; font-size:11px;"></td>
       <td><input type="text" id="arfu-remark-${idx}" value="${(note.remark||'').replace(/"/g,'&quot;')}" placeholder="พิมพ์ Remark..." style="width:130px; font-size:11px;"></td>
       <td><input type="text" id="arfu-pic-${idx}" value="${(note.pic||'').replace(/"/g,'&quot;')}" placeholder="ชื่อ PIC" style="width:90px; font-size:11px;"></td>
