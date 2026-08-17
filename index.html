@@ -5,6 +5,8 @@
 <meta charset="UTF-8">
 <title>Job Sheet — Booking Record</title>
 <style>
+input.arfu-date:not(.arfu-filled):not(:focus)::-webkit-datetime-edit{color:transparent;}
+
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
 :root{
@@ -2991,10 +2993,10 @@ function normalizeRecord(r){
     rec.dcRevAmount = dcRevAmount;
     rec.frCostAmount = frCostAmount;
     rec.frRevAmount = frRevAmount;
-    rec.costAmount = costAmount;
-    rec.revAmount = revAmount;
-    rec.gpAmount = gpAmount;
-    rec.gpPercent = gpPercent;
+    rec.costAmount = costAmount>0 ? costAmount : (parseFloat(r.costAmount)||0);
+    rec.revAmount = revAmount>0 ? revAmount : (parseFloat(r.revAmount)||0);
+    rec.gpAmount = (costAmount>0||revAmount>0) ? gpAmount : (parseFloat(r.gpAmount)||0);
+    rec.gpPercent = rec.revAmount>0 ? (rec.gpAmount/rec.revAmount*100) : 0;
   }
   return rec;
 }
@@ -3348,10 +3350,10 @@ function renderARFollowupTable(){
       <td style="background:#F5D0D0; color:#7A1F1F; font-weight:700;">${fmt(b180)}</td>
       <td style="background:#E8B8B8; color:#5A1414; font-weight:700;">${fmt(b181plus)}</td>
       <td style="border-left:2px solid #D5D5D5; font-weight:700;">${fmtMoney(total)}</td>
-      <td style="border-left:2px solid #D5D5D5;"><input type="date" id="arfu-paymentdate-${idx}" value="${note.paymentDate||''}" style="width:130px; font-size:11px;"></td>
-      <td><input type="text" id="arfu-remark-${idx}" value="${(note.remark||'').replace(/"/g,'&quot;')}" placeholder="พิมพ์ Remark..." style="width:130px; font-size:11px;"></td>
-      <td><input type="text" id="arfu-pic-${idx}" value="${(note.pic||'').replace(/"/g,'&quot;')}" placeholder="ชื่อ PIC" style="width:90px; font-size:11px;"></td>
-      <td><input type="text" id="arfu-timeline-${idx}" value="${(note.timeline||'').replace(/"/g,'&quot;')}" placeholder="Timeline..." style="width:130px; font-size:11px;"></td>
+      <td style="border-left:2px solid #D5D5D5;"><input type="date" id="arfu-paymentdate-${idx}" value="${note.paymentDate||''}" oninput="arfuFill(this)" class="arfu-date${note.paymentDate?' arfu-filled':''}" style="width:130px; font-size:11px;${note.paymentDate?'background:#DDEBF7;':''}"></td>
+      <td><input type="text" id="arfu-remark-${idx}" value="${(note.remark||'').replace(/"/g,'&quot;')}" oninput="arfuFill(this)" style="width:130px; font-size:11px;${note.remark?'background:#DDEBF7;':''}"></td>
+      <td><input type="text" id="arfu-pic-${idx}" value="${(note.pic||'').replace(/"/g,'&quot;')}" oninput="arfuFill(this)" style="width:90px; font-size:11px;${note.pic?'background:#DDEBF7;':''}"></td>
+      <td><input type="text" id="arfu-timeline-${idx}" value="${(note.timeline||'').replace(/"/g,'&quot;')}" oninput="arfuFill(this)" style="width:130px; font-size:11px;${note.timeline?'background:#DDEBF7;':''}"></td>
       <td><button onclick="saveARFollowupNoteRow('${esc}', ${idx})" style="background:#1B2A44; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-size:11px; cursor:pointer;">Save</button></td>
     </tr>`;
   }).join('');
@@ -3374,6 +3376,8 @@ function renderARFollowupTable(){
   document.getElementById('arFollowupTotalOverdue').textContent = fmtMoney(totalOverdue);
   document.getElementById('arFollowupTotalCurrent').textContent = fmtMoney(totalCurrent);
 }
+
+function arfuFill(el){var f=(el.value!=='');el.style.background=f?'#DDEBF7':'';if(el.type==='date')el.classList.toggle('arfu-filled',f);}
 
 async function saveARFollowupNoteRow(customer, idx){
   if(!AR_FOLLOWUP_API_URL){ alert('ยังไม่ได้ตั้งค่า AR_FOLLOWUP_API_URL'); return; }
