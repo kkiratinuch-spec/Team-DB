@@ -5,8 +5,6 @@
 <meta charset="UTF-8">
 <title>Job Sheet — Booking Record</title>
 <style>
-input.arfu-date:not(.arfu-filled):not(:focus)::-webkit-datetime-edit{color:transparent;}
-
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
 :root{
@@ -670,6 +668,31 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         </table>
       </div>
 
+      <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Reconcile Pending to INV Issue</div>
+      <div style="font-size:11px; color:#888; background:#F5F5F5; padding:8px 12px; border-radius:5px; margin-bottom:12px;">📌 Due Date = Reconcile Date + <b>7 days</b> (same for all customers)</div>
+      <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; align-items:flex-end;">
+        <label style="font-size:12px; color:var(--steel);">Customer<br>
+          <select id="arReconcilePendingCustomerFilter" onchange="renderReconcilePendingTable()" style="margin-top:2px;">
+            <option value="">All Customers</option>
+          </select>
+        </label>
+        <label style="font-size:12px; color:var(--steel);">Search MAWB<br>
+          <input type="text" id="arReconcilePendingSearch" placeholder="MAWB..." oninput="renderReconcilePendingTable()" style="margin-top:2px;">
+        </label>
+      </div>
+      <div style="overflow-x:auto; margin-bottom:20px;">
+        <table class="dash-table" style="min-width:1000px;">
+          <thead><tr>
+            <th>MAWB</th><th>Customer</th>
+            <th style="border-left:2px solid #D5D5D5;">Reconcile Date</th><th>Due Date (+7d)</th>
+            <th style="border-left:2px solid #D5D5D5;">Status</th>
+            <th style="border-left:2px solid #D5D5D5;">Revenue</th>
+            <th style="border-left:2px solid #D5D5D5;">Remark</th>
+          </tr></thead>
+          <tbody id="arReconcilePendingBody"></tbody>
+        </table>
+      </div>
+
       <div style="margin-bottom:12px;">
         <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Aging Breakdown — Freight Forwarding</div>
         <div id="arAgingChartFF"></div>
@@ -919,6 +942,33 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         </tr></thead>
         <tbody id="arFollowupBody"></tbody>
         <tfoot id="arFollowupFoot"></tfoot>
+      </table>
+    </div>
+
+    <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Invoice Detail by Customer</div>
+    <div style="font-size:11px; color:#888; margin-bottom:12px;">แตกยอดรวมแต่ละ Bucket เป็นรายการ Invoice ย่อย พร้อมจำนวนวันที่ Aging มาแล้วจริง (คำนวณจาก Invoice Date เทียบกับวันนี้)</div>
+    <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; align-items:flex-end;">
+      <label style="font-size:12px; color:var(--steel);">Customer<br>
+        <select id="arFollowupInvoiceCustomerFilter" onchange="renderARFollowupInvoiceDetail(window._arFollowupData.snapshots.filter(s=>s.snapshotDate===document.getElementById('arFollowupSnapshotPicker').value))" style="margin-top:2px;">
+          <option value="">All Customers</option>
+        </select>
+      </label>
+      <label style="font-size:12px; color:var(--steel);">Aging Bucket<br>
+        <select id="arFollowupInvoiceBucketFilter" onchange="renderARFollowupInvoiceDetail(window._arFollowupData.snapshots.filter(s=>s.snapshotDate===document.getElementById('arFollowupSnapshotPicker').value))" style="margin-top:2px;">
+          <option value="">All</option>
+          <option value="current">Current</option>
+          <option value="1_30">1–30</option>
+          <option value="31_60">31–60</option>
+          <option value="61_90">61–90</option>
+          <option value="91_180">91–180</option>
+          <option value="181plus">181+</option>
+        </select>
+      </label>
+    </div>
+    <div style="overflow-x:auto; margin-bottom:20px;">
+      <table class="dash-table">
+        <thead><tr><th>Customer</th><th>INV Date</th><th>Bucket</th><th>Days Aging</th><th>Amount</th></tr></thead>
+        <tbody id="arFollowupInvoiceBody"></tbody>
       </table>
     </div>
 
@@ -2558,6 +2608,17 @@ function gatherRecord(){
     ...(currentType==='finance' ? {
       crStatus: document.querySelector('input[name=crstatus]:checked') ? document.querySelector('input[name=crstatus]:checked').value : 'freight-input'
     } : {}),
+    ...(currentType==='finance' ? (()=>{
+      // reconcileDate is captured automatically the very first time a record
+      // enters 'reconcile' status, and is never overwritten afterward (even if
+      // the status later changes away from and back to 'reconcile'), so it
+      // always reflects when the record first reached that status.
+      const newCrStatus = document.querySelector('input[name=crstatus]:checked') ? document.querySelector('input[name=crstatus]:checked').value : '';
+      const existingDate = window.crMergeTarget ? window.crMergeTarget.reconcileDate : null;
+      if(existingDate) return {reconcileDate: existingDate};
+      if(newCrStatus==='reconcile') return {reconcileDate: formatDateStr(new Date())};
+      return {};
+    })() : {}),
     savedAt: new Date().toISOString()
   };
 
@@ -2993,10 +3054,10 @@ function normalizeRecord(r){
     rec.dcRevAmount = dcRevAmount;
     rec.frCostAmount = frCostAmount;
     rec.frRevAmount = frRevAmount;
-    rec.costAmount = costAmount>0 ? costAmount : (parseFloat(r.costAmount)||0);
-    rec.revAmount = revAmount>0 ? revAmount : (parseFloat(r.revAmount)||0);
-    rec.gpAmount = (costAmount>0||revAmount>0) ? gpAmount : (parseFloat(r.gpAmount)||0);
-    rec.gpPercent = rec.revAmount>0 ? (rec.gpAmount/rec.revAmount*100) : 0;
+    rec.costAmount = costAmount;
+    rec.revAmount = revAmount;
+    rec.gpAmount = gpAmount;
+    rec.gpPercent = gpPercent;
   }
   return rec;
 }
@@ -3301,6 +3362,22 @@ function renderARFollowupTable(){
   const snapshotDate = document.getElementById('arFollowupSnapshotPicker').value;
   document.getElementById('arFollowupCurrentDateBig').textContent = formatThaiDateBig(snapshotDate);
   const num = v => parseFloat(v)||0;
+
+  // Snapshots are stored one row per INDIVIDUAL INVOICE — group them by
+  // customer here to rebuild the same per-customer summary the table always
+  // showed, now computed client-side instead of trusting a pre-aggregated row.
+  const invoiceRows = data.snapshots.filter(s=>s.snapshotDate===snapshotDate);
+  const byCustomer = {};
+  invoiceRows.forEach(inv=>{
+    if(!byCustomer[inv.customer]){
+      byCustomer[inv.customer] = {customer:inv.customer, current:0, d1_30:0, d31_60:0, d61_90:0, d91_180:0, d181_270:0, d271_360:0, d360plus:0};
+    }
+    const acc = byCustomer[inv.customer];
+    acc.current += num(inv.current); acc.d1_30 += num(inv.d1_30); acc.d31_60 += num(inv.d31_60);
+    acc.d61_90 += num(inv.d61_90); acc.d91_180 += num(inv.d91_180);
+    acc.d181_270 += num(inv.d181_270); acc.d271_360 += num(inv.d271_360); acc.d360plus += num(inv.d360plus);
+  });
+
   // Sort by AGE priority, not total amount: whoever has money sitting in the
   // OLDEST bucket ranks first, regardless of how large their total is. Ties
   // within a bucket are broken by that bucket's amount, then fall through to
@@ -3309,7 +3386,7 @@ function renderARFollowupTable(){
     const b181plus = num(r.d181_270)+num(r.d271_360)+num(r.d360plus);
     return [b181plus, num(r.d91_180), num(r.d61_90), num(r.d31_60), num(r.d1_30)];
   }
-  const rows = data.snapshots.filter(s=>s.snapshotDate===snapshotDate)
+  const rows = Object.values(byCustomer)
     .sort((a,b)=>{
       const ka = agingKey(a), kb = agingKey(b);
       for(let i=0;i<ka.length;i++){
@@ -3326,11 +3403,6 @@ function renderARFollowupTable(){
   const bodyHtml = rows.map((r, idx)=>{
     const current = num(r.current), b30=num(r.d1_30), b60=num(r.d31_60), b90=num(r.d61_90), b180=num(r.d91_180);
     const b181plus = num(r.d181_270)+num(r.d271_360)+num(r.d360plus);
-    // Computed from the buckets rather than trusting the source file's own
-    // "Total" column — that column comes back blank for rows with an
-    // "Outstanding" (not-yet-due) status in the accounting export, so relying
-    // on it silently drops real money for any customer with outstanding
-    // invoices mixed in with overdue ones.
     const total = current + b30 + b60 + b90 + b180 + b181plus;
     totalOutstanding += total;
     totalCurrent += current;
@@ -3350,10 +3422,10 @@ function renderARFollowupTable(){
       <td style="background:#F5D0D0; color:#7A1F1F; font-weight:700;">${fmt(b180)}</td>
       <td style="background:#E8B8B8; color:#5A1414; font-weight:700;">${fmt(b181plus)}</td>
       <td style="border-left:2px solid #D5D5D5; font-weight:700;">${fmtMoney(total)}</td>
-      <td style="border-left:2px solid #D5D5D5;"><input type="date" id="arfu-paymentdate-${idx}" value="${note.paymentDate||''}" oninput="arfuFill(this)" class="arfu-date${note.paymentDate?' arfu-filled':''}" style="width:130px; font-size:11px;${note.paymentDate?'background:#DDEBF7;':''}"></td>
-      <td><input type="text" id="arfu-remark-${idx}" value="${(note.remark||'').replace(/"/g,'&quot;')}" oninput="arfuFill(this)" style="width:130px; font-size:11px;${note.remark?'background:#DDEBF7;':''}"></td>
-      <td><input type="text" id="arfu-pic-${idx}" value="${(note.pic||'').replace(/"/g,'&quot;')}" oninput="arfuFill(this)" style="width:90px; font-size:11px;${note.pic?'background:#DDEBF7;':''}"></td>
-      <td><input type="text" id="arfu-timeline-${idx}" value="${(note.timeline||'').replace(/"/g,'&quot;')}" oninput="arfuFill(this)" style="width:130px; font-size:11px;${note.timeline?'background:#DDEBF7;':''}"></td>
+      <td style="border-left:2px solid #D5D5D5;"><input type="date" id="arfu-paymentdate-${idx}" value="${note.paymentDate||''}" style="width:130px; font-size:11px;"></td>
+      <td><input type="text" id="arfu-remark-${idx}" value="${(note.remark||'').replace(/"/g,'&quot;')}" placeholder="พิมพ์ Remark..." style="width:130px; font-size:11px;"></td>
+      <td><input type="text" id="arfu-pic-${idx}" value="${(note.pic||'').replace(/"/g,'&quot;')}" placeholder="ชื่อ PIC" style="width:90px; font-size:11px;"></td>
+      <td><input type="text" id="arfu-timeline-${idx}" value="${(note.timeline||'').replace(/"/g,'&quot;')}" placeholder="Timeline..." style="width:130px; font-size:11px;"></td>
       <td><button onclick="saveARFollowupNoteRow('${esc}', ${idx})" style="background:#1B2A44; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-size:11px; cursor:pointer;">Save</button></td>
     </tr>`;
   }).join('');
@@ -3375,9 +3447,60 @@ function renderARFollowupTable(){
   document.getElementById('arFollowupTotalOutstanding').textContent = fmtMoney(totalOutstanding);
   document.getElementById('arFollowupTotalOverdue').textContent = fmtMoney(totalOverdue);
   document.getElementById('arFollowupTotalCurrent').textContent = fmtMoney(totalCurrent);
+
+  renderARFollowupInvoiceDetail(invoiceRows);
 }
 
-function arfuFill(el){var f=(el.value!=='');el.style.background=f?'#DDEBF7':'';if(el.type==='date')el.classList.toggle('arfu-filled',f);}
+function renderARFollowupInvoiceDetail(invoiceRows){
+  const custFilterEl = document.getElementById('arFollowupInvoiceCustomerFilter');
+  if(custFilterEl.options.length<=1 || custFilterEl.dataset.stale==='1'){
+    const custs = Array.from(new Set(invoiceRows.map(r=>r.customer))).sort();
+    const cur = custFilterEl.value;
+    custFilterEl.innerHTML = '<option value="">All Customers</option>' + custs.map(c=>`<option value="${c}">${c}</option>`).join('');
+    custFilterEl.value = custs.includes(cur) ? cur : '';
+    custFilterEl.dataset.stale = '0';
+  }
+  const custFilter = custFilterEl.value;
+  const bucketFilter = document.getElementById('arFollowupInvoiceBucketFilter').value;
+
+  const num = v => parseFloat(v)||0;
+  const now = new Date();
+  const todayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+  function bucketOf(inv){
+    if(num(inv.d181_270)>0 || num(inv.d271_360)>0 || num(inv.d360plus)>0) return {key:'181plus', label:'181+', bg:'#E8B8B8', color:'#5A1414'};
+    if(num(inv.d91_180)>0) return {key:'91_180', label:'91–180', bg:'#F5D0D0', color:'#7A1F1F'};
+    if(num(inv.d61_90)>0) return {key:'61_90', label:'61–90', bg:'#FBE4E1', color:'#A32D2D'};
+    if(num(inv.d31_60)>0) return {key:'31_60', label:'31–60', bg:'#FCE4CC', color:'#B85C1E'};
+    if(num(inv.d1_30)>0) return {key:'1_30', label:'1–30', bg:'#FCF3CF', color:'#8A6D0E'};
+    return {key:'current', label:'Current', bg:'#E2EFDA', color:'#1E6B3C'};
+  }
+
+  let rows = invoiceRows.map(inv=>{
+    const amount = num(inv.current)+num(inv.d1_30)+num(inv.d31_60)+num(inv.d61_90)+num(inv.d91_180)+num(inv.d181_270)+num(inv.d271_360)+num(inv.d360plus);
+    const bucket = bucketOf(inv);
+    let daysAging = null;
+    if(inv.invoiceDate){
+      const invMs = new Date(inv.invoiceDate+'T00:00:00').getTime();
+      daysAging = Math.round((todayMs - invMs) / 86400000);
+    }
+    return Object.assign({}, inv, {amount, bucket, daysAging});
+  }).filter(r=>r.amount>0); // skip zero-amount rows (fully paid / no aging)
+
+  if(custFilter) rows = rows.filter(r=>r.customer===custFilter);
+  if(bucketFilter) rows = rows.filter(r=>r.bucket.key===bucketFilter);
+  rows.sort((a,b)=>(b.daysAging||0)-(a.daysAging||0));
+
+  document.getElementById('arFollowupInvoiceBody').innerHTML = rows.length ? rows.map(r=>`
+    <tr>
+      <td>${r.customer}</td>
+      <td>${r.invoiceDate||'—'}</td>
+      <td style="background:${r.bucket.bg}; color:${r.bucket.color}; font-weight:700;">${r.bucket.label}</td>
+      <td>${r.daysAging!==null ? r.daysAging+' วัน' : '—'}</td>
+      <td style="font-weight:700;">${fmtMoney(r.amount)}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="5" style="text-align:center; color:#999;">No invoices for this filter</td></tr>';
+}
 
 async function saveARFollowupNoteRow(customer, idx){
   if(!AR_FOLLOWUP_API_URL){ alert('ยังไม่ได้ตั้งค่า AR_FOLLOWUP_API_URL'); return; }
@@ -3448,6 +3571,10 @@ async function handleARFollowupUpload(file){
     const headers = grid[headerRowIdx].map(h=>String(h).trim());
     const colIdx = name => headers.findIndex(h=>h.toLowerCase()===name.toLowerCase());
     const iCustomer = colIdx('Customer/Payer');
+    const iDocNo = colIdx('Document No.');
+    const iDate = colIdx('Date');
+    const iDueDate = colIdx('Due Date');
+    const iStatus = colIdx('Status');
     const iCurrent = colIdx('Current');
     const i1_30 = colIdx('1-30');
     const i31_60 = colIdx('31-60');
@@ -3460,26 +3587,36 @@ async function handleARFollowupUpload(file){
     if(iCustomer===-1){ alert('หาคอลัมน์ Customer/Payer ไม่เจอ'); return; }
 
     const num = v => { const f = parseFloat(String(v).replace(/,/g,'')); return isNaN(f) ? 0 : f; };
-    const byCustomer = {};
+    // Source file dates come as 'DD/MM/YYYY' text — convert to 'YYYY-MM-DD'.
+    const toIsoDate = v => {
+      const s = String(v||'').trim();
+      const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      return m ? `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}` : '';
+    };
+
+    // Kept as one row per INDIVIDUAL INVOICE (not aggregated per customer),
+    // so the app can show both the customer-level summary (computed client
+    // side by grouping these rows) and a per-invoice drill-down with
+    // Document No. / Invoice Date / Days Aging.
+    rows = [];
     for(let r=headerRowIdx+1; r<grid.length; r++){
       const row = grid[r];
       const customer = (row[iCustomer]||'').toString().trim();
       if(!customer) continue;
-      if(!byCustomer[customer]){
-        byCustomer[customer] = {customer, current:0, d1_30:0, d31_60:0, d61_90:0, d91_180:0, d181_270:0, d271_360:0, d360plus:0, total:0};
-      }
-      const acc = byCustomer[customer];
-      acc.current += num(row[iCurrent]);
-      acc.d1_30 += num(row[i1_30]);
-      acc.d31_60 += num(row[i31_60]);
-      acc.d61_90 += num(row[i61_90]);
-      acc.d91_180 += num(row[i91_180]);
-      if(i181_270!==-1) acc.d181_270 += num(row[i181_270]);
-      if(i271_360!==-1) acc.d271_360 += num(row[i271_360]);
-      if(i360plus!==-1) acc.d360plus += num(row[i360plus]);
-      acc.total += num(row[iTotal]);
+      rows.push({
+        customer,
+        documentNo: iDocNo!==-1 ? (row[iDocNo]||'').toString().trim() : '',
+        invoiceDate: iDate!==-1 ? toIsoDate(row[iDate]) : '',
+        dueDate: iDueDate!==-1 ? toIsoDate(row[iDueDate]) : '',
+        status: iStatus!==-1 ? (row[iStatus]||'').toString().trim() : '',
+        current: num(row[iCurrent]), d1_30: num(row[i1_30]), d31_60: num(row[i31_60]),
+        d61_90: num(row[i61_90]), d91_180: num(row[i91_180]),
+        d181_270: i181_270!==-1 ? num(row[i181_270]) : 0,
+        d271_360: i271_360!==-1 ? num(row[i271_360]) : 0,
+        d360plus: i360plus!==-1 ? num(row[i360plus]) : 0,
+        total: num(row[iTotal]),
+      });
     }
-    rows = Object.values(byCustomer);
     if(rows.length===0){ alert('ไม่พบข้อมูลลูกค้าในไฟล์นี้ (ชีทที่อ่าน: "'+sheetName+'")'); return; }
   }catch(e){
     alert('อ่านไฟล์ไม่สำเร็จ (ขั้นตอนแปลงไฟล์ Excel): ' + (e.message || e) + '\n\nลอง F12 → Console เพื่อดูรายละเอียดเพิ่มเติม หรือส่ง screenshot ของข้อความนี้ให้ตรวจสอบได้');
@@ -3591,7 +3728,7 @@ async function refreshList(){
     document.getElementById('typeTabBooking').classList.remove('active');
     document.getElementById('typeTabFinance').classList.remove('active');
   }
-  allListRecords = (await dataGetAll()).filter(r=>r.type!=='arCustomerSetting' && r.type!=='arCustomerRemark');
+  allListRecords = (await dataGetAll()).filter(r=>r.type!=='arCustomerSetting' && r.type!=='arCustomerRemark' && r.type!=='arReconcileRemark');
   const customerSelect = document.getElementById('listCustomerFilter');
   if(customerSelect){
     const currentVal = customerSelect.value;
@@ -4228,6 +4365,86 @@ function renderARAging(idx, now){
   const allCustomers = Array.from(new Set(idx.filter(i=>i.type==='booking' && i.customer).map(i=>i.customer))).sort();
   renderArLogicRef(allCustomers, CUSTOMER_AR_RULES, DEFAULT_AR_RULE);
   renderCustomerSummaryTable(idx);
+  renderReconcilePendingTable(idx);
+}
+
+function jumpToReconcilePending(customer){
+  const sel = document.getElementById('arReconcilePendingCustomerFilter');
+  if(Array.from(sel.options).some(o=>o.value===customer)){
+    sel.value = customer;
+  }
+  renderReconcilePendingTable();
+  document.getElementById('arReconcilePendingBody').closest('table').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function renderReconcilePendingTable(idx){
+  if(idx) window._reconcilePendingIdx = idx;
+  idx = window._reconcilePendingIdx;
+  if(!idx) return;
+
+  const customerFilterEl = document.getElementById('arReconcilePendingCustomerFilter');
+  if(customerFilterEl.options.length<=1 || customerFilterEl.dataset.stale==='1'){
+    const custs = Array.from(new Set(idx.filter(i=>i.type==='booking' && i.customer).map(i=>i.customer))).sort();
+    const cur = customerFilterEl.value;
+    customerFilterEl.innerHTML = '<option value="">All Customers</option>' + custs.map(c=>`<option value="${c}">${c}</option>`).join('');
+    customerFilterEl.value = cur;
+    customerFilterEl.dataset.stale = '0';
+  }
+  const customerFilter = customerFilterEl.value;
+  const search = (document.getElementById('arReconcilePendingSearch').value||'').trim().toLowerCase();
+
+  const RECONCILE_DUE_DAYS = 7; // flat, same for every customer
+  const now = new Date();
+  const todayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+  const remarkRecords = idx.filter(i=>i.type==='arReconcileRemark');
+  const remarkMap = {};
+  remarkRecords.forEach(r=>{ remarkMap[r.mawbKey] = r.remarkText || ''; });
+
+  let rows = idx.filter(i=>i.type==='booking' && (i.crStatus||'').toLowerCase()==='reconcile' && i.reconcileDate)
+    .map(i=>{
+      const rDate = new Date(i.reconcileDate+'T00:00:00');
+      const dueDate = new Date(rDate.getTime() + RECONCILE_DUE_DAYS*86400000);
+      const dueMs = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()).getTime();
+      const daysUntilDue = Math.round((dueMs - todayMs) / 86400000);
+      return Object.assign({}, i, {
+        dueDateStr: formatDateStr(dueDate),
+        daysUntilDue,
+        isOverdue: daysUntilDue < 0,
+      });
+    });
+
+  if(customerFilter) rows = rows.filter(i=>i.customer===customerFilter);
+  if(search) rows = rows.filter(i=>(i.mawb||'').toLowerCase().includes(search));
+  rows.sort((a,b)=>a.daysUntilDue-b.daysUntilDue);
+
+  document.getElementById('arReconcilePendingBody').innerHTML = rows.length ? rows.map(r=>{
+    const mawbKey = r.jobNo;
+    const esc = mawbKey.replace(/'/g,"\\'");
+    const remarkVal = (remarkMap[mawbKey]||'').replace(/"/g,'&quot;');
+    const statusText = r.isOverdue ? `Overdue ${-r.daysUntilDue}d` : `On track (${r.daysUntilDue}d left)`;
+    const statusColor = r.isOverdue ? '#A32D2D' : '#1E6B3C';
+    const rowBg = r.isOverdue ? '#FBE4E1' : '#E2EFDA';
+    return `<tr style="background:${rowBg};">
+      <td>${r.mawb||'—'}</td><td>${r.customer||''}</td>
+      <td style="border-left:2px solid #D5D5D5;">${r.reconcileDate}</td><td>${r.dueDateStr}</td>
+      <td style="border-left:2px solid #D5D5D5; color:${statusColor}; font-weight:700;">${statusText}</td>
+      <td style="border-left:2px solid #D5D5D5;">${fmtMoney(parseFloat(r.revAmount)||0)}</td>
+      <td style="border-left:2px solid #D5D5D5;"><input type="text" value="${remarkVal}" placeholder="พิมพ์ Remark..." style="width:150px; font-size:11px;"
+        onchange="saveReconcileRemark('${esc}', this.value)"></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="7" style="text-align:center; color:#999;">No records in Reconcile status</td></tr>';
+}
+
+async function saveReconcileRemark(jobNo, text){
+  await dataSave({ jobNo: 'ARRC-'+jobNo, type:'arReconcileRemark', mawbKey: jobNo, remarkText: text });
+  const idx = window._reconcilePendingIdx;
+  if(idx){
+    const existing = idx.find(r=>r.type==='arReconcileRemark' && r.mawbKey===jobNo);
+    if(existing) existing.remarkText = text;
+    else idx.push({type:'arReconcileRemark', mawbKey: jobNo, remarkText: text});
+  }
+  showToast('✓ Save successful');
 }
 
 function renderCustomerSummaryTable(idx, notInvoiced, reconcileRecords, invoicedRecords){
@@ -4271,17 +4488,28 @@ function renderCustomerSummaryTable(idx, notInvoiced, reconcileRecords, invoiced
     return dueMs < todayMsForDue;
   }
 
+  const RECONCILE_DUE_DAYS_SUMMARY = 7; // must match renderReconcilePendingTable
+  const nowForReconcile = new Date();
+  const todayMsForReconcile = new Date(nowForReconcile.getFullYear(), nowForReconcile.getMonth(), nowForReconcile.getDate()).getTime();
+  function isReconcileOverdue(rec){
+    if(!rec.reconcileDate) return false;
+    const rDate = new Date(rec.reconcileDate+'T00:00:00');
+    const dueMs = rDate.getTime() + RECONCILE_DUE_DAYS_SUMMARY*86400000;
+    return dueMs < todayMsForReconcile;
+  }
+
   function summarize(records){
     const p = records.filter(i=>{ const cr=(i.crStatus||'').toLowerCase(); return cr!=='reconcile' && cr!=='invoice-issued'; });
     const r = records.filter(i=>(i.crStatus||'').toLowerCase()==='reconcile');
     const v = records.filter(i=>(i.crStatus||'').toLowerCase()==='invoice-issued');
     const overdueList = p.filter(isOverdue);
     const onTrackList = p.filter(i=>!isOverdue(i));
+    const reconcileOverdueList = r.filter(isReconcileOverdue);
     return {
       totalCount: records.length, totalRev: sum(records),
       onTrackCount: onTrackList.length, onTrackRev: sum(onTrackList),
       overdueCount: overdueList.length, overdueRev: sum(overdueList),
-      reconcileCount: r.length, reconcileRev: sum(r),
+      reconcileCount: r.length, reconcileRev: sum(r), reconcileOverdueCount: reconcileOverdueList.length,
       invoicedCount: v.length, invoicedRev: sum(v),
     };
   }
@@ -4350,7 +4578,10 @@ function renderCustomerSummaryTable(idx, notInvoiced, reconcileRecords, invoiced
       html += revCell(row.totalRev);
       html += countCell(row.invoicedCount, '#FBD9EA', '#A3266B');
       html += revCell(row.invoicedRev);
-      html += countCell(row.reconcileCount, '#D6EBF7', '#1B5A82');
+      const reconcileBadge = row.reconcileOverdueCount>0
+        ? ` <span onclick="event.stopPropagation(); jumpToReconcilePending('${block.customer.replace(/'/g,"\\'")}')" style="cursor:pointer; font-size:9.5px; background:#A32D2D; color:#fff; border-radius:8px; padding:2px 6px;">⚠ ${row.reconcileOverdueCount}</span>`
+        : '';
+      html += `<td style="${DL} ${CELL_FONT} background:#D6EBF7; color:#1B5A82; font-weight:700;">${fmtNum(row.reconcileCount)}${reconcileBadge}</td>`;
       html += revCell(row.reconcileRev);
       html += countCell(row.onTrackCount, '#E2EFDA', '#1E6B3C');
       html += revCell(row.onTrackRev);
@@ -5156,7 +5387,7 @@ function csvEscape(val){
 }
 
 async function exportCSV(){
-  const records = (await dataGetAll()).filter(r=>r.type!=='arCustomerSetting' && r.type!=='arCustomerRemark');
+  const records = (await dataGetAll()).filter(r=>r.type!=='arCustomerSetting' && r.type!=='arCustomerRemark' && r.type!=='arReconcileRemark');
   if(records.length===0){ alert('No job sheets to export yet.'); return; }
   const cols = ['jobNo','type','date','month','customer','cargoService','mode','expImp','service','origin','dest','route','carrier','coloader','etd','eta','transit','containers','itemsJSON','vendorName','truckType','totalTruck','driverName','licensePlate','pickupDate','mawb','notes','status','savedAt','bookingWeight','chargeableWeight','remark','quotationRef','crStatus','invoiceIssueDate','cutoffDays','ruleType','refJobNo','lcCostAmount','lcRevAmount','frCostAmount','frRevAmount','dcCostAmount','dcRevAmount','revAmount','costAmount','gpAmount','gpPercent','crMawb','crCustomer','crMode','crCargoService','crExpImp','crOrigin','crDest','crEtd','crChargeableWeight','costPerKg','sellingPerKg','costPerContainer','sellingPerContainer','lcVendor1','lcVendor2','lcVendor3','lcVendor4','lcService1','lcService2','lcService3','lcService4','lcTruckType1','lcTruckType2','lcTruckType3','lcTruckType4','lcTruckUsage1','lcTruckUsage2','lcTruckUsage3','lcTruckUsage4','lcRatePerTruck1','lcRatePerTruck2','lcRatePerTruck3','lcRatePerTruck4','lcCustoms1','lcCustoms2','lcCustoms3','lcCustoms4','lcHandling1','lcHandling2','lcHandling3','lcHandling4','lcTerminal1','lcTerminal2','lcTerminal3','lcTerminal4','lcDocument1','lcDocument2','lcDocument3','lcDocument4','lcAirlinesOther1','lcAirlinesOther2','lcAirlinesOther3','lcAirlinesOther4','lcPacking1','lcPacking2','lcPacking3','lcPacking4','lcOT1','lcOT2','lcOT3','lcOT4','lcOther1','lcOther2','lcOther3','lcOther4','lcOtherRemark1','lcOtherRemark2','lcOtherRemark3','lcOtherRemark4','lcrVendor1','lcrVendor2','lcrVendor3','lcrVendor4','lcrService1','lcrService2','lcrService3','lcrService4','lcrTruckType1','lcrTruckType2','lcrTruckType3','lcrTruckType4','lcrTruckUsage1','lcrTruckUsage2','lcrTruckUsage3','lcrTruckUsage4','lcrRatePerTruck1','lcrRatePerTruck2','lcrRatePerTruck3','lcrRatePerTruck4','lcrCustoms1','lcrCustoms2','lcrCustoms3','lcrCustoms4','lcrHandling1','lcrHandling2','lcrHandling3','lcrHandling4','lcrTerminal1','lcrTerminal2','lcrTerminal3','lcrTerminal4','lcrDocument1','lcrDocument2','lcrDocument3','lcrDocument4','lcrAirlinesOther1','lcrAirlinesOther2','lcrAirlinesOther3','lcrAirlinesOther4','lcrPacking1','lcrPacking2','lcrPacking3','lcrPacking4','lcrOT1','lcrOT2','lcrOT3','lcrOT4','lcrOther1','lcrOther2','lcrOther3','lcrOther4','lcrOtherRemark1','lcrOtherRemark2','lcrOtherRemark3','lcrOtherRemark4','dcVendor1','dcVendor2','dcVendor3','dcVendor4','dcTruckType1','dcTruckType2','dcTruckType3','dcTruckType4','dcTruckUsage1','dcTruckUsage2','dcTruckUsage3','dcTruckUsage4','dcRatePerTruck1','dcRatePerTruck2','dcRatePerTruck3','dcRatePerTruck4','dcHandling1','dcHandling2','dcHandling3','dcHandling4','dcCustoms1','dcCustoms2','dcCustoms3','dcCustoms4','dcDelivery1','dcDelivery2','dcDelivery3','dcDelivery4','dcrVendor1','dcrVendor2','dcrVendor3','dcrVendor4','dcrTruckType1','dcrTruckType2','dcrTruckType3','dcrTruckType4','dcrTruckUsage1','dcrTruckUsage2','dcrTruckUsage3','dcrTruckUsage4','dcrRatePerTruck1','dcrRatePerTruck2','dcrRatePerTruck3','dcrRatePerTruck4','dcrHandling1','dcrHandling2','dcrHandling3','dcrHandling4','dcrCustoms1','dcrCustoms2','dcrCustoms3','dcrCustoms4','dcrDelivery1','dcrDelivery2','dcrDelivery3','dcrDelivery4','dcRemark1','dcRemark2','dcRemark3','dcRemark4','dcrRemark1','dcrRemark2','dcrRemark3','dcrRemark4'];
   const header = cols.join(',');
