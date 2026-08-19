@@ -3489,14 +3489,35 @@ function renderARFollowupInvoiceDetail(invoiceRows){
 
   if(custFilter) rows = rows.filter(r=>r.customer===custFilter);
   if(bucketFilter) rows = rows.filter(r=>r.bucket.key===bucketFilter);
-  rows.sort((a,b)=>(b.daysAging||0)-(a.daysAging||0));
+
+  // Group invoices that share the same Customer + Days Aging (same age bracket
+  // down to the day) into one row, summing their amounts — multiple invoices
+  // dated the same day for the same customer are combined rather than listed
+  // as separate identical-looking lines.
+  const grouped = {};
+  rows.forEach(r=>{
+    const key = r.customer + '|' + r.daysAging;
+    if(!grouped[key]){
+      grouped[key] = Object.assign({}, r, {amount: 0});
+    }
+    grouped[key].amount += r.amount;
+  });
+  rows = Object.values(grouped);
+
+  // Sort by Aging (most days first), then by Amount (largest first) within
+  // the same aging.
+  rows.sort((a,b)=>{
+    const ageDiff = (b.daysAging||0)-(a.daysAging||0);
+    if(ageDiff!==0) return ageDiff;
+    return b.amount - a.amount;
+  });
 
   document.getElementById('arFollowupInvoiceBody').innerHTML = rows.length ? rows.map(r=>`
     <tr>
       <td>${r.customer}</td>
       <td>${r.invoiceDate||'—'}</td>
       <td style="background:${r.bucket.bg}; color:${r.bucket.color}; font-weight:700;">${r.bucket.label}</td>
-      <td>${r.daysAging!==null ? r.daysAging+' วัน' : '—'}</td>
+      <td>${r.daysAging!==null ? r.daysAging+' days' : '—'}</td>
       <td style="font-weight:700;">${fmtMoney(r.amount)}</td>
     </tr>
   `).join('') : '<tr><td colspan="5" style="text-align:center; color:#999;">No invoices for this filter</td></tr>';
