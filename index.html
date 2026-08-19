@@ -669,7 +669,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       </div>
 
       <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Reconcile Pending to INV Issue</div>
-      <div style="font-size:11px; color:#888; background:#F5F5F5; padding:8px 12px; border-radius:5px; margin-bottom:12px;">📌 Due Date = Reconcile Date + <b>7 days</b> (same for all customers)</div>
+      <div style="font-size:11px; color:#888; background:#F5F5F5; padding:8px 12px; border-radius:5px; margin-bottom:12px;">📌 Due Date = Reconcile Date + จำนวนวันตาม Logic ของแต่ละลูกค้า (ถ้าไม่ได้ตั้งไว้ ใช้ Default <b>7 days</b>)</div>
       <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; align-items:flex-end;">
         <label style="font-size:12px; color:var(--steel);">Customer<br>
           <select id="arReconcilePendingCustomerFilter" onchange="renderReconcilePendingTable()" style="margin-top:2px;">
@@ -683,8 +683,8 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <div style="overflow-x:auto; margin-bottom:20px;">
         <table class="dash-table" style="min-width:1000px;">
           <thead><tr>
-            <th>MAWB</th><th>Customer</th>
-            <th style="border-left:2px solid #D5D5D5;">Reconcile Date</th><th>Due Date (+7d)</th>
+            <th>Customer</th><th>Logic</th>
+            <th style="border-left:2px solid #D5D5D5;">Reconcile Date</th><th>Due Date</th>
             <th style="border-left:2px solid #D5D5D5;">Status</th>
             <th style="border-left:2px solid #D5D5D5;">Revenue</th>
             <th style="border-left:2px solid #D5D5D5;">Remark</th>
@@ -4398,6 +4398,12 @@ function jumpToReconcilePending(customer){
   document.getElementById('arReconcilePendingBody').closest('table').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
+const CUSTOMER_RECONCILE_RULES = {
+  'EOPTOLINK': 7,
+  'MULTI-FINELINE ELECTRONICS': 10,
+};
+const DEFAULT_RECONCILE_DUE_DAYS = 7;
+
 function renderReconcilePendingTable(idx){
   if(idx) window._reconcilePendingIdx = idx;
   idx = window._reconcilePendingIdx;
@@ -4414,7 +4420,6 @@ function renderReconcilePendingTable(idx){
   const customerFilter = customerFilterEl.value;
   const search = (document.getElementById('arReconcilePendingSearch').value||'').trim().toLowerCase();
 
-  const RECONCILE_DUE_DAYS = 7; // flat, same for every customer
   const now = new Date();
   const todayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
@@ -4422,35 +4427,60 @@ function renderReconcilePendingTable(idx){
   const remarkMap = {};
   remarkRecords.forEach(r=>{ remarkMap[r.mawbKey] = r.remarkText || ''; });
 
-  let rows = idx.filter(i=>i.type==='booking' && (i.crStatus||'').toLowerCase()==='reconcile' && i.reconcileDate)
-    .map(i=>{
-      const rDate = new Date(i.reconcileDate+'T00:00:00');
-      const dueDate = new Date(rDate.getTime() + RECONCILE_DUE_DAYS*86400000);
-      const dueMs = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()).getTime();
-      const daysUntilDue = Math.round((dueMs - todayMs) / 86400000);
-      return Object.assign({}, i, {
-        dueDateStr: formatDateStr(dueDate),
-        daysUntilDue,
-        isOverdue: daysUntilDue < 0,
-      });
-    });
+  function dueDaysFor(customer){
+    return CUSTOMER_RECONCILE_RULES.hasOwnProperty(customer) ? CUSTOMER_RECONCILE_RULES[customer] : DEFAULT_RECONCILE_DUE_DAYS;
+  }
+  function logicTextFor(customer){
+    const days = dueDaysFor(customer);
+    const isDefault = !CUSTOMER_RECONCILE_RULES.hasOwnProperty(customer);
+    return `${days} days after Reconcile Date${isDefault ? ' (default)' : ''}`;
+  }
 
-  if(customerFilter) rows = rows.filter(i=>i.customer===customerFilter);
-  if(search) rows = rows.filter(i=>(i.mawb||'').toLowerCase().includes(search));
+  let source = idx.filter(i=>i.type==='booking' && (i.crStatus||'').toLowerCase()==='reconcile' && i.reconcileDate);
+  if(customerFilter) source = source.filter(i=>i.customer===customerFilter);
+  if(search) source = source.filter(i=>(i.mawb||'').toLowerCase().includes(search));
+
+  // Grouped by Customer + Reconcile Date (not per-MAWB) — a customer with
+  // MAWBs reconciled on different dates gets one row per distinct date, since
+  // each group's Due Date and Status depend on that specific Reconcile Date.
+  const groups = {};
+  source.forEach(i=>{
+    const key = i.customer + '|' + i.reconcileDate;
+    if(!groups[key]){
+      groups[key] = {customer: i.customer, reconcileDate: i.reconcileDate, revenue: 0, mawbCount: 0};
+    }
+    groups[key].revenue += parseFloat(i.revAmount)||0;
+    groups[key].mawbCount += 1;
+  });
+
+  let rows = Object.values(groups).map(g=>{
+    const dueDays = dueDaysFor(g.customer);
+    const rDate = new Date(g.reconcileDate+'T00:00:00');
+    const dueDate = new Date(rDate.getTime() + dueDays*86400000);
+    const dueMs = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()).getTime();
+    const daysUntilDue = Math.round((dueMs - todayMs) / 86400000);
+    return Object.assign({}, g, {
+      dueDateStr: formatDateStr(dueDate),
+      daysUntilDue,
+      isOverdue: daysUntilDue < 0,
+    });
+  });
+
   rows.sort((a,b)=>a.daysUntilDue-b.daysUntilDue);
 
   document.getElementById('arReconcilePendingBody').innerHTML = rows.length ? rows.map(r=>{
-    const mawbKey = r.jobNo;
-    const esc = mawbKey.replace(/'/g,"\\'");
-    const remarkVal = (remarkMap[mawbKey]||'').replace(/"/g,'&quot;');
+    const remarkKey = r.customer + '|' + r.reconcileDate;
+    const esc = remarkKey.replace(/'/g,"\\'");
+    const remarkVal = (remarkMap[remarkKey]||'').replace(/"/g,'&quot;');
     const statusText = r.isOverdue ? `Overdue ${-r.daysUntilDue}d` : `On track (${r.daysUntilDue}d left)`;
     const statusColor = r.isOverdue ? '#A32D2D' : '#1E6B3C';
     const rowBg = r.isOverdue ? '#FBE4E1' : '#E2EFDA';
     return `<tr style="background:${rowBg};">
-      <td>${r.mawb||'—'}</td><td>${r.customer||''}</td>
+      <td style="font-weight:700;">${r.customer||''}</td>
+      <td style="font-size:10px;">${logicTextFor(r.customer)}</td>
       <td style="border-left:2px solid #D5D5D5;">${r.reconcileDate}</td><td>${r.dueDateStr}</td>
       <td style="border-left:2px solid #D5D5D5; color:${statusColor}; font-weight:700;">${statusText}</td>
-      <td style="border-left:2px solid #D5D5D5;">${fmtMoney(parseFloat(r.revAmount)||0)}</td>
+      <td style="border-left:2px solid #D5D5D5;">${fmtMoney(r.revenue)}</td>
       <td style="border-left:2px solid #D5D5D5;"><input type="text" value="${remarkVal}" placeholder="พิมพ์ Remark..." style="width:150px; font-size:11px; background:${remarkVal?'#E3F2FB':'#fff'};"
         oninput="this.style.background=this.value?'#E3F2FB':'#fff';" onchange="saveReconcileRemark('${esc}', this.value)"></td>
     </tr>`;
@@ -4509,13 +4539,13 @@ function renderCustomerSummaryTable(idx, notInvoiced, reconcileRecords, invoiced
     return dueMs < todayMsForDue;
   }
 
-  const RECONCILE_DUE_DAYS_SUMMARY = 7; // must match renderReconcilePendingTable
   const nowForReconcile = new Date();
   const todayMsForReconcile = new Date(nowForReconcile.getFullYear(), nowForReconcile.getMonth(), nowForReconcile.getDate()).getTime();
   function isReconcileOverdue(rec){
     if(!rec.reconcileDate) return false;
+    const dueDays = CUSTOMER_RECONCILE_RULES.hasOwnProperty(rec.customer) ? CUSTOMER_RECONCILE_RULES[rec.customer] : DEFAULT_RECONCILE_DUE_DAYS;
     const rDate = new Date(rec.reconcileDate+'T00:00:00');
-    const dueMs = rDate.getTime() + RECONCILE_DUE_DAYS_SUMMARY*86400000;
+    const dueMs = rDate.getTime() + dueDays*86400000;
     return dueMs < todayMsForReconcile;
   }
 
