@@ -670,6 +670,10 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
 
       <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Reconcile Pending to INV Issue</div>
       <div style="font-size:11px; color:#888; background:#F5F5F5; padding:8px 12px; border-radius:5px; margin-bottom:12px;">📌 Due Date = Reconcile Date + จำนวนวันตาม Logic ของแต่ละลูกค้า (ถ้าไม่ได้ตั้งไว้ ใช้ Default <b>7 days</b>)</div>
+      <div id="arReconcileBackfillWarning" style="display:none; font-size:11px; color:#7A5A00; background:#FFF3CD; border:1px solid #E2B33C; padding:10px 14px; border-radius:5px; margin-bottom:12px;">
+        ⚠️ พบ MAWB สถานะ Reconcile ที่ยังไม่มี Reconcile Date จำนวน <b id="arReconcileBackfillCount">0</b> ใบ (เข้าสถานะนี้ก่อนมีฟีเจอร์นี้ เลยไม่ขึ้นในตารางด้านล่าง) —
+        <button onclick="backfillReconcileDate()" style="background:#7A1F1F; color:#fff; border:none; padding:5px 12px; border-radius:4px; font-size:11px; cursor:pointer; margin-left:4px;">Backfill Reconcile Date (ตั้งเป็นวันนี้)</button>
+      </div>
       <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; align-items:flex-end;">
         <label style="font-size:12px; color:var(--steel);">Customer<br>
           <select id="arReconcilePendingCustomerFilter" onchange="renderReconcilePendingTable()" style="margin-top:2px;">
@@ -4404,6 +4408,25 @@ const CUSTOMER_RECONCILE_RULES = {
 };
 const DEFAULT_RECONCILE_DUE_DAYS = 7;
 
+async function backfillReconcileDate(){
+  const idx = window._reconcilePendingIdx;
+  if(!idx) return;
+  const targets = idx.filter(i=>i.type==='booking' && (i.crStatus||'').toLowerCase()==='reconcile' && !i.reconcileDate);
+  if(targets.length===0) return;
+  if(!confirm(`จะตั้งค่า Reconcile Date เป็นวันนี้ (${formatDateStr(new Date())}) ให้ MAWB จำนวน ${targets.length} ใบ ที่ยังไม่มีวันที่บันทึกไว้\n\n⚠️ นี่ไม่ใช่วันที่จริงที่เข้าสถานะ Reconcile (ข้อมูลนั้นไม่เคยถูกบันทึกไว้ก่อนหน้านี้) แต่จะเริ่มนับกำหนดส่ง INV ใหม่จากวันนี้เป็นต้นไป\n\nดำเนินการต่อ?`)) return;
+
+  const today = formatDateStr(new Date());
+  let done = 0;
+  for(const rec of targets){
+    rec.reconcileDate = today;
+    await dataSave(rec);
+    done++;
+  }
+  showToast(`✓ Save successful — อัปเดต ${done} ใบ`);
+  const freshIdx = await dataGetAll();
+  renderReconcilePendingTable(freshIdx);
+}
+
 function renderReconcilePendingTable(idx){
   if(idx) window._reconcilePendingIdx = idx;
   idx = window._reconcilePendingIdx;
@@ -4434,6 +4457,15 @@ function renderReconcilePendingTable(idx){
     const days = dueDaysFor(customer);
     const isDefault = !CUSTOMER_RECONCILE_RULES.hasOwnProperty(customer);
     return `${days} days after Reconcile Date${isDefault ? ' (default)' : ''}`;
+  }
+
+  const missingDateRecords = idx.filter(i=>i.type==='booking' && (i.crStatus||'').toLowerCase()==='reconcile' && !i.reconcileDate);
+  const warningEl = document.getElementById('arReconcileBackfillWarning');
+  if(missingDateRecords.length > 0){
+    warningEl.style.display = 'block';
+    document.getElementById('arReconcileBackfillCount').textContent = missingDateRecords.length;
+  }else{
+    warningEl.style.display = 'none';
   }
 
   let source = idx.filter(i=>i.type==='booking' && (i.crStatus||'').toLowerCase()==='reconcile' && i.reconcileDate);
