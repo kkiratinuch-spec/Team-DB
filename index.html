@@ -3423,9 +3423,9 @@ function renderARFollowupTable(){
       <td style="background:#E8B8B8; color:#5A1414; font-weight:700;">${fmt(b181plus)}</td>
       <td style="border-left:2px solid #D5D5D5; font-weight:700;">${fmtMoney(total)}</td>
       <td style="border-left:2px solid #D5D5D5;"><input type="date" id="arfu-paymentdate-${idx}" value="${note.paymentDate||''}" style="width:130px; font-size:11px; background:${note.paymentDate?'#E3F2FB':'#fff'};" oninput="this.style.background=this.value?'#E3F2FB':'#fff';"></td>
-      <td><input type="text" id="arfu-remark-${idx}" value="${(note.remark||'').replace(/"/g,'&quot;')}" placeholder="พิมพ์ Remark..." style="width:130px; font-size:11px; background:${note.remark?'#E3F2FB':'#fff'};" oninput="this.style.background=this.value?'#E3F2FB':'#fff';"></td>
-      <td><input type="text" id="arfu-pic-${idx}" value="${(note.pic||'').replace(/"/g,'&quot;')}" placeholder="ชื่อ PIC" style="width:90px; font-size:11px; background:${note.pic?'#E3F2FB':'#fff'};" oninput="this.style.background=this.value?'#E3F2FB':'#fff';"></td>
-      <td><input type="text" id="arfu-timeline-${idx}" value="${(note.timeline||'').replace(/"/g,'&quot;')}" placeholder="Timeline..." style="width:130px; font-size:11px; background:${note.timeline?'#E3F2FB':'#fff'};" oninput="this.style.background=this.value?'#E3F2FB':'#fff';"></td>
+      <td><input type="text" id="arfu-remark-${idx}" value="${String(note.remark||'').replace(/"/g,'&quot;')}" placeholder="พิมพ์ Remark..." style="width:130px; font-size:11px; background:${note.remark?'#E3F2FB':'#fff'};" oninput="this.style.background=this.value?'#E3F2FB':'#fff';"></td>
+      <td><input type="text" id="arfu-pic-${idx}" value="${String(note.pic||'').replace(/"/g,'&quot;')}" placeholder="ชื่อ PIC" style="width:90px; font-size:11px; background:${note.pic?'#E3F2FB':'#fff'};" oninput="this.style.background=this.value?'#E3F2FB':'#fff';"></td>
+      <td><input type="text" id="arfu-timeline-${idx}" value="${String(note.timeline||'').replace(/"/g,'&quot;')}" placeholder="Timeline..." style="width:130px; font-size:11px; background:${note.timeline?'#E3F2FB':'#fff'};" oninput="this.style.background=this.value?'#E3F2FB':'#fff';"></td>
       <td><button onclick="saveARFollowupNoteRow('${esc}', ${idx})" style="background:#1B2A44; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-size:11px; cursor:pointer;">Save</button></td>
     </tr>`;
   }).join('');
@@ -4471,7 +4471,7 @@ function renderReconcilePendingTable(idx){
   document.getElementById('arReconcilePendingBody').innerHTML = rows.length ? rows.map(r=>{
     const remarkKey = r.customer + '|' + r.reconcileDate;
     const esc = remarkKey.replace(/'/g,"\\'");
-    const remarkVal = (remarkMap[remarkKey]||'').replace(/"/g,'&quot;');
+    const remarkVal = String(remarkMap[remarkKey]||'').replace(/"/g,'&quot;');
     const statusText = r.isOverdue ? `Overdue ${-r.daysUntilDue}d` : `On track (${r.daysUntilDue}d left)`;
     const statusColor = r.isOverdue ? '#A32D2D' : '#1E6B3C';
     const rowBg = r.isOverdue ? '#FBE4E1' : '#E2EFDA';
@@ -4618,7 +4618,7 @@ function renderCustomerSummaryTable(idx, notInvoiced, reconcileRecords, invoiced
   blocks.forEach(block=>{
     block.subRows.forEach((row, si)=>{
       const esc = row.remarkKey.replace(/'/g,"\\'");
-      const remarkVal = (remarkMap[row.remarkKey]||'').replace(/"/g,'&quot;');
+      const remarkVal = String(remarkMap[row.remarkKey]||'').replace(/"/g,'&quot;');
       html += '<tr>';
       if(si===0){
         html += `<td rowspan="${block.subRows.length}" style="${CELL_FONT} font-weight:700; vertical-align:top; border-right:1px solid #eee;">${block.customer}</td>`;
