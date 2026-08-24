@@ -3395,7 +3395,7 @@ function renderARFollowupTable(){
       return 0;
     });
   const notesMap = {};
-  data.notes.forEach(n=>{ notesMap[n.customer] = n; });
+  data.notes.forEach(n=>{ if(n.snapshotDate===snapshotDate) notesMap[n.customer] = n; });
 
   let totalOutstanding=0, totalOverdue=0, totalCurrent=0;
   const bucketTotals = {current:0, d1_30:0, d31_60:0, d61_90:0, d91_180:0, d181plus:0};
@@ -3525,18 +3525,19 @@ function renderARFollowupInvoiceDetail(invoiceRows){
 
 async function saveARFollowupNoteRow(customer, idx){
   if(!AR_FOLLOWUP_API_URL){ alert('ยังไม่ได้ตั้งค่า AR_FOLLOWUP_API_URL'); return; }
+  const snapshotDate = document.getElementById('arFollowupSnapshotPicker').value;
   const paymentDate = document.getElementById('arfu-paymentdate-'+idx).value;
   const remark = document.getElementById('arfu-remark-'+idx).value;
   const pic = document.getElementById('arfu-pic-'+idx).value;
   const timeline = document.getElementById('arfu-timeline-'+idx).value;
   const data = window._arFollowupData;
-  const note = {customer, paymentDate, remark, pic, timeline};
+  const note = {customer, snapshotDate, paymentDate, remark, pic, timeline};
   try{
     await fetch(AR_FOLLOWUP_API_URL, {
       method: 'POST',
       body: JSON.stringify({action:'saveNote', ...note})
     });
-    const existingIdx = data.notes.findIndex(n=>n.customer===customer);
+    const existingIdx = data.notes.findIndex(n=>n.customer===customer && n.snapshotDate===snapshotDate);
     if(existingIdx===-1) data.notes.push(note); else data.notes[existingIdx] = note;
     showToast('✓ Save successful');
   }catch(e){
