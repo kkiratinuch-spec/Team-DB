@@ -671,7 +671,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <div style="font-size:11px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:8px;">Reconcile Pending to INV Issue</div>
       <div style="font-size:11px; color:#888; background:#F5F5F5; padding:8px 12px; border-radius:5px; margin-bottom:12px;">📌 Due Date = Reconcile Date + จำนวนวันตาม Logic ของแต่ละลูกค้า (ถ้าไม่ได้ตั้งไว้ ใช้ Default <b>7 days</b>)</div>
       <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; align-items:flex-end;">
-        <label style="font-size:12px; color:var(--steel);">Month (by Reconcile Date)<br>
+        <label style="font-size:12px; color:var(--steel);">Month (by ETD)<br>
           <select id="arReconcilePendingMonthFilter" onchange="renderReconcilePendingTable()" style="margin-top:2px;">
             <option value="">All months</option>
             <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
@@ -944,7 +944,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <table class="dash-table" style="min-width:1300px;">
         <thead><tr>
           <th>Customer</th>
-          <th style="border-left:2px solid #D5D5D5;">Current</th>
+          <th style="border-left:2px solid #D5D5D5;">Current 1–15</th><th>Current 15–30</th>
           <th style="border-left:2px solid #D5D5D5;">1–30</th><th>31–60</th><th>61–90</th><th>91–180</th><th>181+</th>
           <th style="border-left:2px solid #D5D5D5;">Total Aging Amount</th>
           <th style="border-left:2px solid #D5D5D5;">Payment Date</th><th>Remark</th><th>PIC</th><th>Timeline</th><th></th>
@@ -3375,14 +3375,30 @@ function renderARFollowupTable(){
   // Snapshots are stored one row per INDIVIDUAL INVOICE — group them by
   // customer here to rebuild the same per-customer summary the table always
   // showed, now computed client-side instead of trusting a pre-aggregated row.
+  const nowForCurrentSplit = new Date();
+  const todayMsForCurrentSplit = new Date(nowForCurrentSplit.getFullYear(), nowForCurrentSplit.getMonth(), nowForCurrentSplit.getDate()).getTime();
   const invoiceRows = data.snapshots.filter(s=>s.snapshotDate===snapshotDate);
   const byCustomer = {};
   invoiceRows.forEach(inv=>{
     if(!byCustomer[inv.customer]){
-      byCustomer[inv.customer] = {customer:inv.customer, current:0, d1_30:0, d31_60:0, d61_90:0, d91_180:0, d181_270:0, d271_360:0, d360plus:0};
+      byCustomer[inv.customer] = {customer:inv.customer, current1_15:0, current15_30:0, d1_30:0, d31_60:0, d61_90:0, d91_180:0, d181_270:0, d271_360:0, d360plus:0};
     }
     const acc = byCustomer[inv.customer];
-    acc.current += num(inv.current); acc.d1_30 += num(inv.d1_30); acc.d31_60 += num(inv.d31_60);
+    const currentAmt = num(inv.current);
+    if(currentAmt>0){
+      // Split by how many days old the invoice itself is (Invoice Date vs
+      // today), not by due date — an invoice can sit in the not-yet-due
+      // "Current" bucket for a while before crossing into 1-30, so this
+      // just shows whether it was billed very recently or a bit longer ago.
+      let daysAging = 0;
+      if(inv.invoiceDate){
+        const invMs = new Date(inv.invoiceDate+'T00:00:00').getTime();
+        daysAging = Math.round((todayMsForCurrentSplit - invMs) / 86400000);
+      }
+      if(daysAging<=15) acc.current1_15 += currentAmt;
+      else acc.current15_30 += currentAmt;
+    }
+    acc.d1_30 += num(inv.d1_30); acc.d31_60 += num(inv.d31_60);
     acc.d61_90 += num(inv.d61_90); acc.d91_180 += num(inv.d91_180);
     acc.d181_270 += num(inv.d181_270); acc.d271_360 += num(inv.d271_360); acc.d360plus += num(inv.d360plus);
   });
@@ -3407,16 +3423,18 @@ function renderARFollowupTable(){
   data.notes.forEach(n=>{ if(n.snapshotDate===snapshotDate) notesMap[n.customer] = n; });
 
   let totalOutstanding=0, totalOverdue=0, totalCurrent=0;
-  const bucketTotals = {current:0, d1_30:0, d31_60:0, d61_90:0, d91_180:0, d181plus:0};
+  const bucketTotals = {current1_15:0, current15_30:0, d1_30:0, d31_60:0, d61_90:0, d91_180:0, d181plus:0};
 
   const bodyHtml = rows.map((r, idx)=>{
-    const current = num(r.current), b30=num(r.d1_30), b60=num(r.d31_60), b90=num(r.d61_90), b180=num(r.d91_180);
+    const cur1 = num(r.current1_15), cur2 = num(r.current15_30);
+    const current = cur1 + cur2;
+    const b30=num(r.d1_30), b60=num(r.d31_60), b90=num(r.d61_90), b180=num(r.d91_180);
     const b181plus = num(r.d181_270)+num(r.d271_360)+num(r.d360plus);
     const total = current + b30 + b60 + b90 + b180 + b181plus;
     totalOutstanding += total;
     totalCurrent += current;
     totalOverdue += (b30+b60+b90+b180+b181plus);
-    bucketTotals.current+=current; bucketTotals.d1_30+=b30; bucketTotals.d31_60+=b60;
+    bucketTotals.current1_15+=cur1; bucketTotals.current15_30+=cur2; bucketTotals.d1_30+=b30; bucketTotals.d31_60+=b60;
     bucketTotals.d61_90+=b90; bucketTotals.d91_180+=b180; bucketTotals.d181plus+=b181plus;
 
     const note = notesMap[r.customer] || {};
@@ -3424,7 +3442,8 @@ function renderARFollowupTable(){
     const fmt = v => v ? fmtMoney(v) : '—';
     return `<tr>
       <td style="font-weight:700;">${r.customer}</td>
-      <td style="border-left:2px solid #D5D5D5; background:#E2EFDA; color:#1E6B3C; font-weight:700;">${fmt(current)}</td>
+      <td style="border-left:2px solid #D5D5D5; background:#E2EFDA; color:#1E6B3C; font-weight:700;">${fmt(cur1)}</td>
+      <td style="background:#E2EFDA; color:#1E6B3C; font-weight:700;">${fmt(cur2)}</td>
       <td style="border-left:2px solid #D5D5D5; background:#FCF3CF; color:#8A6D0E; font-weight:700;">${fmt(b30)}</td>
       <td style="background:#FCE4CC; color:#B85C1E; font-weight:700;">${fmt(b60)}</td>
       <td style="background:#FBE4E1; color:#A32D2D; font-weight:700;">${fmt(b90)}</td>
@@ -3439,16 +3458,17 @@ function renderARFollowupTable(){
     </tr>`;
   }).join('');
 
-  document.getElementById('arFollowupBody').innerHTML = rows.length ? bodyHtml : '<tr><td colspan="12" style="text-align:center; color:#999;">ไม่มีข้อมูลสำหรับวันที่นี้</td></tr>';
+  document.getElementById('arFollowupBody').innerHTML = rows.length ? bodyHtml : '<tr><td colspan="13" style="text-align:center; color:#999;">ไม่มีข้อมูลสำหรับวันที่นี้</td></tr>';
   document.getElementById('arFollowupFoot').innerHTML = rows.length ? `<tr>
     <td>Grand Total</td>
-    <td style="border-left:2px solid #D5D5D5;">${fmtMoney(bucketTotals.current)}</td>
+    <td style="border-left:2px solid #D5D5D5;">${fmtMoney(bucketTotals.current1_15)}</td>
+    <td>${fmtMoney(bucketTotals.current15_30)}</td>
     <td style="border-left:2px solid #D5D5D5;">${fmtMoney(bucketTotals.d1_30)}</td>
     <td>${fmtMoney(bucketTotals.d31_60)}</td>
     <td>${fmtMoney(bucketTotals.d61_90)}</td>
     <td>${fmtMoney(bucketTotals.d91_180)}</td>
     <td>${fmtMoney(bucketTotals.d181plus)}</td>
-    <td style="border-left:2px solid #D5D5D5;">${fmtMoney(totalOverdue)}</td>
+    <td style="border-left:2px solid #D5D5D5;">${fmtMoney(totalOutstanding)}</td>
     <td style="border-left:2px solid #D5D5D5;" colspan="5"></td>
   </tr>` : '';
 
@@ -4452,7 +4472,8 @@ function renderReconcilePendingTable(idx){
   if(search) source = source.filter(i=>(i.mawb||'').toLowerCase().includes(search));
   if(monthFilter!==''){
     source = source.filter(i=>{
-      const d = new Date(i.reconcileDate+'T00:00:00');
+      if(!i.etd) return false;
+      const d = new Date(i.etd+'T00:00:00');
       return d.getMonth()===parseInt(monthFilter,10);
     });
   }
