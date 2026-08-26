@@ -440,7 +440,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     <div class="bar-section">
       <h3>A.3 — Summary Sea freight</h3>
       <table class="dash-table">
-        <thead><tr><th>Period</th><th>Total shipments</th><th>Total container</th></tr></thead>
+        <thead><tr><th>Period</th><th>Total shipments</th><th>Total container</th><th>Total CBM</th></tr></thead>
         <tbody id="bookingSeaBody"></tbody>
       </table>
     </div>
@@ -451,7 +451,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <div style="padding-left:14px;">
         <h3 style="font-weight:700;">A.3.1.1) Freight Forwarding</h3>
         <table class="dash-table">
-          <thead><tr><th>Period</th><th>Total shipments</th><th>Total container</th></tr></thead>
+          <thead><tr><th>Period</th><th>Total shipments</th><th>Total container</th><th>Total CBM</th></tr></thead>
           <tbody id="ffSeaExportBody"></tbody>
         </table>
       </div>
@@ -463,7 +463,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <div style="padding-left:14px;">
         <h3 style="font-weight:700;">A.3.2.1) Freight Forwarding</h3>
         <table class="dash-table">
-          <thead><tr><th>Period</th><th>Total shipments</th><th>Total container</th></tr></thead>
+          <thead><tr><th>Period</th><th>Total shipments</th><th>Total container</th><th>Total CBM</th></tr></thead>
           <tbody id="ffSeaImportBody"></tbody>
         </table>
       </div>
@@ -1064,6 +1064,14 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
             <option>Truck</option>
           </select>
         </div>
+        <div class="field finance-hide sea-col">
+          <label>Type</label>
+          <select id="f_seatype">
+            <option value="">—</option>
+            <option>FCL</option>
+            <option>LCL</option>
+          </select>
+        </div>
         <div class="field finance-hide">
           <label>Export / import</label>
           <select id="f_expimp">
@@ -1079,6 +1087,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <div class="field"><label>MAWB no.</label><input type="text" id="f_cr_mawb" placeholder="Type an existing MAWB..." class="mono" oninput="lookupMAWB()"></div>
         <div class="field"><label>Customer</label><div class="readout mono" id="f_cr_customer">—</div></div>
         <div class="field"><label>Mode</label><div class="readout mono" id="f_cr_mode">—</div></div>
+        <div class="field mode-sea-only" id="a1SeaType" style="display:none;"><label>Type</label><div class="readout mono" id="f_cr_seatype">—</div></div>
         <div class="field"><label>Cargo service</label><div class="readout mono" id="f_cr_cargoservice">—</div></div>
         <div class="field"><label>Export / Import</label><div class="readout mono" id="f_cr_expimp">—</div></div>
         <div class="field"><label>Origin</label><div class="readout mono" id="f_cr_origin">—</div></div>
@@ -1120,6 +1129,8 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <div class="grid finance-only mode-sea-only" id="a3FreightCostSea" style="display:none;">
         <div class="field"><label>Container(s)</label><div class="readout mono" id="f_cr_containers">—</div></div>
         <div class="field"><label>Cost per Container</label><input type="number" id="f_costpercontainer" oninput="updateGP()"></div>
+        <div class="field"><label>CBM</label><div class="readout mono" id="f_cr_cbm">—</div></div>
+        <div class="field"><label>Cost per CBM</label><input type="number" step="0.01" id="f_costpercbm" oninput="updateGP()"></div>
       </div>
       <div class="grid finance-only" id="a3FreightCost">
         <div class="field"><label>Total Freight Cost</label><div class="readout mono" id="f_summarycost" style="background:#FBE8C7; color:#3A3A3A;">—</div></div>
@@ -1133,6 +1144,8 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       <div class="grid finance-only mode-sea-only" id="a3FreightRevSea" style="display:none;">
         <div class="field"><label>Container(s)</label><div class="readout mono" id="f_cr_containers2">—</div></div>
         <div class="field"><label>Selling per Container</label><input type="number" id="f_sellingpercontainer" oninput="updateGP()"></div>
+        <div class="field"><label>CBM</label><div class="readout mono" id="f_cr_cbm2">—</div></div>
+        <div class="field"><label>Selling per CBM</label><input type="number" step="0.01" id="f_sellingpercbm" oninput="updateGP()"></div>
       </div>
       <div class="grid finance-only" id="a3FreightRev">
         <div class="field"><label>Total Freight Revenue</label><div class="readout mono" id="f_summaryrev" style="background:#FBE8C7; color:#3A3A3A;">—</div></div>
@@ -1383,6 +1396,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
             <th class="qty air-col">Booking weight (kg)</th>
             <th class="qty air-col">Chargeable weight (kg)</th>
             <th class="qty sea-col">Container</th>
+            <th class="qty sea-col">CBM</th>
             <th class="qty">Pieces</th>
             <th>Remarks</th>
             <th class="rmcol"></th>
@@ -1554,6 +1568,12 @@ function normalizeCargoService(v){
   v = (v||'').trim().toLowerCase();
   if(v==='express') return 'Express';
   return 'Freight Forwarding';
+}
+function normalizeSeaType(v){
+  v = (v||'').trim().toLowerCase();
+  if(v==='lcl') return 'LCL';
+  if(v==='fcl') return 'FCL';
+  return '';
 }
 
 function cleanNumStr(v){
@@ -1728,23 +1748,29 @@ function updateGP(){
   const lcGP = lcRev - lcCost;
   document.getElementById('f_lc_gp').textContent = (lcCostHasData || lcRevHasData) ? fmtMoney(lcGP) : '—';
 
-  // A.3 — Freight (mode-aware: Air uses weight × rate/kg, Sea uses containers × rate/container)
+  // A.3 — Freight (mode-aware: Air uses weight × rate/kg, Sea uses containers × rate/container for FCL or CBM × rate/CBM for LCL)
   const crMode = document.getElementById('f_cr_mode').textContent;
   const isSea = crMode === 'Sea';
+  const seaType = document.getElementById('f_cr_seatype').textContent;
   const chargeableWeight = parseFloat(document.getElementById('f_cr_chargeableweight').textContent) || 0;
   document.getElementById('f_cr_chargeableweight2').textContent = document.getElementById('f_cr_chargeableweight').textContent;
   const containersVal = document.getElementById('f_cr_containers').textContent;
   document.getElementById('f_cr_containers2').textContent = containersVal;
   const containers = parseFloat(containersVal) || 0;
+  const cbmVal = document.getElementById('f_cr_cbm').textContent;
+  document.getElementById('f_cr_cbm2').textContent = cbmVal;
+  const cbm = parseFloat(cbmVal) || 0;
   const costPerKg = parseFloat(document.getElementById('f_costperkg').value) || 0;
   const sellingPerKg = parseFloat(document.getElementById('f_sellingperkg').value) || 0;
   const costPerContainer = parseFloat(document.getElementById('f_costpercontainer').value) || 0;
   const sellingPerContainer = parseFloat(document.getElementById('f_sellingpercontainer').value) || 0;
+  const costPerCBM = parseFloat(document.getElementById('f_costpercbm').value) || 0;
+  const sellingPerCBM = parseFloat(document.getElementById('f_sellingpercbm').value) || 0;
   let frCost, frRev, frHasData;
-  const useContainerCalc = isSea && containers > 0 && (costPerContainer > 0 || sellingPerContainer > 0);
-  if(useContainerCalc){
-    frCost = containers * costPerContainer;
-    frRev = containers * sellingPerContainer;
+  const sf = isSea ? calcSeaFreight(seaType, containers, cbm, costPerContainer, sellingPerContainer, costPerCBM, sellingPerCBM) : null;
+  if(sf){
+    frCost = sf.cost;
+    frRev = sf.rev;
     frHasData = true;
   }else{
     frCost = chargeableWeight * costPerKg;
@@ -1825,6 +1851,9 @@ function lookupMAWB(){
     document.getElementById('f_cr_dest').textContent = '—';
     document.getElementById('f_cr_etd').textContent = '—';
     document.getElementById('f_cr_chargeableweight').textContent = '0';
+    document.getElementById('f_cr_containers').textContent = '0';
+    document.getElementById('f_cr_cbm').textContent = '0';
+    document.getElementById('f_cr_seatype').textContent = '—';
     statusEl.textContent = '—';
     updateGP();
     return;
@@ -1845,6 +1874,8 @@ function lookupMAWB(){
         document.getElementById('f_cr_etd').textContent = match.etd || '—';
         document.getElementById('f_cr_chargeableweight').textContent = String(match.weight || 0);
         document.getElementById('f_cr_containers').textContent = String(match.containers || 0);
+        document.getElementById('f_cr_cbm').textContent = String(match.cbm || 0);
+        document.getElementById('f_cr_seatype').textContent = match.seaType || '—';
         const isSeaMode = match.mode === 'Sea';
         document.querySelectorAll('.mode-air-only').forEach(el=>{ el.style.display = isSeaMode ? 'none' : ''; });
         document.querySelectorAll('.mode-sea-only').forEach(el=>{ el.style.display = isSeaMode ? '' : 'none'; });
@@ -1857,7 +1888,7 @@ function lookupMAWB(){
         // pull the editable A.2–A.4 fields back into the form so the user is editing the
         // existing numbers, not starting from blank.
         if(match.revAmount || match.costAmount){
-          const simpleFieldMap = {f_costperkg:'costPerKg', f_sellingperkg:'sellingPerKg', f_costpercontainer:'costPerContainer', f_sellingpercontainer:'sellingPerContainer', f_invoiceissuedate:'invoiceIssueDate'};
+          const simpleFieldMap = {f_costperkg:'costPerKg', f_sellingperkg:'sellingPerKg', f_costpercontainer:'costPerContainer', f_sellingpercontainer:'sellingPerContainer', f_costpercbm:'costPerCBM', f_sellingpercbm:'sellingPerCBM', f_invoiceissuedate:'invoiceIssueDate'};
           Object.keys(simpleFieldMap).forEach(id=>{
             const el = document.getElementById(id);
             const key = simpleFieldMap[id];
@@ -1901,6 +1932,9 @@ function lookupMAWB(){
         document.getElementById('f_cr_dest').textContent = '—';
         document.getElementById('f_cr_etd').textContent = '—';
         document.getElementById('f_cr_chargeableweight').textContent = '0';
+        document.getElementById('f_cr_containers').textContent = '0';
+        document.getElementById('f_cr_cbm').textContent = '0';
+        document.getElementById('f_cr_seatype').textContent = '—';
         statusEl.textContent = '✗ No matching booking — will save as a standalone record';
       }
       updateGP();
@@ -1921,6 +1955,7 @@ function addItemRow(data){
     <td class="qty air-col"><input type="number" class="it-bookingweight" value="${data?data.bookingWeight:''}"></td>
     <td class="qty air-col"><input type="number" class="it-chargeableweight" value="${data?data.chargeableWeight:''}"></td>
     <td class="qty sea-col"><input type="number" class="it-container" value="${data?data.container:''}"></td>
+    <td class="qty sea-col"><input type="number" step="0.01" class="it-cbm" value="${data?data.cbm:''}"></td>
     <td class="qty"><input type="number" class="it-pieces" value="${data?data.pieces:''}"></td>
     <td><input type="text" class="it-remarks" value="${data?data.remarks:''}"></td>
     <td class="rmcol"><button class="rm-btn" onclick="this.closest('tr').remove()">×</button></td>
@@ -1937,6 +1972,7 @@ function collectItems(){
       bookingWeight: r.querySelector('.it-bookingweight').value,
       chargeableWeight: r.querySelector('.it-chargeableweight').value,
       container: r.querySelector('.it-container').value,
+      cbm: r.querySelector('.it-cbm').value,
       pieces: r.querySelector('.it-pieces').value,
       remarks: r.querySelector('.it-remarks').value
     });
@@ -1967,6 +2003,7 @@ async function newSheet(type){
   document.getElementById('f_quotationref').value = '';
   document.getElementById('f_cargoservice').selectedIndex = 0;
   document.getElementById('f_mode').selectedIndex = 0;
+  document.getElementById('f_seatype').selectedIndex = 0;
   document.getElementById('f_expimp').selectedIndex = 0;
   document.getElementById('f_service').value = '';
   document.getElementById('f_origin').value = '';
@@ -1995,12 +2032,16 @@ async function newSheet(type){
   document.getElementById('f_cr_lookupstatus').textContent = '—';
   document.getElementById('f_cr_chargeableweight').textContent = '0';
   document.getElementById('f_cr_containers').textContent = '0';
+  document.getElementById('f_cr_cbm').textContent = '0';
+  document.getElementById('f_cr_seatype').textContent = '—';
   document.querySelectorAll('.mode-air-only').forEach(el=>{ el.style.display = ''; });
   document.querySelectorAll('.mode-sea-only').forEach(el=>{ el.style.display = 'none'; });
   document.getElementById('f_costperkg').value = '';
   document.getElementById('f_sellingperkg').value = '';
   document.getElementById('f_costpercontainer').value = '';
   document.getElementById('f_sellingpercontainer').value = '';
+  document.getElementById('f_costpercbm').value = '';
+  document.getElementById('f_sellingpercbm').value = '';
   document.getElementById('f_lc_vendor1').value = '';
   document.getElementById('f_lc_service1').value = '';
   document.getElementById('f_lc_vendor2').value = '';
@@ -2276,6 +2317,7 @@ function gatherRecord(){
     quotationRef: document.getElementById('f_quotationref').value,
     cargoService: document.getElementById('f_cargoservice').value,
     mode: document.getElementById('f_mode').value,
+    seaType: document.getElementById('f_seatype').value,
     expImp: document.getElementById('f_expimp').value,
     service: document.getElementById('f_service').value,
     origin: document.getElementById('f_origin').value,
@@ -2289,6 +2331,7 @@ function gatherRecord(){
     items: items,
     mawb: document.getElementById('f_mawb').value,
     containers: items.reduce((s,it)=>s+(parseFloat(it.container)||0),0),
+    cbm: items.reduce((s,it)=>s+itemCBM(it),0),
     bookingWeight: items.reduce((s,it)=>s+(parseFloat(it.bookingWeight)||0),0),
     chargeableWeight: items.reduce((s,it)=>s+itemWeight(it),0),
     vendorName: document.getElementById('f_vendorname').value,
@@ -2305,6 +2348,7 @@ function gatherRecord(){
     crMode: document.getElementById('f_cr_mode').textContent,
     crCargoService: document.getElementById('f_cr_cargoservice').textContent,
     crExpImp: document.getElementById('f_cr_expimp').textContent,
+    crSeaType: document.getElementById('f_cr_seatype').textContent,
     crOrigin: document.getElementById('f_cr_origin').textContent,
     crDest: document.getElementById('f_cr_dest').textContent,
     crEtd: document.getElementById('f_cr_etd').textContent,
@@ -2453,6 +2497,8 @@ function gatherRecord(){
     sellingPerKg: document.getElementById('f_sellingperkg').value,
     costPerContainer: document.getElementById('f_costpercontainer').value,
     sellingPerContainer: document.getElementById('f_sellingpercontainer').value,
+    costPerCBM: document.getElementById('f_costpercbm').value,
+    sellingPerCBM: document.getElementById('f_sellingpercbm').value,
     dcVendor1: document.getElementById('f_dc_vendor1').value,
     dcVendor2: document.getElementById('f_dc_vendor2').value,
     dcVendor3: document.getElementById('f_dc_vendor3').value,
@@ -2636,8 +2682,8 @@ function gatherRecord(){
   // overwritten with blanks. Strip them so the backend's merge-write preserves the
   // Booking's current values untouched.
   if(currentType==='finance' && window.crMergeTarget){
-    const bookingOnlyFields = ['cargoService','mode','expImp','service','origin','dest','route',
-      'carrier','coloader','etd','eta','transit','containers','items','vendorName','truckType',
+    const bookingOnlyFields = ['cargoService','mode','seaType','expImp','service','origin','dest','route',
+      'carrier','coloader','etd','eta','transit','containers','cbm','items','vendorName','truckType',
       'totalTruck','driverName','licensePlate','pickupDate','mawb','bookingWeight','chargeableWeight'];
     bookingOnlyFields.forEach(f => delete rec[f]);
   }
@@ -2654,6 +2700,7 @@ function applyRecord(rec){
   document.getElementById('f_quotationref').value = rec.quotationRef || '';
   document.getElementById('f_cargoservice').value = rec.cargoService || 'Freight Forwarding';
   document.getElementById('f_mode').value = rec.mode || 'Air';
+  document.getElementById('f_seatype').value = rec.seaType || '';
   document.getElementById('f_expimp').value = rec.expImp || 'Export';
   document.getElementById('f_service').value = rec.service || '';
   document.getElementById('f_origin').value = rec.origin || '';
@@ -2997,13 +3044,38 @@ function itemWeight(it){
 function itemContainer(it){
   return parseFloat(it.container) || 0;
 }
+function itemCBM(it){
+  return parseFloat(it.cbm) || 0;
+}
+
+// Sea freight bills per container (FCL) or per CBM (LCL). Prefer whichever unit
+// matches the booking's Type; if that unit has no rate data, fall back to whichever
+// of container/CBM actually has data (so records saved before Type existed, or with
+// an incomplete Type, keep working); return null when neither applies so the caller
+// can fall back to a weight-based rate.
+function calcSeaFreight(seaType, containers, cbm, costPerContainer, sellingPerContainer, costPerCBM, sellingPerCBM){
+  if(seaType==='LCL' && cbm>0 && (costPerCBM>0 || sellingPerCBM>0)){
+    return {cost: cbm*costPerCBM, rev: cbm*sellingPerCBM};
+  }
+  if(seaType==='FCL' && containers>0 && (costPerContainer>0 || sellingPerContainer>0)){
+    return {cost: containers*costPerContainer, rev: containers*sellingPerContainer};
+  }
+  if(containers>0 && (costPerContainer>0 || sellingPerContainer>0)){
+    return {cost: containers*costPerContainer, rev: containers*sellingPerContainer};
+  }
+  if(cbm>0 && (costPerCBM>0 || sellingPerCBM>0)){
+    return {cost: cbm*costPerCBM, rev: cbm*sellingPerCBM};
+  }
+  return null;
+}
 
 function normalizeRecord(r){
   const items = r.items||[];
   const weight = items.reduce((s,it)=>s+itemWeight(it),0);
   const bookingWeight = items.reduce((s,it)=>s+(parseFloat(it.bookingWeight)||0),0);
   const containers = items.length ? items.reduce((s,it)=>s+itemContainer(it),0) : (parseFloat(r.containers)||0);
-  const rec = Object.assign({}, r, {weight, bookingWeight, containers});
+  const cbm = items.length ? items.reduce((s,it)=>s+itemCBM(it),0) : (parseFloat(r.cbm)||0);
+  const rec = Object.assign({}, r, {weight, bookingWeight, containers, cbm});
 
   // If this record has Cost & Revenue attached, recompute EVERY charge amount (Local
   // Charge across up to 5 vendors, Destination Charge across up to 4 vendors, and
@@ -3043,14 +3115,16 @@ function normalizeRecord(r){
     const sellingPerKg = num(rec.sellingPerKg);
     const costPerContainer = num(rec.costPerContainer);
     const sellingPerContainer = num(rec.sellingPerContainer);
+    const costPerCBM = num(rec.costPerCBM);
+    const sellingPerCBM = num(rec.sellingPerCBM);
     const containers = num(rec.containers);
-    // Sea freight normally bills per container, but older/incomplete records may only
-    // have a weight-based rate filled in (no container count yet). Only use the
-    // container-based calculation when there's actually container data to use;
-    // otherwise fall back to the weight-based rate so existing revenue isn't lost.
-    const useContainerCalc = rec.mode==='Sea' && containers>0 && (costPerContainer>0 || sellingPerContainer>0);
-    const frCostAmount = useContainerCalc ? (containers * costPerContainer) : (weight * costPerKg);
-    const frRevAmount = useContainerCalc ? (containers * sellingPerContainer) : (weight * sellingPerKg);
+    const cbm = num(rec.cbm);
+    // Sea freight bills per container (FCL) or per CBM (LCL); older/incomplete records
+    // may only have a weight-based rate filled in. Fall back to weight-based so
+    // existing revenue isn't lost when neither unit has rate data.
+    const sf = rec.mode==='Sea' ? calcSeaFreight(rec.seaType, containers, cbm, costPerContainer, sellingPerContainer, costPerCBM, sellingPerCBM) : null;
+    const frCostAmount = sf ? sf.cost : (weight * costPerKg);
+    const frRevAmount = sf ? sf.rev : (weight * sellingPerKg);
 
     const costAmount = lcCostAmount + frCostAmount + dcCostAmount;
     const revAmount = lcRevAmount + frRevAmount + dcRevAmount;
@@ -3113,7 +3187,8 @@ async function dataSave(rec){
     idx = idx.filter(i=>i.jobNo !== rec.jobNo);
     const totalWeight = (merged.items||[]).reduce((sum,it)=>sum+itemWeight(it),0);
     const totalContainers = (merged.items||[]).reduce((sum,it)=>sum+itemContainer(it),0);
-    idx.unshift({jobNo:merged.jobNo, type:merged.type, date:merged.date, etd:merged.etd, customer:merged.customer, mode:merged.mode, cargoService:merged.cargoService, route:merged.route, mawb:merged.mawb, status:merged.status, weight:totalWeight, containers:totalContainers});
+    const totalCBM = (merged.items||[]).reduce((sum,it)=>sum+itemCBM(it),0);
+    idx.unshift({jobNo:merged.jobNo, type:merged.type, date:merged.date, etd:merged.etd, customer:merged.customer, mode:merged.mode, seaType:merged.seaType, cargoService:merged.cargoService, route:merged.route, mawb:merged.mawb, status:merged.status, weight:totalWeight, containers:totalContainers, cbm:totalCBM});
     setLocalIndex(idx);
   }
 }
@@ -5025,8 +5100,10 @@ async function renderDashboard(){
       const matches = records.filter(filterFn);
       const shipments = matches.length;
       if(metric==='sea'){
-        const containers = matches.reduce((sum,i)=>sum+(parseFloat(i.containers)||0),0);
-        return `<tr><td>${label}</td><td>${fmtNum(shipments)}</td><td>${fmtNum(containers)}</td></tr>` + (withBreakdown ? customerBreakdownRow(matches, 3) : '');
+        // FCL bookings are counted in Total container, LCL bookings in Total CBM.
+        const containers = matches.filter(i=>i.seaType==='FCL').reduce((sum,i)=>sum+(parseFloat(i.containers)||0),0);
+        const cbm = matches.filter(i=>i.seaType==='LCL').reduce((sum,i)=>sum+(parseFloat(i.cbm)||0),0);
+        return `<tr><td>${label}</td><td>${fmtNum(shipments)}</td><td>${fmtNum(containers)}</td><td>${fmtNum(cbm)}</td></tr>` + (withBreakdown ? customerBreakdownRow(matches, 4) : '');
       }
       const bookingWeight = matches.reduce((sum,i)=>sum+(parseFloat(i.bookingWeight)||0),0);
       const chargeableWeight = matches.reduce((sum,i)=>sum+(parseFloat(i.weight)||0),0);
@@ -5478,7 +5555,7 @@ function csvEscape(val){
 async function exportCSV(){
   const records = (await dataGetAll()).filter(r=>r.type!=='arCustomerSetting' && r.type!=='arCustomerRemark' && r.type!=='arReconcileRemark');
   if(records.length===0){ alert('No job sheets to export yet.'); return; }
-  const cols = ['jobNo','type','date','month','customer','cargoService','mode','expImp','service','origin','dest','route','carrier','coloader','etd','eta','transit','containers','itemsJSON','vendorName','truckType','totalTruck','driverName','licensePlate','pickupDate','mawb','notes','status','savedAt','bookingWeight','chargeableWeight','remark','quotationRef','crStatus','invoiceIssueDate','cutoffDays','ruleType','refJobNo','lcCostAmount','lcRevAmount','frCostAmount','frRevAmount','dcCostAmount','dcRevAmount','revAmount','costAmount','gpAmount','gpPercent','crMawb','crCustomer','crMode','crCargoService','crExpImp','crOrigin','crDest','crEtd','crChargeableWeight','costPerKg','sellingPerKg','costPerContainer','sellingPerContainer','lcVendor1','lcVendor2','lcVendor3','lcVendor4','lcService1','lcService2','lcService3','lcService4','lcTruckType1','lcTruckType2','lcTruckType3','lcTruckType4','lcTruckUsage1','lcTruckUsage2','lcTruckUsage3','lcTruckUsage4','lcRatePerTruck1','lcRatePerTruck2','lcRatePerTruck3','lcRatePerTruck4','lcCustoms1','lcCustoms2','lcCustoms3','lcCustoms4','lcHandling1','lcHandling2','lcHandling3','lcHandling4','lcTerminal1','lcTerminal2','lcTerminal3','lcTerminal4','lcDocument1','lcDocument2','lcDocument3','lcDocument4','lcAirlinesOther1','lcAirlinesOther2','lcAirlinesOther3','lcAirlinesOther4','lcPacking1','lcPacking2','lcPacking3','lcPacking4','lcOT1','lcOT2','lcOT3','lcOT4','lcOther1','lcOther2','lcOther3','lcOther4','lcOtherRemark1','lcOtherRemark2','lcOtherRemark3','lcOtherRemark4','lcrVendor1','lcrVendor2','lcrVendor3','lcrVendor4','lcrService1','lcrService2','lcrService3','lcrService4','lcrTruckType1','lcrTruckType2','lcrTruckType3','lcrTruckType4','lcrTruckUsage1','lcrTruckUsage2','lcrTruckUsage3','lcrTruckUsage4','lcrRatePerTruck1','lcrRatePerTruck2','lcrRatePerTruck3','lcrRatePerTruck4','lcrCustoms1','lcrCustoms2','lcrCustoms3','lcrCustoms4','lcrHandling1','lcrHandling2','lcrHandling3','lcrHandling4','lcrTerminal1','lcrTerminal2','lcrTerminal3','lcrTerminal4','lcrDocument1','lcrDocument2','lcrDocument3','lcrDocument4','lcrAirlinesOther1','lcrAirlinesOther2','lcrAirlinesOther3','lcrAirlinesOther4','lcrPacking1','lcrPacking2','lcrPacking3','lcrPacking4','lcrOT1','lcrOT2','lcrOT3','lcrOT4','lcrOther1','lcrOther2','lcrOther3','lcrOther4','lcrOtherRemark1','lcrOtherRemark2','lcrOtherRemark3','lcrOtherRemark4','dcVendor1','dcVendor2','dcVendor3','dcVendor4','dcTruckType1','dcTruckType2','dcTruckType3','dcTruckType4','dcTruckUsage1','dcTruckUsage2','dcTruckUsage3','dcTruckUsage4','dcRatePerTruck1','dcRatePerTruck2','dcRatePerTruck3','dcRatePerTruck4','dcHandling1','dcHandling2','dcHandling3','dcHandling4','dcCustoms1','dcCustoms2','dcCustoms3','dcCustoms4','dcDelivery1','dcDelivery2','dcDelivery3','dcDelivery4','dcrVendor1','dcrVendor2','dcrVendor3','dcrVendor4','dcrTruckType1','dcrTruckType2','dcrTruckType3','dcrTruckType4','dcrTruckUsage1','dcrTruckUsage2','dcrTruckUsage3','dcrTruckUsage4','dcrRatePerTruck1','dcrRatePerTruck2','dcrRatePerTruck3','dcrRatePerTruck4','dcrHandling1','dcrHandling2','dcrHandling3','dcrHandling4','dcrCustoms1','dcrCustoms2','dcrCustoms3','dcrCustoms4','dcrDelivery1','dcrDelivery2','dcrDelivery3','dcrDelivery4','dcRemark1','dcRemark2','dcRemark3','dcRemark4','dcrRemark1','dcrRemark2','dcrRemark3','dcrRemark4'];
+  const cols = ['jobNo','type','date','month','customer','cargoService','mode','seaType','expImp','service','origin','dest','route','carrier','coloader','etd','eta','transit','containers','cbm','itemsJSON','vendorName','truckType','totalTruck','driverName','licensePlate','pickupDate','mawb','notes','status','savedAt','bookingWeight','chargeableWeight','remark','quotationRef','crStatus','invoiceIssueDate','cutoffDays','ruleType','refJobNo','lcCostAmount','lcRevAmount','frCostAmount','frRevAmount','dcCostAmount','dcRevAmount','revAmount','costAmount','gpAmount','gpPercent','crMawb','crCustomer','crMode','crCargoService','crExpImp','crSeaType','crOrigin','crDest','crEtd','crChargeableWeight','costPerKg','sellingPerKg','costPerContainer','sellingPerContainer','costPerCBM','sellingPerCBM','lcVendor1','lcVendor2','lcVendor3','lcVendor4','lcService1','lcService2','lcService3','lcService4','lcTruckType1','lcTruckType2','lcTruckType3','lcTruckType4','lcTruckUsage1','lcTruckUsage2','lcTruckUsage3','lcTruckUsage4','lcRatePerTruck1','lcRatePerTruck2','lcRatePerTruck3','lcRatePerTruck4','lcCustoms1','lcCustoms2','lcCustoms3','lcCustoms4','lcHandling1','lcHandling2','lcHandling3','lcHandling4','lcTerminal1','lcTerminal2','lcTerminal3','lcTerminal4','lcDocument1','lcDocument2','lcDocument3','lcDocument4','lcAirlinesOther1','lcAirlinesOther2','lcAirlinesOther3','lcAirlinesOther4','lcPacking1','lcPacking2','lcPacking3','lcPacking4','lcOT1','lcOT2','lcOT3','lcOT4','lcOther1','lcOther2','lcOther3','lcOther4','lcOtherRemark1','lcOtherRemark2','lcOtherRemark3','lcOtherRemark4','lcrVendor1','lcrVendor2','lcrVendor3','lcrVendor4','lcrService1','lcrService2','lcrService3','lcrService4','lcrTruckType1','lcrTruckType2','lcrTruckType3','lcrTruckType4','lcrTruckUsage1','lcrTruckUsage2','lcrTruckUsage3','lcrTruckUsage4','lcrRatePerTruck1','lcrRatePerTruck2','lcrRatePerTruck3','lcrRatePerTruck4','lcrCustoms1','lcrCustoms2','lcrCustoms3','lcrCustoms4','lcrHandling1','lcrHandling2','lcrHandling3','lcrHandling4','lcrTerminal1','lcrTerminal2','lcrTerminal3','lcrTerminal4','lcrDocument1','lcrDocument2','lcrDocument3','lcrDocument4','lcrAirlinesOther1','lcrAirlinesOther2','lcrAirlinesOther3','lcrAirlinesOther4','lcrPacking1','lcrPacking2','lcrPacking3','lcrPacking4','lcrOT1','lcrOT2','lcrOT3','lcrOT4','lcrOther1','lcrOther2','lcrOther3','lcrOther4','lcrOtherRemark1','lcrOtherRemark2','lcrOtherRemark3','lcrOtherRemark4','dcVendor1','dcVendor2','dcVendor3','dcVendor4','dcTruckType1','dcTruckType2','dcTruckType3','dcTruckType4','dcTruckUsage1','dcTruckUsage2','dcTruckUsage3','dcTruckUsage4','dcRatePerTruck1','dcRatePerTruck2','dcRatePerTruck3','dcRatePerTruck4','dcHandling1','dcHandling2','dcHandling3','dcHandling4','dcCustoms1','dcCustoms2','dcCustoms3','dcCustoms4','dcDelivery1','dcDelivery2','dcDelivery3','dcDelivery4','dcrVendor1','dcrVendor2','dcrVendor3','dcrVendor4','dcrTruckType1','dcrTruckType2','dcrTruckType3','dcrTruckType4','dcrTruckUsage1','dcrTruckUsage2','dcrTruckUsage3','dcrTruckUsage4','dcrRatePerTruck1','dcrRatePerTruck2','dcrRatePerTruck3','dcrRatePerTruck4','dcrHandling1','dcrHandling2','dcrHandling3','dcrHandling4','dcrCustoms1','dcrCustoms2','dcrCustoms3','dcrCustoms4','dcrDelivery1','dcrDelivery2','dcrDelivery3','dcrDelivery4','dcRemark1','dcRemark2','dcRemark3','dcRemark4','dcrRemark1','dcrRemark2','dcrRemark3','dcrRemark4'];
   const header = cols.join(',');
   const rows = records.map(r=>{
     return cols.map(c=>csvEscape(r[c])).join(',');
@@ -5488,10 +5565,10 @@ async function exportCSV(){
 }
 
 const csvTemplateCols = [
-  'type','mawb','date','customer','cargoService','mode','expImp','service',
-  'origin','dest','etd','eta','product','bookingWeight','chargeableWeight','container',
+  'type','mawb','date','customer','cargoService','mode','seaType','expImp','service',
+  'origin','dest','etd','eta','product','bookingWeight','chargeableWeight','container','cbm',
   'pieces','remarks','vendorName','truckType','totalTruck','driverName','licensePlate','pickupDate',
-  'notes','status','crstatus','costPerKg','sellingPerKg','costPerContainer','sellingPerContainer','lcVendor1',
+  'notes','status','crstatus','costPerKg','sellingPerKg','costPerContainer','sellingPerContainer','costPerCBM','sellingPerCBM','lcVendor1',
   'lcVendor2','lcVendor3','lcVendor4','lcService1','lcService2','lcService3','lcService4','lcTruckType1',
   'lcTruckType2','lcTruckType3','lcTruckType4','lcTruckUsage1','lcTruckUsage2','lcTruckUsage3','lcTruckUsage4','lcRatePerTruck1',
   'lcRatePerTruck2','lcRatePerTruck3','lcRatePerTruck4','lcCustoms1','lcCustoms2','lcCustoms3','lcCustoms4','lcHandling1',
@@ -5691,6 +5768,7 @@ function importCSV(file){
           if(obj.customer) rec.customer = obj.customer;
           if(obj.cargoService) rec.cargoService = normalizeCargoService(obj.cargoService);
           if(obj.mode) rec.mode = normalizeMode(obj.mode);
+          if(obj.seaType) rec.seaType = normalizeSeaType(obj.seaType);
           if(obj.expImp) rec.expImp = normalizeExpImp(obj.expImp);
           if(obj.service) rec.service = obj.service;
           if(obj.origin) rec.origin = obj.origin;
@@ -5699,11 +5777,12 @@ function importCSV(file){
           if(obj.etd) rec.etd = etdStr;
           if(obj.eta) rec.eta = etaStr;
           if(obj.bookingWeight || obj.chargeableWeight || obj.product){
-            rec.items = [{product:obj.product||'', bookingWeight:cleanNumStr(obj.bookingWeight), chargeableWeight:cleanNumStr(obj.chargeableWeight), container:cleanNumStr(obj.container), pieces:cleanNumStr(obj.pieces)||1, remarks:obj.remarks||''}];
+            rec.items = [{product:obj.product||'', bookingWeight:cleanNumStr(obj.bookingWeight), chargeableWeight:cleanNumStr(obj.chargeableWeight), container:cleanNumStr(obj.container), cbm:cleanNumStr(obj.cbm), pieces:cleanNumStr(obj.pieces)||1, remarks:obj.remarks||''}];
             rec.bookingWeight = cleanNumStr(obj.bookingWeight);
             rec.chargeableWeight = cleanNumStr(obj.chargeableWeight);
           }
           if(obj.container) rec.containers = cleanNumStr(obj.container);
+          if(obj.cbm) rec.cbm = cleanNumStr(obj.cbm);
           if(obj.vendorName) rec.vendorName = obj.vendorName;
           if(obj.truckType) rec.truckType = obj.truckType;
           if(obj.totalTruck) rec.totalTruck = cleanNumStr(obj.totalTruck);
@@ -5721,9 +5800,10 @@ function importCSV(file){
           rec = {
             jobNo, type, date:dateStr, month: dDate ? monthNames[dDate.getMonth()]+'-'+dDate.getFullYear().toString().slice(2) : '',
             customer:obj.customer||'', cargoService:normalizeCargoService(obj.cargoService), mode:normalizeMode(obj.mode),
+            seaType:normalizeSeaType(obj.seaType),
             expImp:normalizeExpImp(obj.expImp), service:obj.service||'', origin, dest, route, carrier:'', coloader:'',
-            etd:etdStr, eta:etaStr, transit, containers:cleanNumStr(obj.container),
-            items:[{product:obj.product||'', bookingWeight:cleanNumStr(obj.bookingWeight), chargeableWeight:cleanNumStr(obj.chargeableWeight), container:cleanNumStr(obj.container), pieces:cleanNumStr(obj.pieces)||1, remarks:obj.remarks||''}],
+            etd:etdStr, eta:etaStr, transit, containers:cleanNumStr(obj.container), cbm:cleanNumStr(obj.cbm),
+            items:[{product:obj.product||'', bookingWeight:cleanNumStr(obj.bookingWeight), chargeableWeight:cleanNumStr(obj.chargeableWeight), container:cleanNumStr(obj.container), cbm:cleanNumStr(obj.cbm), pieces:cleanNumStr(obj.pieces)||1, remarks:obj.remarks||''}],
             bookingWeight:cleanNumStr(obj.bookingWeight), chargeableWeight:cleanNumStr(obj.chargeableWeight),
             vendorName:obj.vendorName||'', truckType:obj.truckType||'', totalTruck:cleanNumStr(obj.totalTruck),
             driverName:obj.driverName||'', licensePlate:obj.licensePlate||'', pickupDate:pickupStr,
@@ -5735,10 +5815,11 @@ function importCSV(file){
 
         rec.savedAt = new Date().toISOString();
 
-        const hasCrData = obj.crstatus || obj.costPerKg || obj.sellingPerKg || lcFields.some(f_=>obj['lc'+f_+'1']) || dcFields.some(f_=>obj['dc'+f_+'1']);
+        const hasCrData = obj.crstatus || obj.costPerKg || obj.sellingPerKg || obj.costPerContainer || obj.sellingPerContainer || obj.costPerCBM || obj.sellingPerCBM || lcFields.some(f_=>obj['lc'+f_+'1']) || dcFields.some(f_=>obj['dc'+f_+'1']);
         if(type==='booking' && mawb && hasCrData){
           const crCustomer = existing ? (existing.customer||'') : (rec.customer||'');
           const crMode = existing ? (existing.mode||'') : (rec.mode||'');
+          const crSeaType = existing ? (existing.seaType||'') : (rec.seaType||'');
           const crCargoService = existing ? (existing.cargoService||'') : (rec.cargoService||'');
           const crExpImp = existing ? (existing.expImp||'') : (rec.expImp||'');
           const crOrigin = existing ? (existing.origin||'') : (rec.origin||'');
@@ -5749,9 +5830,11 @@ function importCSV(file){
           rec.crStatus = (obj.crstatus||'freight-input').toLowerCase();
           rec.refJobNo = mawb; rec.crMawb = mawb;
           rec.crCustomer = crCustomer; rec.crMode = crMode; rec.crCargoService = crCargoService;
-          rec.crExpImp = crExpImp; rec.crOrigin = crOrigin; rec.crDest = crDest;
+          rec.crExpImp = crExpImp; rec.crSeaType = crSeaType; rec.crOrigin = crOrigin; rec.crDest = crDest;
           rec.crEtd = crEtd; rec.crChargeableWeight = String(w);
           rec.costPerKg = obj.costPerKg||''; rec.sellingPerKg = obj.sellingPerKg||'';
+          rec.costPerContainer = obj.costPerContainer||''; rec.sellingPerContainer = obj.sellingPerContainer||'';
+          rec.costPerCBM = obj.costPerCBM||''; rec.sellingPerCBM = obj.sellingPerCBM||'';
 
           let lcCostAmount=0, lcRevAmount=0, dcCostAmount=0, dcRevAmount=0;
           for(let vi=1; vi<=5; vi++){
@@ -5774,10 +5857,12 @@ function importCSV(file){
           }
           const costPerKg = parseFloat(obj.costPerKg)||0, sellingPerKg = parseFloat(obj.sellingPerKg)||0;
           const costPerContainer = parseFloat(obj.costPerContainer)||0, sellingPerContainer = parseFloat(obj.sellingPerContainer)||0;
-          const containersVal = parseFloat(obj.containers)||0;
-          const useContainerCalcImport = obj.mode==='Sea' && containersVal>0 && (costPerContainer>0 || sellingPerContainer>0);
-          const frCostAmount = useContainerCalcImport ? (containersVal*costPerContainer) : (w*costPerKg);
-          const frRevAmount = useContainerCalcImport ? (containersVal*sellingPerContainer) : (w*sellingPerKg);
+          const costPerCBM = parseFloat(obj.costPerCBM)||0, sellingPerCBM = parseFloat(obj.sellingPerCBM)||0;
+          const containersVal = existing ? (parseFloat(existing.containers)||0) : (parseFloat(rec.containers)||0);
+          const cbmVal = existing ? (parseFloat(existing.cbm)||0) : (parseFloat(rec.cbm)||0);
+          const sfImport = obj.mode==='Sea' ? calcSeaFreight(crSeaType, containersVal, cbmVal, costPerContainer, sellingPerContainer, costPerCBM, sellingPerCBM) : null;
+          const frCostAmount = sfImport ? sfImport.cost : (w*costPerKg);
+          const frRevAmount = sfImport ? sfImport.rev : (w*sellingPerKg);
           const totalCost = lcCostAmount+frCostAmount+dcCostAmount;
           const totalRev = lcRevAmount+frRevAmount+dcRevAmount;
           rec.lcCostAmount=round2(lcCostAmount); rec.lcRevAmount=round2(lcRevAmount);
