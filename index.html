@@ -2969,26 +2969,46 @@ function updateConnStatus(){
   el.style.color = configured ? 'var(--green)' : '#A32D2D';
 }
 
+// Google Apps Script Web App deployments intermittently serve a bare 404 from their
+// content-echo layer even when the deployment itself is healthy and correctly
+// configured (confirmed: repeating the exact same request a few times in a row gets a
+// mix of 200s and 404s). A single blip should not surface as "Could not reach the
+// Google Sheet" to the user, so every API call retries a few times with a short delay
+// before giving up. GET is naturally safe to retry; save/delete are effectively
+// idempotent here too (save overwrites by jobNo, delete matches by jobNo), so retrying
+// them on a transient failure does not risk duplicate rows.
+async function fetchWithRetry(url, options, attempts){
+  attempts = attempts || 3;
+  let lastErr;
+  for(let i=0; i<attempts; i++){
+    try{
+      const res = await fetch(url, options);
+      if(res.ok) return res;
+      lastErr = new Error('HTTP '+res.status);
+    }catch(e){
+      lastErr = e;
+    }
+    if(i < attempts-1) await new Promise(r=>setTimeout(r, 400 + i*400));
+  }
+  throw lastErr;
+}
 async function apiFetchAll(){
-  const res = await fetch(API_URL + '?t=' + Date.now(), {method:'GET', cache:'no-store'});
-  if(!res.ok) throw new Error('API GET failed: '+res.status);
+  const res = await fetchWithRetry(API_URL + '?t=' + Date.now(), {method:'GET', cache:'no-store'});
   return await res.json();
 }
 async function apiSaveRecord(rec){
-  const res = await fetch(API_URL, {
+  await fetchWithRetry(API_URL, {
     method:'POST',
     headers:{'Content-Type':'text/plain;charset=utf-8'},
     body: JSON.stringify({action:'save', record:rec})
   });
-  if(!res.ok) throw new Error('API POST failed: '+res.status);
 }
 async function apiDeleteRecord(jobNo){
-  const res = await fetch(API_URL, {
+  await fetchWithRetry(API_URL, {
     method:'POST',
     headers:{'Content-Type':'text/plain;charset=utf-8'},
     body: JSON.stringify({action:'delete', jobNo})
   });
-  if(!res.ok) throw new Error('API DELETE failed: '+res.status);
 }
 
 function itemWeight(it){
@@ -3324,7 +3344,7 @@ async function arFollowupFetchAll(){
   }
   document.getElementById('arFollowupApiWarning').style.display = 'none';
   try{
-    const res = await fetch(AR_FOLLOWUP_API_URL + '?action=getAll');
+    const res = await fetchWithRetry(AR_FOLLOWUP_API_URL + '?action=getAll');
     const data = await res.json();
     if(!data.ok) throw new Error(data.error || 'Unknown error');
     return {snapshots: data.snapshots || [], notes: data.notes || []};
@@ -3562,7 +3582,7 @@ async function saveARFollowupNoteRow(customer, idx){
   const data = window._arFollowupData;
   const note = {customer, snapshotDate, paymentDate, remark, pic, timeline};
   try{
-    await fetch(AR_FOLLOWUP_API_URL, {
+    await fetchWithRetry(AR_FOLLOWUP_API_URL, {
       method: 'POST',
       body: JSON.stringify({action:'saveNote', ...note})
     });
@@ -3581,7 +3601,7 @@ async function deleteARFollowupSnapshot(){
   if(!confirm(`ต้องการลบ Snapshot ของวันที่ ${snapshotDate} ใช่ไหม? การลบนี้ย้อนกลับไม่ได้`)) return;
   if(!AR_FOLLOWUP_API_URL){ alert('ยังไม่ได้ตั้งค่า AR_FOLLOWUP_API_URL'); return; }
   try{
-    await fetch(AR_FOLLOWUP_API_URL, { method:'POST', body: JSON.stringify({action:'deleteSnapshot', snapshotDate}) });
+    await fetchWithRetry(AR_FOLLOWUP_API_URL, { method:'POST', body: JSON.stringify({action:'deleteSnapshot', snapshotDate}) });
     showToast('✓ Save successful');
     renderARFollowupDash();
   }catch(e){
@@ -3676,7 +3696,7 @@ async function handleARFollowupUpload(file){
   }
 
   try{
-    const res = await fetch(AR_FOLLOWUP_API_URL, {
+    const res = await fetchWithRetry(AR_FOLLOWUP_API_URL, {
       method: 'POST',
       body: JSON.stringify({action:'uploadSnapshot', snapshotDate, sourceFileName: file.name, rows})
     });
