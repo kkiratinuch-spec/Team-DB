@@ -3051,11 +3051,26 @@ async function fetchWithRetry(url, options, attempts){
   }
   throw lastErr;
 }
+// The shared sheet is large (several MB) and slow to return, and one screen can ask
+// for it several times at once (list + dashboard). Share one in-flight request and
+// reuse the result for a short while, so the Sheet is downloaded once instead of 2-5x.
+// Any save/delete clears the cache so the next read is always fresh.
+const API_CACHE_MS = 60000;
+let _apiCache = null, _apiCacheAt = 0, _apiInFlight = null;
+function apiInvalidateCache(){ _apiCache = null; _apiCacheAt = 0; }
 async function apiFetchAll(){
-  const res = await fetchWithRetry(API_URL + '?t=' + Date.now(), {method:'GET', cache:'no-store'});
-  return await res.json();
+  if(_apiCache && (Date.now()-_apiCacheAt) < API_CACHE_MS) return _apiCache;
+  if(_apiInFlight) return _apiInFlight;
+  _apiInFlight = (async()=>{
+    const res = await fetchWithRetry(API_URL + '?t=' + Date.now(), {method:'GET', cache:'no-store'});
+    const data = await res.json();
+    _apiCache = data; _apiCacheAt = Date.now();
+    return data;
+  })();
+  try{ return await _apiInFlight; } finally { _apiInFlight = null; }
 }
 async function apiSaveRecord(rec){
+  apiInvalidateCache();
   await fetchWithRetry(API_URL, {
     method:'POST',
     headers:{'Content-Type':'text/plain;charset=utf-8'},
@@ -3063,6 +3078,7 @@ async function apiSaveRecord(rec){
   });
 }
 async function apiDeleteRecord(jobNo){
+  apiInvalidateCache();
   await fetchWithRetry(API_URL, {
     method:'POST',
     headers:{'Content-Type':'text/plain;charset=utf-8'},
@@ -3165,7 +3181,12 @@ async function dataGetAll(){
       return records.map(normalizeRecord).sort((a,b)=> (b.savedAt||'').localeCompare(a.savedAt||''));
     }catch(e){
       console.error(e);
-      alert('Could not reach the Google Sheet. Check your internet connection and try Refresh, or make sure API_URL is set correctly in the code.');
+      // Several panels can fail from the same request — show the message only once.
+      if(!dataGetAll._alerting){
+        dataGetAll._alerting = true;
+        setTimeout(()=>{ dataGetAll._alerting = false; }, 5000);
+        alert('Could not reach the Google Sheet (it may be slow or busy). Please wait a moment and press Refresh.\n\nDetail: ' + (e && e.message ? e.message : e));
+      }
       return [];
     }
   }else{
