@@ -496,7 +496,20 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>B.3 — Monthly Volume by Export / Import</h3>
+      <h3>B.3.1 — Monthly Shipment by Export / Import (by MAWB)</h3>
+      <div style="overflow-x:auto;">
+        <table class="dash-table" style="min-width:720px;">
+          <thead>
+            <tr><th rowspan="2">Month</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Air Freight</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Air Express</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Sea Freight</th></tr>
+            <tr><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th></tr>
+          </thead>
+          <tbody id="monthlyExpImpShipBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bar-section">
+      <h3>B.3.2 — Monthly Volume by Export / Import (kg / Container)</h3>
       <div style="overflow-x:auto;">
         <table class="dash-table" style="min-width:720px;">
           <thead>
@@ -5275,6 +5288,13 @@ async function renderMonthlyDashboard(){
     {recs:airExpressRecords, field:'weight'},
     {recs:seaFreightRecords, field:'containers'}
   ];
+  // B.3.1 — Shipment count (bookings with a MAWB, same rule as B.2)
+  const expImpShip = expImpCats.map(c=>['Export','Import'].map(dir=>monthlyRows(c.recs.filter(i=>i.mawb && (i.expImp||'Export')===dir), [c.field])));
+  document.getElementById('monthlyExpImpShipBody').innerHTML = monthShortNames.map((m,mi)=>
+    `<tr><td>${m}</td>` + expImpShip.map(pair=>pair.map(arr=>`<td>${fmtNum(arr[mi].count)}</td>`).join('')).join('') + '</tr>'
+  ).join('') + '<tr style="font-weight:500;"><td>Grand total</td>' + expImpShip.map(pair=>pair.map(arr=>`<td>${fmtNum(arr.reduce((s,r)=>s+r.count,0))}</td>`).join('')).join('') + '</tr>';
+
+  // B.3.2 — Volume
   const expImpData = expImpCats.map(c=>['Export','Import'].map(dir=>monthlyRows(c.recs.filter(i=>(i.expImp||'Export')===dir), [c.field])));
   document.getElementById('monthlyExpImpBody').innerHTML = monthShortNames.map((m,mi)=>
     `<tr><td>${m}</td>` + expImpData.map(pair=>pair.map(arr=>`<td>${fmtNum(arr[mi].a)}</td>`).join('')).join('') + '</tr>'
