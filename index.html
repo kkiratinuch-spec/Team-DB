@@ -481,7 +481,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     <div class="bar-section">
       <h3>B.1 — Monthly Inquiry</h3>
       <table class="dash-table">
-        <thead><tr><th>Month</th><th>Total requests</th><th>Win</th><th>Failed</th><th>Negotiation</th><th>Quotation preparation</th></tr></thead>
+        <thead><tr><th>Month</th><th>Total requests</th><th>Win</th><th>Failed</th><th>Negotiation</th><th>Quotation preparation</th><th title="Win ÷ (Win + Failed)">Win %</th></tr></thead>
         <tbody id="monthlyInquiryBody"></tbody>
       </table>
     </div>
@@ -554,6 +554,59 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <table class="dash-table" style="min-width:820px;">
           <thead><tr id="volHeaderRowSeaFreight"><th>Customer</th></tr></thead>
           <tbody id="volByCustomerBodySeaFreight"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bar-section">
+      <h3>B.10 — Monthly Volume by Export / Import</h3>
+      <div style="overflow-x:auto;">
+        <table class="dash-table" style="min-width:720px;">
+          <thead>
+            <tr><th rowspan="2">Month</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Air Freight (kg)</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Air Express (kg)</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Sea Freight (Container)</th></tr>
+            <tr><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th></tr>
+          </thead>
+          <tbody id="monthlyExpImpBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bar-section">
+      <h3>B.11.1 — Vol by Vendor (Carrier) — Air Freight (kg) — <span id="vendorYearAirFreight">—</span></h3>
+      <div style="overflow-x:auto;">
+        <table class="dash-table" style="min-width:820px;">
+          <thead><tr id="vendorHeaderRowAirFreight"><th>Vendor</th></tr></thead>
+          <tbody id="volByVendorBodyAirFreight"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bar-section">
+      <h3>B.11.2 — Vol by Vendor (Carrier) — Air Express (kg) — <span id="vendorYearAirExpress">—</span></h3>
+      <div style="overflow-x:auto;">
+        <table class="dash-table" style="min-width:820px;">
+          <thead><tr id="vendorHeaderRowAirExpress"><th>Vendor</th></tr></thead>
+          <tbody id="volByVendorBodyAirExpress"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bar-section">
+      <h3>B.11.3 — Vol by Vendor (Carrier) — Sea Freight (Container) — <span id="vendorYearSeaFreight">—</span></h3>
+      <div style="overflow-x:auto;">
+        <table class="dash-table" style="min-width:820px;">
+          <thead><tr id="vendorHeaderRowSeaFreight"><th>Vendor</th></tr></thead>
+          <tbody id="volByVendorBodySeaFreight"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bar-section">
+      <h3>B.12 — Monthly Yield (THB) — Revenue &amp; GP per Shipment / per kg</h3>
+      <div style="overflow-x:auto;">
+        <table class="dash-table" style="min-width:820px;">
+          <thead><tr><th>Month</th><th>Shipments (with C&amp;R)</th><th>Revenue / Shipment</th><th>GP / Shipment</th><th>Revenue / kg (Air)</th><th>GP / kg (Air)</th><th>GP %</th></tr></thead>
+          <tbody id="monthlyYieldBody"></tbody>
         </table>
       </div>
     </div>
@@ -5131,8 +5184,18 @@ async function renderMonthlyDashboard(){
     if(i.status==='quotation-preparation') inqByMonth[m].quotePrep++;
   });
   document.getElementById('monthlyInquiryBody').innerHTML = monthShortNames.map((m,i)=>
-    `<tr><td>${m}</td><td>${fmtNum(inqByMonth[i].total)}</td><td>${fmtNum(inqByMonth[i].win)}</td><td>${fmtNum(inqByMonth[i].failed)}</td><td>${fmtNum(inqByMonth[i].negotiation)}</td><td>${fmtNum(inqByMonth[i].quotePrep)}</td></tr>`
-  ).join('');
+    `<tr><td>${m}</td><td>${fmtNum(inqByMonth[i].total)}</td><td>${fmtNum(inqByMonth[i].win)}</td><td>${fmtNum(inqByMonth[i].failed)}</td><td>${fmtNum(inqByMonth[i].negotiation)}</td><td>${fmtNum(inqByMonth[i].quotePrep)}</td><td>${winPctCell(inqByMonth[i].win, inqByMonth[i].failed)}</td></tr>`
+  ).join('') + (function(){
+    const t = inqByMonth.reduce((a,r)=>({total:a.total+r.total, win:a.win+r.win, failed:a.failed+r.failed, negotiation:a.negotiation+r.negotiation, quotePrep:a.quotePrep+r.quotePrep}), {total:0,win:0,failed:0,negotiation:0,quotePrep:0});
+    return `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(t.total)}</td><td>${fmtNum(t.win)}</td><td>${fmtNum(t.failed)}</td><td>${fmtNum(t.negotiation)}</td><td>${fmtNum(t.quotePrep)}</td><td>${winPctCell(t.win, t.failed)}</td></tr>`;
+  })();
+  function winPctCell(win, failed){
+    const closed = win + failed;
+    if(closed===0) return '—';
+    const pct = win/closed*100;
+    const color = pct>=50 ? '#2F7A46' : '#A32D2D';
+    return `<span style="color:${color}; font-weight:600;">${pct.toFixed(0)}%</span>`;
+  }
 
   const shipmentByMonth = new Array(12).fill(0);
   const chargeableWeightByMonth = new Array(12).fill(0);
@@ -5217,6 +5280,72 @@ async function renderMonthlyDashboard(){
   renderVolTable('volHeaderRowAirFreight', 'volByCustomerBodyAirFreight', 'volYearAirFreight', airFreightRecords, 'weight', 'kg');
   renderVolTable('volHeaderRowAirExpress', 'volByCustomerBodyAirExpress', 'volYearAirExpress', airExpressRecords, 'weight', 'kg');
   renderVolTable('volHeaderRowSeaFreight', 'volByCustomerBodySeaFreight', 'volYearSeaFreight', seaFreightRecords, 'containers', 'container');
+
+  // B.10 — Export / Import split (by ETD)
+  const expImpCats = [
+    {recs:airFreightRecords, field:'weight'},
+    {recs:airExpressRecords, field:'weight'},
+    {recs:seaFreightRecords, field:'containers'}
+  ];
+  const expImpData = expImpCats.map(c=>['Export','Import'].map(dir=>monthlyRows(c.recs.filter(i=>(i.expImp||'Export')===dir), [c.field])));
+  document.getElementById('monthlyExpImpBody').innerHTML = monthShortNames.map((m,mi)=>
+    `<tr><td>${m}</td>` + expImpData.map(pair=>pair.map(arr=>`<td>${fmtNum(arr[mi].a)}</td>`).join('')).join('') + '</tr>'
+  ).join('') + '<tr style="font-weight:500;"><td>Grand total</td>' + expImpData.map(pair=>pair.map(arr=>`<td>${fmtNum(arr.reduce((s,r)=>s+r.a,0))}</td>`).join('')).join('') + '</tr>';
+
+  // B.11 — Vol by Vendor (Carrier; falls back to Co-loader)
+  function vendorKey(i){
+    const v = String(i.carrier||'').trim() || String(i.coloader||'').trim();
+    return v ? v.toUpperCase() : '—';
+  }
+  function renderVendorTable(suffix, records, valueField, unitLabel){
+    document.getElementById('vendorYear'+suffix).textContent = year;
+    document.getElementById('vendorHeaderRow'+suffix).innerHTML = '<th>Vendor</th>' + monthShortNames.map(m=>`<th>${m}</th>`).join('') + `<th>Total (${unitLabel})</th><th>Vol %</th>`;
+    const map = {};
+    let grand = 0;
+    records.filter(i=>i.etd).forEach(i=>{
+      const d = new Date(i.etd+'T00:00:00');
+      if(d.getFullYear()!==year) return;
+      const k = vendorKey(i);
+      if(!map[k]) map[k] = new Array(12).fill(0);
+      const v = parseFloat(i[valueField])||0;
+      map[k][d.getMonth()] += v;
+      grand += v;
+    });
+    const entries = Object.entries(map).sort((a,b)=>b[1].reduce((s,v)=>s+v,0)-a[1].reduce((s,v)=>s+v,0));
+    const body = document.getElementById('volByVendorBody'+suffix);
+    if(entries.length===0){ body.innerHTML = `<tr><td colspan="15" class="empty">No data yet for ${year}</td></tr>`; return; }
+    body.innerHTML = entries.map(([vendor,months])=>{
+      const total = months.reduce((s,v)=>s+v,0);
+      const pct = grand>0 ? (total/grand*100) : 0;
+      return `<tr><td>${vendor}</td>` + months.map(v=>`<td>${fmtNum(v,0)}</td>`).join('') + `<td>${fmtNum(total,0)}</td><td>${pct.toFixed(1)}%</td></tr>`;
+    }).join('') + '<tr style="font-weight:500;"><td>Grand total</td>' + monthShortNames.map((_,mi)=>`<td>${fmtNum(entries.reduce((s,[,months])=>s+months[mi],0),0)}</td>`).join('') + `<td>${fmtNum(grand,0)}</td><td>100%</td></tr>`;
+  }
+  renderVendorTable('AirFreight', airFreightRecords, 'weight', 'kg');
+  renderVendorTable('AirExpress', airExpressRecords, 'weight', 'kg');
+  renderVendorTable('SeaFreight', seaFreightRecords, 'containers', 'container');
+
+  // B.12 — Yield: same record set as the Revenue Dashboard (anything with Cost & Revenue)
+  const yieldByMonth = Array.from({length:12}, ()=>({n:0, rev:0, cost:0, airKg:0, airRev:0, airCost:0}));
+  idx.filter(i=>(i.type==='finance' || i.revAmount || i.costAmount) && i.etd).forEach(i=>{
+    const d = new Date(i.etd+'T00:00:00');
+    if(d.getFullYear()!==year) return;
+    const y = yieldByMonth[d.getMonth()];
+    const rev = parseFloat(i.revAmount)||0, cost = parseFloat(i.costAmount)||0;
+    y.n++; y.rev += rev; y.cost += cost;
+    if((i.crMode||i.mode)==='Air'){
+      const kg = parseFloat(i.crChargeableWeight)||parseFloat(i.weight)||0;
+      if(kg>0){ y.airKg += kg; y.airRev += rev; y.airCost += cost; }
+    }
+  });
+  const div = (a,b,dec)=> b>0 ? fmtNum(a/b, dec) : '—';
+  function yieldRow(label, y, bold){
+    const gp = y.rev - y.cost;
+    const gpPct = y.rev>0 ? (gp/y.rev*100) : null;
+    const gpCell = gpPct===null ? '—' : `<span style="color:${gpPct>=0?'#2F7A46':'#A32D2D'}; font-weight:600;">${gpPct.toFixed(1)}%</span>`;
+    return `<tr${bold?' style="font-weight:500;"':''}><td>${label}</td><td>${fmtNum(y.n)}</td><td>${div(y.rev,y.n,0)}</td><td>${div(gp,y.n,0)}</td><td>${div(y.airRev,y.airKg,2)}</td><td>${div(y.airRev-y.airCost,y.airKg,2)}</td><td>${gpCell}</td></tr>`;
+  }
+  const yTot = yieldByMonth.reduce((a,y)=>({n:a.n+y.n, rev:a.rev+y.rev, cost:a.cost+y.cost, airKg:a.airKg+y.airKg, airRev:a.airRev+y.airRev, airCost:a.airCost+y.airCost}), {n:0,rev:0,cost:0,airKg:0,airRev:0,airCost:0});
+  document.getElementById('monthlyYieldBody').innerHTML = monthShortNames.map((m,mi)=>yieldRow(m, yieldByMonth[mi], false)).join('') + yieldRow('Year total / avg', yTot, true);
 }
 
 const REV_MODE_CATS = [
