@@ -508,50 +508,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       </div>
     </div>
     <div class="bar-section">
-      <h3>B.4 — Monthly Air Freight (kg)</h3>
-      <table class="dash-table">
-        <thead><tr><th>Month</th><th>Shipments</th><th>Chargeable weight</th></tr></thead>
-        <tbody id="monthlyAirFreightBody"></tbody>
-      </table>
-    </div>
-
-    <div class="bar-section">
-      <h3>B.5 — Monthly Air Express (kg)</h3>
-      <table class="dash-table">
-        <thead><tr><th>Month</th><th>Shipments</th><th>Chargeable weight</th></tr></thead>
-        <tbody id="monthlyAirExpressBody"></tbody>
-      </table>
-    </div>
-
-    <div class="bar-section">
-      <h3>B.6 — Monthly Sea Freight (Container)</h3>
-      <table class="dash-table">
-        <thead><tr><th>Month</th><th>Shipments</th><th>Container</th></tr></thead>
-        <tbody id="monthlySeaFreightBody"></tbody>
-      </table>
-    </div>
-
-    <div class="bar-section">
-      <h3>B.7.1 — Vol by Tradelane — EXPORT (Destination) — Chargeable Weight (kg) — <span id="volYearTradelaneExp">—</span></h3>
-      <div style="overflow-x:auto;">
-        <table class="dash-table" style="min-width:900px;">
-          <thead><tr id="volHeaderRowTradelaneExp"><th>Destination</th></tr></thead>
-          <tbody id="volByTradelaneBodyExp"></tbody>
-        </table>
-      </div>
-    </div>
-    <div class="bar-section">
-      <h3 class="imp">B.7.2 — Vol by Tradelane — IMPORT (Origin) — Chargeable Weight (kg) — <span id="volYearTradelaneImp">—</span></h3>
-      <div style="overflow-x:auto;">
-        <table class="dash-table" style="min-width:900px;">
-          <thead><tr id="volHeaderRowTradelaneImp"><th>Origin</th></tr></thead>
-          <tbody id="volByTradelaneBodyImp"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="bar-section">
-      <h3>B.8.1 — Vol by customer — Air Freight — EXPORT (kg) — <span id="volYearAirFreight">—</span></h3>
+      <h3>B.4.1 — Vol by customer — Air Freight — EXPORT (kg) — <span id="volYearAirFreight">—</span></h3>
       <div style="overflow-x:auto;">
         <table class="dash-table" style="min-width:820px;">
           <thead><tr id="volHeaderRowAirFreight"><th>Customer</th></tr></thead>
@@ -560,7 +517,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
       </div>
     </div>
     <div class="bar-section">
-      <h3 class="imp">B.8.2 — Vol by customer — Air Freight — IMPORT (kg) — <span id="volYearAirFreightImp">—</span></h3>
+      <h3 class="imp">B.4.2 — Vol by customer — Air Freight — IMPORT (kg) — <span id="volYearAirFreightImp">—</span></h3>
       <div style="overflow-x:auto;">
         <table class="dash-table" style="min-width:820px;">
           <thead><tr id="volHeaderRowAirFreightImp"><th>Customer</th></tr></thead>
@@ -570,7 +527,25 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>B.9 — Vol by customer — Air Express (kg) — <span id="volYearAirExpress">—</span></h3>
+      <h3>B.5.1 — Vol by customer — Sea Freight — EXPORT (Container) — <span id="volYearSeaFreight">—</span></h3>
+      <div style="overflow-x:auto;">
+        <table class="dash-table" style="min-width:820px;">
+          <thead><tr id="volHeaderRowSeaFreight"><th>Customer</th></tr></thead>
+          <tbody id="volByCustomerBodySeaFreight"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="bar-section">
+      <h3 class="imp">B.5.2 — Vol by customer — Sea Freight — IMPORT (Container) — <span id="volYearSeaFreightImp">—</span></h3>
+      <div style="overflow-x:auto;">
+        <table class="dash-table" style="min-width:820px;">
+          <thead><tr id="volHeaderRowSeaFreightImp"><th>Customer</th></tr></thead>
+          <tbody id="volByCustomerBodySeaFreightImp"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="bar-section">
+      <h3>B.6 — Vol by customer — Air Express (kg) — <span id="volYearAirExpress">—</span></h3>
       <div style="overflow-x:auto;">
         <table class="dash-table" style="min-width:820px;">
           <thead><tr id="volHeaderRowAirExpress"><th>Customer</th></tr></thead>
@@ -580,14 +555,48 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     </div>
 
     <div class="bar-section">
-      <h3>B.10 — Vol by customer — Sea Freight (Container) — <span id="volYearSeaFreight">—</span></h3>
+      <h3>B.7 — Monthly Air Freight (kg)</h3>
+      <table class="dash-table">
+        <thead><tr><th>Month</th><th>Shipments</th><th>Chargeable weight</th></tr></thead>
+        <tbody id="monthlyAirFreightBody"></tbody>
+      </table>
+    </div>
+
+    <div class="bar-section">
+      <h3>B.8 — Monthly Air Express (kg)</h3>
+      <table class="dash-table">
+        <thead><tr><th>Month</th><th>Shipments</th><th>Chargeable weight</th></tr></thead>
+        <tbody id="monthlyAirExpressBody"></tbody>
+      </table>
+    </div>
+
+    <div class="bar-section">
+      <h3>B.9 — Monthly Sea Freight (Container)</h3>
+      <table class="dash-table">
+        <thead><tr><th>Month</th><th>Shipments</th><th>Container</th></tr></thead>
+        <tbody id="monthlySeaFreightBody"></tbody>
+      </table>
+    </div>
+
+    <div class="bar-section">
+      <h3>B.10.1 — Vol by Tradelane — EXPORT (Destination) — Chargeable Weight (kg) — <span id="volYearTradelaneExp">—</span></h3>
       <div style="overflow-x:auto;">
-        <table class="dash-table" style="min-width:820px;">
-          <thead><tr id="volHeaderRowSeaFreight"><th>Customer</th></tr></thead>
-          <tbody id="volByCustomerBodySeaFreight"></tbody>
+        <table class="dash-table" style="min-width:900px;">
+          <thead><tr id="volHeaderRowTradelaneExp"><th>Destination</th></tr></thead>
+          <tbody id="volByTradelaneBodyExp"></tbody>
         </table>
       </div>
     </div>
+    <div class="bar-section">
+      <h3 class="imp">B.10.2 — Vol by Tradelane — IMPORT (Origin) — Chargeable Weight (kg) — <span id="volYearTradelaneImp">—</span></h3>
+      <div style="overflow-x:auto;">
+        <table class="dash-table" style="min-width:900px;">
+          <thead><tr id="volHeaderRowTradelaneImp"><th>Origin</th></tr></thead>
+          <tbody id="volByTradelaneBodyImp"></tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 
   <div class="dash" id="revDashPanel" style="display:none;">
@@ -5251,7 +5260,8 @@ async function renderMonthlyDashboard(){
   renderVolTable('volHeaderRowAirFreight', 'volByCustomerBodyAirFreight', 'volYearAirFreight', airFreightRecords.filter(i=>!isImport(i)), 'weight', 'kg');
   renderVolTable('volHeaderRowAirFreightImp', 'volByCustomerBodyAirFreightImp', 'volYearAirFreightImp', airFreightRecords.filter(isImport), 'weight', 'kg');
   renderVolTable('volHeaderRowAirExpress', 'volByCustomerBodyAirExpress', 'volYearAirExpress', airExpressRecords, 'weight', 'kg');
-  renderVolTable('volHeaderRowSeaFreight', 'volByCustomerBodySeaFreight', 'volYearSeaFreight', seaFreightRecords, 'containers', 'container');
+  renderVolTable('volHeaderRowSeaFreight', 'volByCustomerBodySeaFreight', 'volYearSeaFreight', seaFreightRecords.filter(i=>!isImport(i)), 'containers', 'container');
+  renderVolTable('volHeaderRowSeaFreightImp', 'volByCustomerBodySeaFreightImp', 'volYearSeaFreightImp', seaFreightRecords.filter(isImport), 'containers', 'container');
 
   // B.3 — Export / Import split (by ETD)
   const expImpCats = [
