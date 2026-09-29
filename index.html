@@ -240,6 +240,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
 #monthlyDashPanel .bar-section h3{background:#D6E6F4; color:#2E5A8F;}
 #monthlyDashPanel .bar-section h3.imp{background:#FBE9DC; color:#A0501A;}
 #revDashPanel .bar-section h3{background:#EAF4E5; color:#2F7A46;}
+#revDashPanel .bar-section h3.imp{background:#FBE9DC; color:#A0501A;}
 #podCrDashPanel .bar-section h3{background:#FBE4E1; color:#A32D2D;}
 #opsDashPanel .bar-section h3{background:#E6DDF2; color:#5B3A7A;}
 
@@ -623,12 +624,18 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
     <div class="metric-cards" id="revMetricCards"></div>
 
     <div class="bar-section"><h3>C.1 — Revenue / Cost / GP by Month (THB, all modes)</h3><div id="c1Container"></div></div>
-    <div class="bar-section"><h3>C.2 — Revenue / Cost / GP by Mode (THB)</h3><div id="c2Container"></div></div>
-    <div class="bar-section"><h3>C.3 — Revenue / Cost / GP by Destination (THB)</h3><div id="c9Container"></div></div>
-    <div class="bar-section"><h3>C.4 — Revenue by Customer (THB)</h3><div id="c3Container"></div></div>
-    <div class="bar-section"><h3>C.5 — Cost by Customer (THB)</h3><div id="c5Container"></div></div>
-    <div class="bar-section"><h3>C.6 — GP by Customer (THB)</h3><div id="c8Container"></div></div>
-    <div class="bar-section"><h3>C.7 — GP by Customer (%)</h3><div id="c10Container"></div></div>
+    <div class="bar-section"><h3>C.1.1 — Revenue / Cost / GP by Month — Export / Import (THB, all modes)</h3><div id="c1ExpImpContainer"></div></div>
+    <div class="bar-section"><h3>C.2 — Revenue / Cost / GP by Mode — Export / Import (THB)</h3><div id="c2Container"></div></div>
+    <div class="bar-section"><h3>C.3.1 — Revenue / Cost / GP by Destination — EXPORT (THB)</h3><div id="c9Container"></div></div>
+    <div class="bar-section"><h3 class="imp">C.3.2 — Revenue / Cost / GP by Origin — IMPORT (THB)</h3><div id="c9ImpContainer"></div></div>
+    <div class="bar-section"><h3>C.4.1 — Revenue by Customer — EXPORT (THB)</h3><div id="c3Container"></div></div>
+    <div class="bar-section"><h3 class="imp">C.4.2 — Revenue by Customer — IMPORT (THB)</h3><div id="c3ImpContainer"></div></div>
+    <div class="bar-section"><h3>C.5.1 — Cost by Customer — EXPORT (THB)</h3><div id="c5Container"></div></div>
+    <div class="bar-section"><h3 class="imp">C.5.2 — Cost by Customer — IMPORT (THB)</h3><div id="c5ImpContainer"></div></div>
+    <div class="bar-section"><h3>C.6.1 — GP by Customer — EXPORT (THB)</h3><div id="c8Container"></div></div>
+    <div class="bar-section"><h3 class="imp">C.6.2 — GP by Customer — IMPORT (THB)</h3><div id="c8ImpContainer"></div></div>
+    <div class="bar-section"><h3>C.7.1 — GP by Customer — EXPORT (%)</h3><div id="c10Container"></div></div>
+    <div class="bar-section"><h3 class="imp">C.7.2 — GP by Customer — IMPORT (%)</h3><div id="c10ImpContainer"></div></div>
   </div>
 
 
@@ -5414,6 +5421,41 @@ function buildGPPercentModeTables(containerId, records, year, categories){
   document.getElementById(containerId).innerHTML = html;
 }
 
+// Export / Import split — same rule as Monthly Dashboard: blank direction counts as Export.
+// Finance rows carry crExpImp (copied from the booking); fall back to expImp.
+function revDir(i){ return (i.crExpImp || i.expImp || 'Export')==='Import' ? 'Import' : 'Export'; }
+function revByDir(records, dir){ return records.filter(i=>revDir(i)===dir); }
+
+function revExpImpMonthlyTable(records, year){
+  const dirs = ['Export','Import'].map(dir=>{
+    const recs = revByDir(records, dir);
+    return {rev: revMonthlyTotals(recs, year, 'revAmount'), cost: revMonthlyTotals(recs, year, 'costAmount')};
+  });
+  const cells = (rev, cost, bl)=>{
+    const gp = rev-cost, pct = rev>0 ? (gp/rev*100) : null;
+    return `<td style="${bl}">${fmtNum(rev,2)}</td><td>${fmtNum(cost,2)}</td><td>${fmtNum(gp,2)}</td><td>${pct===null?'—':pct.toFixed(1)+'%'}</td>`;
+  };
+  const BL = 'border-left:2px solid #ccc;';
+  const rows = monthShortNames.map((m,mi)=>`<tr><td>${m}</td>` + dirs.map(d=>cells(d.rev[mi], d.cost[mi], BL)).join('') + '</tr>').join('');
+  const grand = '<tr style="font-weight:500;"><td>Grand total</td>' + dirs.map(d=>cells(d.rev.reduce((s,v)=>s+v,0), d.cost.reduce((s,v)=>s+v,0), BL)).join('') + '</tr>';
+  const sub = (bg)=>['Rev','Cost','GP (THB)','GP %'].map((h,k)=>`<th style="background:${bg};${k===0?'border-left:2px solid #fff;':''}">${h}</th>`).join('');
+  return `<div style="overflow-x:auto;"><table class="dash-table" style="min-width:820px;"><thead>
+    <tr><th rowspan="2">Month</th><th colspan="4" style="text-align:center; border-left:2px solid #fff; background:#EEF4FB; color:#2E5A8F;">Export</th><th colspan="4" style="text-align:center; border-left:2px solid #fff; background:#FBF1EA; color:#A0501A;">Import</th></tr>
+    <tr>${sub('#EEF4FB')}${sub('#FBF1EA')}</tr>
+  </thead><tbody>${rows}${grand}</tbody></table></div>`;
+}
+
+function buildMonthlyExpImpTable(containerId, records, year){
+  document.getElementById(containerId).innerHTML = revExpImpMonthlyTable(records, year);
+}
+
+function buildCombinedModeExpImpTables(containerId, records, year, categories){
+  document.getElementById(containerId).innerHTML = categories.map(cat=>`<div style="margin-bottom:16px;">
+      <div style="font-size:11px; font-weight:700; color:var(--steel); margin-bottom:6px; text-transform:uppercase;">${cat.label}</div>
+      ${revExpImpMonthlyTable(revFilterByCat(records, cat), year)}
+    </div>`).join('');
+}
+
 function buildMonthlyAllModesTable(containerId, records, year){
   const revTotals = revMonthlyTotals(records, year, 'revAmount');
   const costTotals = revMonthlyTotals(records, year, 'costAmount');
@@ -5428,11 +5470,12 @@ function buildMonthlyAllModesTable(containerId, records, year){
     <tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(grandRev,2)}</td><td>${fmtNum(grandCost,2)}</td><td>${fmtNum(grandGP,2)}</td><td>${grandPct===null?'—':grandPct.toFixed(1)+'%'}</td></tr></tbody></table>`;
 }
 
-function buildDestinationTable(containerId, records, year){
+function buildDestinationTable(containerId, records, year, keyField, keyLabel){
+  keyField = keyField || 'crDest'; keyLabel = keyLabel || 'Destination';
   const yearRecords = records.filter(i=>i.etd && new Date(i.etd+'T00:00:00').getFullYear()===year);
   const map = {};
   yearRecords.forEach(i=>{
-    const k = i.crDest || '—';
+    const k = i[keyField] || '—';
     if(!map[k]) map[k] = {rev:0, cost:0};
     map[k].rev += parseFloat(i.revAmount)||0;
     map[k].cost += parseFloat(i.costAmount)||0;
@@ -5453,7 +5496,7 @@ function buildDestinationTable(containerId, records, year){
     const grandPct = grandRev>0 ? (grandGP/grandRev*100) : null;
     bodyHtml += `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(grandRev,2)}</td><td>${fmtNum(grandCost,2)}</td><td>${fmtNum(grandGP,2)}</td><td>${grandPct===null?'—':grandPct.toFixed(1)+'%'}</td></tr>`;
   }
-  document.getElementById(containerId).innerHTML = `<table class="dash-table"><thead><tr><th>Destination</th><th>Rev</th><th>Cost</th><th>GP (THB)</th><th>GP %</th></tr></thead><tbody>${bodyHtml}</tbody></table>`;
+  document.getElementById(containerId).innerHTML = `<table class="dash-table"><thead><tr><th>${keyLabel}</th><th>Rev</th><th>Cost</th><th>GP (THB)</th><th>GP %</th></tr></thead><tbody>${bodyHtml}</tbody></table>`;
 }
 
 function buildCustomerGPPercentTable(containerId, records, year){
@@ -5558,13 +5601,21 @@ async function renderRevDashboard(){
     <div class="metric m-green"><div class="num">${mtdGPPct===null?'—':mtdGPPct.toFixed(1)+'%'}</div><div class="lbl">GP % (MTD)</div></div>
   `;
 
+  const expRecords = revByDir(financeRecords, 'Export');
+  const impRecords = revByDir(financeRecords, 'Import');
   buildMonthlyAllModesTable('c1Container', financeRecords, year);
-  buildCombinedModeTables('c2Container', financeRecords, year, REV_MODE_CATS);
-  buildDestinationTable('c9Container', financeRecords, year);
-  buildCustomerOnlyTable('c3Container', financeRecords, year, 'revAmount');
-  buildCustomerOnlyTable('c5Container', financeRecords, year, 'costAmount');
-  buildCustomerOnlyTable('c8Container', financeRecords, year, 'gpAmount');
-  buildCustomerGPPercentTable('c10Container', financeRecords, year);
+  buildMonthlyExpImpTable('c1ExpImpContainer', financeRecords, year);
+  buildCombinedModeExpImpTables('c2Container', financeRecords, year, REV_MODE_CATS);
+  buildDestinationTable('c9Container', expRecords, year, 'crDest', 'Destination');
+  buildDestinationTable('c9ImpContainer', impRecords, year, 'crOrigin', 'Origin');
+  buildCustomerOnlyTable('c3Container', expRecords, year, 'revAmount');
+  buildCustomerOnlyTable('c3ImpContainer', impRecords, year, 'revAmount');
+  buildCustomerOnlyTable('c5Container', expRecords, year, 'costAmount');
+  buildCustomerOnlyTable('c5ImpContainer', impRecords, year, 'costAmount');
+  buildCustomerOnlyTable('c8Container', expRecords, year, 'gpAmount');
+  buildCustomerOnlyTable('c8ImpContainer', impRecords, year, 'gpAmount');
+  buildCustomerGPPercentTable('c10Container', expRecords, year);
+  buildCustomerGPPercentTable('c10ImpContainer', impRecords, year);
 }
 
 function loadFromDash(jobNo){
