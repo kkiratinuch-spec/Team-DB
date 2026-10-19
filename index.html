@@ -304,6 +304,10 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
 .ops-savebar .msg{font-size:12px;color:#555}
 .ops-savebar .msg.dirty{color:#B25E00;font-weight:700}
 .ops-cfg{background:#FBE4E1;border:1px solid #F0B8B0;color:#A32D2D;border-radius:4px;padding:8px 12px;font-size:12.5px;margin-bottom:10px}
+.ops-dup{font-size:10.5px;font-weight:700;color:#A32D2D;background:#FBE4E1;border-radius:3px;padding:1px 6px;margin-left:6px;white-space:nowrap;cursor:help;font-family:inherit}
+.ops-e4wrap tr.dup td.mono{color:#A32D2D}
+.ops-dupwarn{background:#FBE4E1;border:1px solid #F0B8B0;color:#A32D2D;border-radius:4px;padding:7px 12px;font-size:12.5px;margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ops-dupwarn label{display:inline-flex;align-items:center;gap:5px;font-weight:600;cursor:pointer}
 .ops-unit{color:#8a8a8a;font-size:11.5px;margin-left:3px}
 .ops-ltype{font-size:10.5px;font-weight:700;border:1px solid #C9BEDA;color:#5B3A7A;border-radius:3px;padding:0 4px;margin-right:6px}
 .ops-auto{font-size:10.5px;color:#8a8a8a;margin-left:4px}
@@ -1074,16 +1078,12 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
           <button type="button" class="primary" id="opsSaveBtn" onclick="opsSaveAll()" disabled>💾 Save</button>
         </div>
       </div>
+      <div class="ops-dupwarn" id="opsDupWarn" style="display:none;"></div>
       <div class="ops-cfg" id="opsCfgWarn" style="display:none;">⚠️ ยังไม่ได้ตั้งค่า OPS Status Sheet — แก้ตัวแปร <code>OPS_API_URL</code> ในโค้ดให้เป็น URL ของ Web App จาก <b>OPSStatusBackend.gs</b> (ตอนนี้กด Save ไม่ได้)</div>
       <div class="ops-e4wrap"><table class="dash-table"><thead><tr><th>Customer</th><th>MAWB</th><th class="n">Chargeable Weight / Volume</th><th>ETD</th><th>OPS Status</th><th style="min-width:200px;">Remark</th></tr></thead><tbody id="opsE4Body"></tbody></table></div>
       <div style="font-size:11.5px; color:#8a8a8a; margin-top:6px;">เปลี่ยน OPS Status / Remark แล้วกด <b>💾 Save</b> เพื่อบันทึกลง Google Sheet "OPS Status" (แยกจาก Raw data ของ Job Sheet) · แถวสีเหลือง = ยังไม่ได้ Save · ช่อง Status ว่าง = ยังไม่ได้ตั้ง (Not set)</div>
     </div>
 
-    <details style="margin-top:10px;">
-      <summary style="font-size:12px; color:#5B3A7A; cursor:pointer; font-weight:700; text-transform:uppercase; letter-spacing:.04em;">ตารางสถานะเดิม (Inquiry / Booking / Cost &amp; Revenue)</summary>
-      <div style="margin:10px 0;"><label style="font-size:11px; font-weight:700; color:#5B3A7A;">YEAR <input type="number" id="opsDashYear" min="2020" max="2100" onchange="renderOpsDashboard()" style="width:90px;"></label></div>
-      <div id="opsDashTables"></div>
-    </details>
   </div>
 
   <div class="dash" id="arFollowupDashPanel" style="display:none;">
@@ -3971,7 +3971,7 @@ const OPS = {
   ships: [], byId: {}, months: [],
   pending: {},                                   // jobNo → true for unsaved edits
   F: {mode:'', dir:'', cust:'', month:''},       // top filters (month = 'YYYY-MM')
-  E4: {month:'', cust:'', q:''}                  // E.4's own filters
+  E4: {month:'', cust:'', q:'', dupOnly:false}                  // E.4's own filters
 };
 
 function opsEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -4010,6 +4010,10 @@ function opsLoad(records, savedRows){
     };
   }).filter(Boolean);
   OPS.byId = {}; OPS.ships.forEach(x=>OPS.byId[x.jobNo]=x);
+  // Duplicate MAWB check (ignores spaces / dashes / case) across ALL bookings
+  OPS.dup = {};
+  OPS.ships.forEach(x=>{ x.mkey = x.mawb.replace(/[\s-]/g,'').toUpperCase(); if(x.mkey) (OPS.dup[x.mkey] = OPS.dup[x.mkey] || []).push(x); });
+  Object.keys(OPS.dup).forEach(k=>{ if(OPS.dup[k].length<2) delete OPS.dup[k]; });
   // keep unsaved edits across a Refresh
   Object.keys(prevPending).forEach(j=>{ const x=OPS.byId[j]; if(x){ x.st=prevPending[j].st; x.remark=prevPending[j].remark; } else delete OPS.pending[j]; });
   document.getElementById('opsCfgWarn').style.display = opsApiReady() ? 'none' : 'block';
@@ -4037,7 +4041,8 @@ function opsLoad(records, savedRows){
 }
 
 function opsIsLate(x){
-  if(x.st==='Cancelled' || x.st==='Not set' || OPS_DONE.has(x.st)) return false;
+  // Flag anything not yet Arrival / POD (including 'Not set') once it's more than N days past ETD
+  if(x.st==='Cancelled' || OPS_DONE.has(x.st)) return false;
   return x.age > (OPS_LATE_DAYS[x.mode] || 7);
 }
 function opsCount(list){
@@ -4112,7 +4117,8 @@ function opsRenderE4(){
   const list = OPS.ships.filter(x=>
       (!OPS.F.mode || x.mode===OPS.F.mode) && (!OPS.F.dir || x.dir===OPS.F.dir) &&
       (E4.month==='all' || x.mk===E4.month) && (!E4.cust || x.cust===E4.cust) &&
-      (!E4.q || x.mawb.replace(/[\s-]/g,'').toUpperCase().indexOf(E4.q)!==-1))
+      (!E4.q || x.mawb.replace(/[\s-]/g,'').toUpperCase().indexOf(E4.q)!==-1) &&
+      (!E4.dupOnly || !!OPS.dup[x.mkey]))
     .sort((a,b)=>a.cust.localeCompare(b.cust) || a.etd-b.etd);
   const colOf = k=>(OPS_STATUSES_ALL.find(s=>s[0]===k)||['','#ccc'])[1];
   const fmtVol = x=> x.unit ? `${x.load?`<span class="ops-ltype">${x.load}</span>`:''}${x.vol.toLocaleString(undefined,{maximumFractionDigits:3})}<span class="ops-unit">${x.unit}</span>` : '—';
@@ -4121,7 +4127,7 @@ function opsRenderE4(){
   const totVol = [['kg',sumU('kg')],['Cntr',sumU('Cntr')],['CBM',sumU('CBM')]].filter(v=>v[1]).map(([u,v])=>`${v.toLocaleString(undefined,{maximumFractionDigits:3})}<span class="ops-unit">${u}</span>`).join(' · ');
   const body = document.getElementById('opsE4Body');
   body.innerHTML = list.length
-    ? list.map(x=>`<tr data-job="${opsEsc(x.jobNo)}" class="${x.st==='Cancelled'?'cx':''}${OPS.pending[x.jobNo]?' dirty':''}"><td>${opsEsc(x.cust)}</td><td class="mono">${x.mawb?opsEsc(x.mawb):'<span style="color:#8a8a8a">—</span>'}</td><td class="n">${fmtVol(x)}</td><td style="white-space:nowrap;">${opsFmtDate(x.etdStr)}</td>
+    ? list.map(x=>`<tr data-job="${opsEsc(x.jobNo)}" class="${x.st==='Cancelled'?'cx':''}${OPS.pending[x.jobNo]?' dirty':''}${OPS.dup[x.mkey]?' dup':''}"><td>${opsEsc(x.cust)}</td><td class="mono">${x.mawb?opsEsc(x.mawb):'<span style="color:#8a8a8a">—</span>'}${opsDupBadge(x)}</td><td class="n">${fmtVol(x)}</td><td style="white-space:nowrap;">${opsFmtDate(x.etdStr)}</td>
         <td style="white-space:nowrap;"><select data-job="${opsEsc(x.jobNo)}" style="--c:${colOf(x.st)}">${OPS_STATUSES_ALL.map(([k])=>`<option value="${k}"${k===x.st?' selected':''}>${k==='Not set'?'':k}</option>`).join('')}</select>${opsIsLate(x)?' <span class="ops-badge">⚠ &gt; 7 days</span>':''}</td>
         <td><input class="rmk" data-job="${opsEsc(x.jobNo)}" type="text" placeholder="พิมพ์หมายเหตุ…" value="${opsEsc(x.remark)}"></td></tr>`).join('') +
       `<tr class="ops-tot"><td>Total — ${act.length} MAWB</td><td></td><td class="n">${totVol||'—'}</td><td></td><td colspan="2" style="font-weight:400; color:#8a8a8a; font-size:12px;">ไม่รวม Cancelled</td></tr>`
@@ -4129,6 +4135,21 @@ function opsRenderE4(){
   const cx = list.length - act.length;
   document.getElementById('opsE4Count').textContent = act.length + ' MAWB' + (cx ? ` (+ Cancelled ${cx})` : '');
   opsUpdateSaveBar();
+  opsRenderDupWarn(list);
+}
+function opsDupBadge(x){
+  const g = OPS.dup[x.mkey]; if(!g) return '';
+  const others = g.filter(o=>o!==x).map(o=>`${o.jobNo} · ${o.cust} · ETD ${opsFmtDate(o.etdStr)}`).join('\n');
+  return `<span class="ops-dup" title="MAWB นี้ซ้ำกับ:\n${opsEsc(others)}">⚠ ซ้ำ ×${g.length}</span>`;
+}
+function opsRenderDupWarn(list){
+  const el = document.getElementById('opsDupWarn');
+  const inView = new Set(list.filter(x=>OPS.dup[x.mkey]).map(x=>x.mkey));
+  const total = Object.keys(OPS.dup).length;
+  if(!total){ el.style.display='none'; OPS.E4.dupOnly=false; return; }
+  el.style.display='flex';
+  el.innerHTML = `<span>⚠ พบ <b>MAWB ซ้ำ ${inView.size}</b> เลขในรายการนี้ (ทั้งระบบ ${total} เลข) — ตรวจว่าเป็น Booking ซ้ำหรือแยก shipment ตั้งใจ</span>
+    <label><input type="checkbox" ${OPS.E4.dupOnly?'checked':''} onchange="OPS.E4.dupOnly=this.checked; opsRenderE4();"> แสดงเฉพาะ MAWB ซ้ำ</label>`;
 }
 
 function opsUpdateSaveBar(msg){
@@ -4249,70 +4270,6 @@ function opsDrawMonth(byM, selIdx, year){
 async function renderOpsDashboard(){
   const [records, opsRows] = await Promise.all([dataGetAll(), opsFetchSaved()]);
   try{ opsInitEvents(); opsLoad(records, opsRows); opsRender(); }catch(e){ console.error("OPS v2 render failed:", e); }
-  const inquiryStatuses = ['quotation-preparation','negotiation','win','failed'];
-  const bookingStatuses = ['flight-booked','truck-booked','truck-booked-drafted','pod','cancelled'];
-  const financeStatuses = ['freight-input','local-charge-input','cost-rev-input-completed','accrued','reconcile','invoice-issued'];
-
-  const yearPicker = document.getElementById('opsDashYear');
-  const now = new Date();
-  if(!yearPicker.value || parseInt(yearPicker.value,10)<2020){ yearPicker.value = now.getFullYear(); }
-  const year = parseInt(yearPicker.value, 10);
-
-  const PURPLE_BG = '#E6DDF2', PURPLE_TXT = '#5B3A7A';
-
-  function monthlyTable(title, records, statuses, matchField, extraColLabel, extraColFn, dateField){
-    dateField = dateField || 'date';
-    const monthly = Array.from({length:12}, ()=>{
-      const row = {};
-      statuses.forEach(s=>row[s]=0);
-      return row;
-    });
-    const extraMonthly = new Array(12).fill(0);
-    records.forEach(r=>{
-      const dateVal = r[dateField];
-      if(!dateVal) return;
-      const d = new Date(dateVal+'T00:00:00');
-      if(isNaN(d.getTime()) || d.getFullYear()!==year) return;
-      if(extraColFn && extraColFn(r)) extraMonthly[d.getMonth()]++;
-      const st = matchField==='crStatus' ? r.crStatus : r.status;
-      if(!st || !monthly[0].hasOwnProperty(st)) return;
-      if(matchField!=='crStatus' && r.type!==matchField) return;
-      monthly[d.getMonth()][st]++;
-    });
-    const thead = '<th>Month</th>' + (extraColLabel?`<th>${extraColLabel}</th>`:'') + statuses.map(s=>`<th>${STATUS_LABELS[s]||s}</th>`).join('');
-    const rows = monthShortNames.map((m,i)=>
-      '<tr><td>'+m+'</td>' + (extraColLabel?`<td>${extraMonthly[i]>0?extraMonthly[i]:'—'}</td>`:'') + statuses.map(s=>`<td>${monthly[i][s]>0?monthly[i][s]:'—'}</td>`).join('') + '</tr>'
-    ).join('');
-    const totals = statuses.map(s=>monthly.reduce((sum,row)=>sum+row[s],0));
-    const extraTotal = extraMonthly.reduce((s,v)=>s+v,0);
-    const totalRow = '<tr style="font-weight:600;"><td>Total</td>' + (extraColLabel?`<td>${extraTotal}</td>`:'') + totals.map(t=>`<td>${t}</td>`).join('') + '</tr>';
-    return `
-      <div style="margin-bottom:16px;">
-        <div style="background:${PURPLE_BG}; color:${PURPLE_TXT}; padding:5px 10px; font-size:11px; font-weight:700; text-transform:uppercase; border-radius:3px 3px 0 0;">${title}</div>
-        <div style="overflow-x:auto;">
-          <table class="dash-table" style="min-width:600px;"><thead><tr>${thead}</tr></thead><tbody>${rows}${totalRow}</tbody></table>
-        </div>
-      </div>`;
-  }
-
-  const mawbCounter = r=>r.type==='booking' && !!r.mawb;
-
-  const inqTable = monthlyTable('Inquiry', records, inquiryStatuses, 'inquiry');
-  const airFreightRecords = records.filter(r=>r.mode==='Air' && r.cargoService==='Freight Forwarding');
-  const airExpressRecords = records.filter(r=>r.mode==='Air' && r.cargoService==='Express');
-  const seaFreightRecords = records.filter(r=>r.mode==='Sea' && r.cargoService==='Freight Forwarding');
-  const bkAirFreightTable = monthlyTable('Booking — Air Freight', airFreightRecords, bookingStatuses, 'booking', 'Total MAWB', mawbCounter, 'etd');
-  const bkAirExpressTable = monthlyTable('Booking — Air Express', airExpressRecords, bookingStatuses, 'booking', 'Total MAWB', mawbCounter, 'etd');
-  const bkSeaFreightTable = monthlyTable('Booking — Sea Freight', seaFreightRecords, bookingStatuses, 'booking', 'Total MAWB', mawbCounter, 'etd');
-  const finTable = monthlyTable('Cost & Revenue', records, financeStatuses, 'crStatus', 'Total MAWB', mawbCounter, 'etd');
-
-  document.getElementById('opsDashTables').innerHTML = `
-    ${inqTable}
-    ${bkAirFreightTable}
-    ${bkAirExpressTable}
-    ${bkSeaFreightTable}
-    ${finTable}
-  `;
 }
 
 async function refreshList(){
