@@ -295,6 +295,15 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
 .ops-e4wrap tr.cx td{color:#9aa0a6}
 .ops-e4wrap tr.cx td.mono{text-decoration:line-through}
 .ops-e4wrap tr.saving td{background:#FFF6CC}
+.ops-e4wrap tr.dirty td{background:#FFF8E1}
+.ops-e4wrap tr.dirty td:first-child{box-shadow:inset 4px 0 0 #E8A100}
+.ops-savebar{display:flex;align-items:center;gap:8px;margin-left:auto;align-self:center}
+.ops-savebar button{font-size:12px;font-weight:700;padding:6px 14px;border-radius:4px;cursor:pointer;border:1px solid #5B3A7A;background:#fff;color:#5B3A7A}
+.ops-savebar button.primary{background:#5B3A7A;color:#fff}
+.ops-savebar button:disabled{opacity:.45;cursor:default}
+.ops-savebar .msg{font-size:12px;color:#555}
+.ops-savebar .msg.dirty{color:#B25E00;font-weight:700}
+.ops-cfg{background:#FBE4E1;border:1px solid #F0B8B0;color:#A32D2D;border-radius:4px;padding:8px 12px;font-size:12.5px;margin-bottom:10px}
 .ops-unit{color:#8a8a8a;font-size:11.5px;margin-left:3px}
 .ops-ltype{font-size:10.5px;font-weight:700;border:1px solid #C9BEDA;color:#5B3A7A;border-radius:3px;padding:0 4px;margin-right:6px}
 .ops-auto{font-size:10.5px;color:#8a8a8a;margin-left:4px}
@@ -1058,10 +1067,16 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <label>Month (ETD)<select id="opsE4Month" onchange="OPS.E4.month=this.value; opsRender();"></select></label>
         <label>Customer<select id="opsE4Cust" onchange="OPS.E4.cust=this.value; opsRender();"></select></label>
         <label>Search MAWB<input type="search" id="opsE4Search" placeholder="เช่น 217-0580" style="width:190px;" oninput="OPS.E4.q=this.value.replace(/[\s-]/g,'').toUpperCase(); opsRender();"></label>
-        <span id="opsE4Count" style="font-size:12px; color:#555; margin-left:auto; align-self:center;"></span>
+        <span id="opsE4Count" style="font-size:12px; color:#555; align-self:center;"></span>
+        <div class="ops-savebar">
+          <span class="msg" id="opsSaveMsg"></span>
+          <button type="button" id="opsDiscardBtn" onclick="opsDiscard()" disabled>Discard</button>
+          <button type="button" class="primary" id="opsSaveBtn" onclick="opsSaveAll()" disabled>💾 Save</button>
+        </div>
       </div>
+      <div class="ops-cfg" id="opsCfgWarn" style="display:none;">⚠️ ยังไม่ได้ตั้งค่า OPS Status Sheet — แก้ตัวแปร <code>OPS_API_URL</code> ในโค้ดให้เป็น URL ของ Web App จาก <b>OPSStatusBackend.gs</b> (ตอนนี้กด Save ไม่ได้)</div>
       <div class="ops-e4wrap"><table class="dash-table"><thead><tr><th>Customer</th><th>MAWB</th><th class="n">Chargeable Weight / Volume</th><th>OPS Status</th><th style="min-width:200px;">Remark</th></tr></thead><tbody id="opsE4Body"></tbody></table></div>
-      <div style="font-size:11.5px; color:#8a8a8a; margin-top:6px;">OPS Status และ Remark บันทึกลง Google Sheet อัตโนมัติเมื่อเปลี่ยน (แยกจาก Status ของ Booking) · ช่อง Status ว่าง = ยังไม่ได้ตั้ง (นับเป็น "Not set")</div>
+      <div style="font-size:11.5px; color:#8a8a8a; margin-top:6px;">เปลี่ยน OPS Status / Remark แล้วกด <b>💾 Save</b> เพื่อบันทึกลง Google Sheet "OPS Status" (แยกจาก Raw data ของ Job Sheet) · แถวสีเหลือง = ยังไม่ได้ Save · ช่อง Status ว่าง = ยังไม่ได้ตั้ง (Not set)</div>
     </div>
 
     <details style="margin-top:10px;">
@@ -3936,8 +3951,25 @@ const OPS_STATUSES_ALL = OPS_STATUSES.concat([['Cancelled','var(--s-cancel)']]);
 const OPS_DONE = new Set(['Arrival Destination','POD']);
 // "Transit > N Days" threshold, counted from ETD. Change here if Sea needs a longer window.
 const OPS_LATE_DAYS = {Air:7, Sea:7};
+// Separate Google Sheet for OPS Status / Remark (see OPSStatusBackend.gs).
+// The main Job Sheet raw data is never written from this page.
+let OPS_API_URL = 'https://script.google.com/macros/s/AKfycbxvh16vMAQazxTwhpCYIBrqSmRHTQgcU42BBiKFjjU1KTQd3L2aookPYhFWHMCuKwiB/exec';
+function opsApiReady(){ return !!OPS_API_URL && OPS_API_URL.indexOf('PASTE_')===-1; }
+async function opsFetchSaved(){
+  if(!opsApiReady()) return [];
+  try{
+    const res = await fetchWithRetry(OPS_API_URL + '?t=' + Date.now(), {method:'GET', cache:'no-store'});
+    const rows = await res.json();
+    return Array.isArray(rows) ? rows : [];
+  }catch(e){
+    console.error('OPS Status sheet load failed:', e);
+    alert('โหลด OPS Status จาก Google Sheet ไม่สำเร็จ — กด Refresh อีกครั้ง\n\n' + (e && e.message ? e.message : e));
+    return [];
+  }
+}
 const OPS = {
   ships: [], byId: {}, months: [],
+  pending: {},                                   // jobNo → true for unsaved edits
   F: {mode:'', dir:'', cust:'', month:''},       // top filters (month = 'YYYY-MM')
   E4: {month:'', cust:'', q:''}                  // E.4's own filters
 };
@@ -3950,9 +3982,11 @@ function opsMonthLabel(k){ if(!k||k==='all') return 'All months'; const [y,m]=k.
 // A booking that has never been set on this page starts blank ('Not set').
 function opsDefaultStatus(r){ return 'Not set'; }
 
-function opsLoad(records){
+function opsLoad(records, savedRows){
   const saved = {};
-  records.filter(r=>r.type==='opsStatus' && r.mawbKey).forEach(r=>{ saved[r.mawbKey] = r; });
+  (savedRows||[]).forEach(r=>{ if(r.jobNo) saved[String(r.jobNo).trim()] = r; });
+  const prevPending = {};
+  Object.keys(OPS.pending).forEach(j=>{ const x=OPS.byId[j]; if(x) prevPending[j]={st:x.st, remark:x.remark}; });
   const today = new Date(todayStr()+'T00:00:00');
   OPS.ships = records.filter(r=>r.type==='booking' && r.etd).map(r=>{
     const d = new Date(r.etd+'T00:00:00');
@@ -3971,10 +4005,13 @@ function opsLoad(records){
     return {
       jobNo:r.jobNo, mk:r.etd.slice(0,7), etd:d, age:(today-d)/864e5,
       mode:r.mode||'', dir:r.expImp||'Export', cust:r.customer||'—', mawb:r.mawb||'',
-      unit, vol, load, st:opsStatus, auto:!(s && s.opsStatus), remark:(s && s.remarkText) || ''
+      unit, vol, load, st:opsStatus, remark:(s && s.remark) || '', etdStr:r.etd
     };
   }).filter(Boolean);
   OPS.byId = {}; OPS.ships.forEach(x=>OPS.byId[x.jobNo]=x);
+  // keep unsaved edits across a Refresh
+  Object.keys(prevPending).forEach(j=>{ const x=OPS.byId[j]; if(x){ x.st=prevPending[j].st; x.remark=prevPending[j].remark; } else delete OPS.pending[j]; });
+  document.getElementById('opsCfgWarn').style.display = opsApiReady() ? 'none' : 'block';
   OPS.months = Array.from(new Set(OPS.ships.map(x=>x.mk))).sort().reverse();
   const cur = todayStr().slice(0,7);
   if(!OPS.F.month || OPS.months.indexOf(OPS.F.month)===-1){
@@ -4083,28 +4120,68 @@ function opsRenderE4(){
   const totVol = [['kg',sumU('kg')],['Cntr',sumU('Cntr')],['CBM',sumU('CBM')]].filter(v=>v[1]).map(([u,v])=>`${v.toLocaleString(undefined,{maximumFractionDigits:3})}<span class="ops-unit">${u}</span>`).join(' · ');
   const body = document.getElementById('opsE4Body');
   body.innerHTML = list.length
-    ? list.map(x=>`<tr data-job="${opsEsc(x.jobNo)}" class="${x.st==='Cancelled'?'cx':''}"><td>${opsEsc(x.cust)}</td><td class="mono">${x.mawb?opsEsc(x.mawb):'<span style="color:#8a8a8a">—</span>'}</td><td class="n">${fmtVol(x)}</td>
+    ? list.map(x=>`<tr data-job="${opsEsc(x.jobNo)}" class="${x.st==='Cancelled'?'cx':''}${OPS.pending[x.jobNo]?' dirty':''}"><td>${opsEsc(x.cust)}</td><td class="mono">${x.mawb?opsEsc(x.mawb):'<span style="color:#8a8a8a">—</span>'}</td><td class="n">${fmtVol(x)}</td>
         <td style="white-space:nowrap;"><select data-job="${opsEsc(x.jobNo)}" style="--c:${colOf(x.st)}">${OPS_STATUSES_ALL.map(([k])=>`<option value="${k}"${k===x.st?' selected':''}>${k==='Not set'?'':k}</option>`).join('')}</select>${opsIsLate(x)?' <span class="ops-badge">⚠ &gt; 7 days</span>':''}</td>
         <td><input class="rmk" data-job="${opsEsc(x.jobNo)}" type="text" placeholder="พิมพ์หมายเหตุ…" value="${opsEsc(x.remark)}"></td></tr>`).join('') +
       `<tr class="ops-tot"><td>Total — ${act.length} MAWB</td><td></td><td class="n">${totVol||'—'}</td><td colspan="2" style="font-weight:400; color:#8a8a8a; font-size:12px;">ไม่รวม Cancelled</td></tr>`
     : '<tr><td colspan="5" class="empty">No shipments for this filter</td></tr>';
   const cx = list.length - act.length;
   document.getElementById('opsE4Count').textContent = act.length + ' MAWB' + (cx ? ` (+ Cancelled ${cx})` : '');
+  opsUpdateSaveBar();
 }
 
-async function opsSave(x, row){
-  if(row) row.classList.add('saving');
+function opsUpdateSaveBar(msg){
+  const n = Object.keys(OPS.pending).length;
+  const ready = opsApiReady();
+  document.getElementById('opsSaveBtn').disabled = !n || !ready;
+  document.getElementById('opsDiscardBtn').disabled = !n;
+  document.getElementById('opsSaveBtn').textContent = n ? `💾 Save (${n})` : '💾 Save';
+  const m = document.getElementById('opsSaveMsg');
+  if(msg){ m.textContent = msg; m.className = 'msg'; }
+  else if(n){ m.textContent = `มี ${n} รายการยังไม่ได้ Save`; m.className = 'msg dirty'; }
+  else if(!m.dataset.keep){ m.textContent = ''; m.className = 'msg'; }
+}
+function opsMarkDirty(x){
+  OPS.pending[x.jobNo] = true;
+  const tr = document.querySelector(`#opsE4Body tr[data-job="${CSS.escape(x.jobNo)}"]`);
+  if(tr) tr.classList.add('dirty');
+  opsUpdateSaveBar();
+}
+async function opsSaveAll(){
+  const jobs = Object.keys(OPS.pending);
+  if(!jobs.length) return;
+  if(!opsApiReady()){ alert('ยังไม่ได้ตั้งค่า OPS_API_URL'); return; }
+  const btn = document.getElementById('opsSaveBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const rows = jobs.map(j=>OPS.byId[j]).filter(Boolean).map(x=>({
+    jobNo:x.jobNo, mawb:x.mawb, customer:x.cust, etd:x.etdStr, mode:x.mode, expImp:x.dir,
+    opsStatus:(x.st==='Not set'?'':x.st), remark:x.remark
+  }));
   try{
-    await dataSave({ jobNo:'OPS-'+x.jobNo, type:'opsStatus', mawbKey:x.jobNo, opsStatus:(x.st==='Not set'?'':x.st), remarkText:x.remark, savedAt:new Date().toISOString() });
-    x.auto = false;
-    showToast('✓ OPS status saved');
+    const res = await fetchWithRetry(OPS_API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'saveBatch', rows})});
+    let out = {}; try{ out = await res.json(); }catch(_){}
+    if(out && out.ok===false) throw new Error(out.error||'Save failed');
+    jobs.forEach(j=>delete OPS.pending[j]);
+    document.querySelectorAll('#opsE4Body tr.dirty').forEach(tr=>tr.classList.remove('dirty'));
+    const m = document.getElementById('opsSaveMsg'); m.dataset.keep='1';
+    opsUpdateSaveBar('✓ Saved ' + rows.length + ' รายการ · ' + new Date().toLocaleTimeString('en-GB'));
+    setTimeout(()=>{ delete m.dataset.keep; }, 100);
+    showToast('✓ OPS status saved (' + rows.length + ')');
   }catch(e){
-    console.error('OPS status save failed:', e);
-    alert('บันทึก OPS Status ไม่สำเร็จ ลองใหม่อีกครั้ง\n\n' + (e && e.message ? e.message : e));
-  }finally{
-    if(row) row.classList.remove('saving');
+    console.error('OPS save failed:', e);
+    alert('Save ไม่สำเร็จ — ข้อมูลที่แก้ยังอยู่ ลองกด Save อีกครั้ง\n\n' + (e && e.message ? e.message : e));
+    opsUpdateSaveBar();
   }
 }
+async function opsDiscard(){
+  if(!Object.keys(OPS.pending).length) return;
+  if(!confirm('ยกเลิกการแก้ไขที่ยังไม่ได้ Save ทั้งหมด?')) return;
+  OPS.pending = {};
+  renderOpsDashboard();
+}
+window.addEventListener('beforeunload', e=>{
+  if(Object.keys(OPS.pending).length){ e.preventDefault(); e.returnValue = ''; }
+});
 
 function opsInitEvents(){
   if(window._opsEventsReady) return; window._opsEventsReady = true;
@@ -4113,23 +4190,19 @@ function opsInitEvents(){
     OPS.F[s.dataset.f] = b.dataset.v; opsRender();
   }));
   const body = document.getElementById('opsE4Body');
-  // Status change → update E.1–E.3 immediately, then save in the background
+  // Status change → E.1–E.3 update immediately; saved to the sheet when Save is pressed
   body.addEventListener('change', e=>{
-    const sel = e.target.closest('select');
-    if(sel){
-      const x = OPS.byId[sel.dataset.job]; if(!x) return;
-      x.st = sel.value; x.auto = false;
-      opsRender();
-      opsSave(x, body.querySelector(`tr[data-job="${CSS.escape(x.jobNo)}"]`));
-      return;
-    }
-    const inp = e.target.closest('input.rmk');   // fires when the remark box loses focus / Enter
-    if(inp){
-      const x = OPS.byId[inp.dataset.job]; if(!x) return;
-      if(x.remark === inp.value) return;
-      x.remark = inp.value;
-      opsSave(x, inp.closest('tr'));
-    }
+    const sel = e.target.closest('select'); if(!sel) return;
+    const x = OPS.byId[sel.dataset.job]; if(!x) return;
+    x.st = sel.value;
+    OPS.pending[x.jobNo] = true;
+    opsRender();
+  });
+  body.addEventListener('input', e=>{
+    const inp = e.target.closest('input.rmk'); if(!inp) return;
+    const x = OPS.byId[inp.dataset.job]; if(!x) return;
+    x.remark = inp.value;
+    opsMarkDirty(x);
   });
   body.addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target.matches('input.rmk')) e.target.blur(); });
 }
@@ -4173,8 +4246,8 @@ function opsDrawMonth(byM, selIdx, year){
 }
 
 async function renderOpsDashboard(){
-  const records = await dataGetAll();
-  try{ opsInitEvents(); opsLoad(records); opsRender(); }catch(e){ console.error("OPS v2 render failed:", e); }
+  const [records, opsRows] = await Promise.all([dataGetAll(), opsFetchSaved()]);
+  try{ opsInitEvents(); opsLoad(records, opsRows); opsRender(); }catch(e){ console.error("OPS v2 render failed:", e); }
   const inquiryStatuses = ['quotation-preparation','negotiation','win','failed'];
   const bookingStatuses = ['flight-booked','truck-booked','truck-booked-drafted','pod','cancelled'];
   const financeStatuses = ['freight-input','local-charge-input','cost-rev-input-completed','accrued','reconcile','invoice-issued'];
