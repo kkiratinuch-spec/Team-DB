@@ -243,6 +243,29 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
 #revDashPanel .bar-section h3.imp{background:#FBE9DC; color:#A0501A;}
 #podCrDashPanel .bar-section h3{background:#FBE4E1; color:#A32D2D;}
 #opsDashPanel .bar-section h3{background:#E6DDF2; color:#5B3A7A;}
+/* ===== Saved Job Sheets — editable table ===== */
+.sj-bar{display:none;align-items:center;gap:8px;justify-content:flex-end;margin:-4px 0 10px}
+.sj-bar .msg{font-size:12px;color:#555}.sj-bar .msg.dirty{color:#B25E00;font-weight:700}
+.sj-bar button{font-size:12px;font-weight:700;padding:6px 14px;border-radius:4px;cursor:pointer;border:1px solid #1B2A44;background:#fff;color:#1B2A44}
+.sj-bar button.primary{background:#1B2A44;color:#fff}
+.sj-bar button:disabled{opacity:.4;cursor:default}
+.sj-wrap{max-height:620px;overflow:auto;border:1px solid var(--line);border-radius:6px}
+.sj-table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1250px}
+.sj-table th{position:sticky;top:0;z-index:1;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#3A3A3A;background:#EDEDED;border-bottom:1px solid #1B2A44;padding:7px 8px;white-space:nowrap}
+.sj-table th.g{background:#E2EFDA;color:#1F4A2E}.sj-table th.ed{background:#FFF3D6}
+.sj-table td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+.sj-table td.n,.sj-table th.n{text-align:right}
+.sj-table tr.dirty td{background:#FFF8E1}.sj-table tr.dirty td:first-child{box-shadow:inset 4px 0 0 #E8A100}
+.sj-table tr.sj-tot td{font-weight:700;background:#F7F9FC}
+.sj-job{color:#2E5A8F;text-decoration:none;font-weight:600}.sj-job:hover{text-decoration:underline}
+input.sj-num{width:84px;text-align:right;font-size:12.5px;padding:5px 7px;border:1px solid #D5D7DB;border-radius:4px;background:#FFFCF2}
+input.sj-num:disabled,select.sj-cr:disabled{background:#F2F3F5;color:#8a8a8a}
+select.sj-cr{font-size:12px;padding:4px 6px;border:1px solid #C9CDD3;border-radius:4px;font-weight:600;min-width:170px}
+.sj-unit{color:#8a8a8a;font-size:11px;margin-left:3px}
+.sj-ltype{font-size:10px;font-weight:700;border:1px solid #C9CDD3;border-radius:3px;padding:0 4px;margin-right:4px;color:#2E5A8F}
+.sj-lc{display:block;font-size:10.5px;color:#8a8a8a}
+.sj-auto{display:block;font-size:10.5px;color:#B25E00}
+.sj-pos{color:#2F7A46;font-weight:700}.sj-neg{color:#A32D2D;font-weight:700}
 /* ===== OPS Dashboard v2 (E.1–E.4) ===== */
 #opsDashPanel{--s-tender:#2a78d6; --s-depart:#eb6834; --s-transit:#6250d6; --s-arrival:#eda100; --s-pod:#1baf7a; --s-issue:#e34948; --s-cancel:#9aa0a6; --s-none:#D5D7DB; --ops-warn:#B25E00; --ops-warn-bg:#FFF1DE;}
 .ops-filters{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-bottom:16px;padding:10px 12px;background:#F7F5FA;border:1px solid #E6DDF2;border-radius:6px}
@@ -455,6 +478,11 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
         <option value="__weight_pending__">⚠ Chargeable Weight Pending (Booking)</option>
         <option value="__cr_weight_pending__">⚠ Chargeable Weight Pending (Cost &amp; Rev)</option>
       </select>
+    </div>
+    <div class="sj-bar" id="sjSaveBar">
+      <span class="msg" id="sjSaveMsg"></span>
+      <button type="button" id="sjDiscardBtn" onclick="sjDiscard()" disabled>Discard</button>
+      <button type="button" class="primary" id="sjSaveBtn" onclick="sjSaveAll()" disabled>💾 Save</button>
     </div>
     <div id="listBody"><div class="empty">Loading...</div></div>
   </div>
@@ -3306,8 +3334,11 @@ function normalizeRecord(r){
     // container-based calculation when there's actually container data to use;
     // otherwise fall back to the weight-based rate so existing revenue isn't lost.
     const useContainerCalc = rec.mode==='Sea' && containers>0 && (costPerContainer>0 || sellingPerContainer>0);
-    const frCostAmount = useContainerCalc ? (containers * costPerContainer) : (weight * costPerKg);
-    const frRevAmount = useContainerCalc ? (containers * sellingPerContainer) : (weight * sellingPerKg);
+    // Sea LCL (no containers, CBM on the item lines): the per-kg rate fields hold the rate per CBM
+    const cbm = items.reduce((t,it)=>t+(parseFloat(it.cbm)||0),0);
+    const useCbmCalc = !useContainerCalc && rec.mode==='Sea' && !(containers>0) && cbm>0;
+    const frCostAmount = useContainerCalc ? (containers * costPerContainer) : (useCbmCalc ? cbm * costPerKg : weight * costPerKg);
+    const frRevAmount = useContainerCalc ? (containers * sellingPerContainer) : (useCbmCalc ? cbm * sellingPerKg : weight * sellingPerKg);
 
     const costAmount = lcCostAmount + frCostAmount + dcCostAmount;
     const revAmount = lcRevAmount + frRevAmount + dcRevAmount;
@@ -4367,7 +4398,229 @@ async function renderOpsDashboard(){
   try{ opsInitEvents(); opsLoad(records, opsRows); opsRender(); }catch(e){ console.error("OPS v2 render failed:", e); }
 }
 
+// =====================================================================
+// SAVED JOB SHEETS — editable table (Booking / Cost & Revenue tabs)
+// Writes back to the MAIN Job Sheet raw data using the existing columns
+// (chargeableWeight + items, sellingPerKg / costPerKg, sellingPerContainer /
+// costPerContainer, crStatus, revAmount / costAmount / gpAmount / gpPercent).
+// =====================================================================
+const SJ_PAGE = 50;
+const SJ_CR = [['','—'],['freight-input','Freight Input'],['local-charge-input','Local Charge Input'],['cost-rev-input-completed','Cost & Rev Completed'],['accrued','Accrued'],['reconcile','Reconcile'],['invoice-issued','Invoice Issued']];
+const SJ = { edits:{}, savedMsg:'' };       // jobNo → {cw, sell, cost, cr, autoCr}
+
+function sjMode(){ return listTypeFilter==='booking' || listTypeFilter==='finance'; }
+function sjNum(v){ return parseFloat(v)||0; }
+function sjEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function sjFmt(n,d){ d=d||0; return n ? Number(n).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d}) : '—'; }
+function sjItems(r){ let it=r.items||[]; if(typeof it==='string'){ try{ it=JSON.parse(it);}catch(e){ it=[]; } } return Array.isArray(it)?it:[]; }
+function sjCbm(r){ return sjItems(r).reduce((s,it)=>s+(parseFloat(it.cbm)||0),0); }
+function sjKind(r){
+  if(r.mode==='Sea'){
+    if(sjNum(r.containers)>0) return 'FCL';
+    if(sjCbm(r)>0) return 'LCL';
+    return 'SEA';
+  }
+  return 'AIR';
+}
+// Current values for a row = saved record + any unsaved edit
+function sjView(r){
+  const e = SJ.edits[r.jobNo] || {};
+  const kind = sjKind(r);
+  const perCntr = kind==='FCL';
+  const v = {
+    kind,
+    cw:   e.cw   !== undefined ? e.cw   : sjNum(r.weight),
+    sell: e.sell !== undefined ? e.sell : sjNum(perCntr ? r.sellingPerContainer : r.sellingPerKg),
+    cost: e.cost !== undefined ? e.cost : sjNum(perCntr ? r.costPerContainer : r.costPerKg),
+    cr:   e.cr   !== undefined ? e.cr   : (r.crStatus||''),
+    autoCr: !!e.autoCr
+  };
+  const qty = kind==='FCL' ? sjNum(r.containers) : (kind==='LCL' ? sjCbm(r) : v.cw);
+  const lcR = sjNum(r.lcRevAmount)+sjNum(r.dcRevAmount), lcC = sjNum(r.lcCostAmount)+sjNum(r.dcCostAmount);
+  const hasRate = v.sell || v.cost;
+  if(hasRate || !(sjNum(r.revAmount)||sjNum(r.costAmount))){
+    v.rev = qty*v.sell + lcR; v.costAmt = qty*v.cost + lcC;
+  }else{                                   // totals-only rows (e.g. Express upload): show stored totals
+    v.rev = sjNum(r.revAmount); v.costAmt = sjNum(r.costAmount);
+  }
+  v.lcR = lcR; v.lcC = lcC;
+  v.gp = v.rev - v.costAmt; v.pct = v.rev>0 ? v.gp/v.rev*100 : null;
+  return v;
+}
+
+function sjRenderTable(){
+  const body = document.getElementById('listBody');
+  const all = currentFilteredRecords;
+  const total = all.length;
+  const totalPages = Math.max(1, Math.ceil(total / SJ_PAGE));
+  if(currentListPage>totalPages) currentListPage = totalPages;
+  const start = (currentListPage-1)*SJ_PAGE;
+  const page = all.slice(start, start+SJ_PAGE);
+  let T = {rev:0, cost:0};
+  const rows = page.map(r=>{
+    const v = sjView(r); T.rev += v.rev; T.cost += v.costAmt;
+    const editable = r.type==='booking';
+    const dis = editable ? '' : ' disabled title="Cost & Revenue record — open the form to edit"';
+    const unit = v.kind==='FCL' ? '/cntr' : (v.kind==='LCL' ? '/CBM' : '/kg');
+    const qtyCell = v.kind==='FCL' ? `<span class="sj-ltype">FCL</span>${sjFmt(sjNum(r.containers))}<span class="sj-unit">Cntr</span>`
+                  : v.kind==='LCL' ? `<span class="sj-ltype">LCL</span>${sjFmt(sjCbm(r),3)}<span class="sj-unit">CBM</span>`
+                  : `<input class="sj-num" data-job="${sjEsc(r.jobNo)}" data-k="cw" value="${v.cw||''}" inputmode="decimal"${dis}><span class="sj-unit">kg</span>`;
+    const gpCls = v.gp>=0 ? 'sj-pos' : 'sj-neg';
+    const checked = selectedJobNos.has(r.jobNo) ? ' checked' : '';
+    return `<tr data-job="${sjEsc(r.jobNo)}" class="${SJ.edits[r.jobNo]?'dirty':''}">
+      <td><input type="checkbox" class="row-checkbox" data-jobno="${sjEsc(r.jobNo)}"${checked} onchange="if(this.checked){selectedJobNos.add(this.dataset.jobno);}else{selectedJobNos.delete(this.dataset.jobno);} updateSelectedCount();"></td>
+      <td><a href="#" class="sj-job" onclick="loadSheet('${sjEsc(r.jobNo)}'); return false;">${sjEsc(r.jobNo)}</a></td>
+      <td>${sjEsc(r.customer||'—')}</td>
+      <td class="mono">${sjEsc(r.crMawb||r.mawb||'—')}</td>
+      <td>${r.etd ? r.etd.split('-').reverse().join('/') : '—'}</td>
+      <td class="n">${(r.mode==='Sea' || !sjNum(r.bookingWeight)) ? '—' : sjFmt(sjNum(r.bookingWeight))+'<span class="sj-unit">kg</span>'}</td>
+      <td class="n">${qtyCell}</td>
+      <td class="n"><input class="sj-num" data-job="${sjEsc(r.jobNo)}" data-k="sell" value="${v.sell||''}" inputmode="decimal"${dis}><span class="sj-unit">${unit}</span></td>
+      <td class="n"><input class="sj-num" data-job="${sjEsc(r.jobNo)}" data-k="cost" value="${v.cost||''}" inputmode="decimal"${dis}><span class="sj-unit">${unit}</span></td>
+      <td class="n" data-c="rev">${sjFmt(v.rev,2)}${v.lcR?`<span class="sj-lc">incl. LC ${sjFmt(v.lcR)}</span>`:''}</td>
+      <td class="n" data-c="cost">${sjFmt(v.costAmt,2)}${v.lcC?`<span class="sj-lc">incl. LC ${sjFmt(v.lcC)}</span>`:''}</td>
+      <td class="n ${gpCls}" data-c="gp">${(v.rev||v.costAmt)?sjFmt(v.gp,2):'—'}</td>
+      <td class="n ${gpCls}" data-c="pct">${v.pct==null?'—':v.pct.toFixed(1)+'%'}</td>
+      <td><select class="sj-cr" data-job="${sjEsc(r.jobNo)}"${dis}>${SJ_CR.map(([val,l])=>`<option value="${val}"${val===v.cr?' selected':''}>${l}</option>`).join('')}</select>${v.autoCr?'<span class="sj-auto">ตั้งให้อัตโนมัติ</span>':''}</td>
+    </tr>`;
+  }).join('');
+  body.innerHTML = `
+    <div class="sj-wrap"><table class="sj-table">
+      <thead><tr><th></th><th>Job No</th><th>Customer</th><th>MAWB</th><th>ETD</th><th class="n">Booking Wt</th>
+        <th class="n ed">Chargeable Wt ✏️</th><th class="n ed">Selling ✏️</th><th class="n ed">Cost ✏️</th>
+        <th class="n g">Revenue</th><th class="n g">Cost</th><th class="n g">GP</th><th class="n g">GP %</th><th class="ed">CR Status ✏️</th></tr></thead>
+      <tbody>${rows}
+        <tr class="sj-tot"><td colspan="9">Total (this page) — ${page.length} jobs</td><td class="n">${sjFmt(T.rev,2)}</td><td class="n">${sjFmt(T.cost,2)}</td><td class="n">${sjFmt(T.rev-T.cost,2)}</td><td class="n">${T.rev?((T.rev-T.cost)/T.rev*100).toFixed(1)+'%':'—'}</td><td></td></tr>
+      </tbody></table></div>
+    <div style="font-size:11.5px; color:#8a8a8a; margin-top:6px;">✏️ = แก้ได้ · หัวสีเขียว = คำนวณให้ · Revenue / Cost = ราคา × CW (Sea FCL × ตู้ · LCL × CBM) + Local / Dest Charge ที่มีอยู่ · ใส่ราคาแล้ว CR Status ว่าง → ตั้งเป็น Freight Input ให้ · กด Job No เพื่อเปิดฟอร์มเต็ม</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:10px; border-top:1px solid var(--line); font-size:12px; color:var(--steel);">
+      <span>Showing ${total===0?0:start+1}–${Math.min(start+SJ_PAGE,total)} of ${total}</span>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="ghost" style="padding:5px 10px; font-size:12px;" onclick="goToListPage(${currentListPage-1})" ${currentListPage<=1?'disabled':''}>‹ Prev</button>
+        <span>Page ${currentListPage} of ${totalPages}</span>
+        <button class="ghost" style="padding:5px 10px; font-size:12px;" onclick="goToListPage(${currentListPage+1})" ${currentListPage>=totalPages?'disabled':''}>Next ›</button>
+      </div>
+    </div>`;
+  updateSelectedCount();
+  sjUpdateBar();
+}
+
+function sjUpdateBar(){
+  const bar = document.getElementById('sjSaveBar');
+  if(!bar) return;
+  bar.style.display = sjMode() ? 'flex' : 'none';
+  const n = Object.keys(SJ.edits).length;
+  document.getElementById('sjSaveBtn').disabled = !n;
+  document.getElementById('sjDiscardBtn').disabled = !n;
+  document.getElementById('sjSaveBtn').textContent = n ? `💾 Save (${n})` : '💾 Save';
+  const m = document.getElementById('sjSaveMsg');
+  if(n){ m.textContent = `มี ${n} งานยังไม่ได้ Save`; m.className='msg dirty'; }
+  else { m.textContent = SJ.savedMsg; m.className='msg'; }
+}
+
+function sjRecalcRow(tr, r){
+  const v = sjView(r);
+  tr.querySelector('[data-c=rev]').firstChild.textContent = sjFmt(v.rev,2);
+  tr.querySelector('[data-c=cost]').firstChild.textContent = sjFmt(v.costAmt,2);
+  const g = tr.querySelector('[data-c=gp]'), p = tr.querySelector('[data-c=pct]');
+  g.textContent = (v.rev||v.costAmt) ? sjFmt(v.gp,2) : '—';
+  p.textContent = v.pct==null ? '—' : v.pct.toFixed(1)+'%';
+  [g,p].forEach(el=>{ el.classList.toggle('sj-pos', v.gp>=0); el.classList.toggle('sj-neg', v.gp<0); });
+}
+
+function sjInitEvents(){
+  if(window._sjReady) return; window._sjReady = true;
+  const body = document.getElementById('listBody');
+  body.addEventListener('input', e=>{
+    const t = e.target; if(!t.matches || !t.matches('input.sj-num')) return;
+    const r = allListRecords.find(x=>x.jobNo===t.dataset.job); if(!r) return;
+    const ed = SJ.edits[r.jobNo] = SJ.edits[r.jobNo] || {};
+    ed[t.dataset.k] = parseFloat(t.value)||0;
+    const tr = t.closest('tr'); tr.classList.add('dirty');
+    // price entered but no CR status yet → Freight Input (shows as "On track" in Billing Monitoring)
+    if((t.dataset.k==='sell'||t.dataset.k==='cost') && (ed.sell||ed.cost) && !(ed.cr!==undefined ? ed.cr : r.crStatus)){
+      ed.cr = 'freight-input'; ed.autoCr = true;
+      const sel = tr.querySelector('select.sj-cr'); sel.value = 'freight-input';
+      if(!tr.querySelector('.sj-auto')) sel.insertAdjacentHTML('afterend','<span class="sj-auto">ตั้งให้อัตโนมัติ</span>');
+    }
+    sjRecalcRow(tr, r);
+    sjUpdateBar();
+  });
+  body.addEventListener('change', e=>{
+    const s = e.target; if(!s.matches || !s.matches('select.sj-cr')) return;
+    const r = allListRecords.find(x=>x.jobNo===s.dataset.job); if(!r) return;
+    const ed = SJ.edits[r.jobNo] = SJ.edits[r.jobNo] || {};
+    ed.cr = s.value; ed.autoCr = false;
+    const a = s.parentElement.querySelector('.sj-auto'); if(a) a.remove();
+    s.closest('tr').classList.add('dirty');
+    sjUpdateBar();
+  });
+  window.addEventListener('beforeunload', e=>{ if(Object.keys(SJ.edits).length){ e.preventDefault(); e.returnValue=''; } });
+}
+
+// Build the full record to write back (same shape the Booking / C&R forms save)
+function sjBuildRecord(r, ed){
+  const rec = Object.assign({}, r);
+  const kind = sjKind(r);
+  if(ed.cw !== undefined && kind==='AIR'){
+    const items = sjItems(r).map(it=>Object.assign({}, it));
+    if(items.length) items[0].chargeableWeight = String(ed.cw);
+    else items.push({product:'', bookingWeight:'', chargeableWeight:String(ed.cw), container:'', pieces:'', remarks:''});
+    rec.items = items;
+    rec.chargeableWeight = String(ed.cw);
+  }
+  if(kind==='FCL'){
+    if(ed.sell !== undefined) rec.sellingPerContainer = String(ed.sell);
+    if(ed.cost !== undefined) rec.costPerContainer = String(ed.cost);
+  }else{
+    if(ed.sell !== undefined) rec.sellingPerKg = String(ed.sell);     // LCL: rate per CBM
+    if(ed.cost !== undefined) rec.costPerKg = String(ed.cost);
+  }
+  if(ed.cr !== undefined) rec.crStatus = ed.cr;
+  // Copy booking details into the C&R fields the Revenue / Billing dashboards read
+  const fill = (k,v)=>{ if(!rec[k] && v) rec[k] = v; };
+  fill('crMawb', r.mawb); fill('crCustomer', r.customer); fill('crMode', r.mode); fill('crExpImp', r.expImp);
+  fill('crOrigin', r.origin); fill('crDest', r.dest); fill('crEtd', r.etd); fill('crCargoService', r.cargoService);
+  if(rec.crStatus && !rec.reconcileDate && rec.crStatus==='reconcile') rec.reconcileDate = todayStr();
+  rec.savedAt = new Date().toISOString();
+  return normalizeRecord(rec);              // recompute revAmount / costAmount / gpAmount / gpPercent
+}
+
+async function sjSaveAll(){
+  const jobs = Object.keys(SJ.edits);
+  if(!jobs.length) return;
+  const btn = document.getElementById('sjSaveBtn');
+  btn.disabled = true;
+  let done = 0; const failed = [];
+  for(const j of jobs){
+    const r = allListRecords.find(x=>x.jobNo===j);
+    if(!r){ delete SJ.edits[j]; continue; }
+    btn.textContent = `Saving ${done+1}/${jobs.length}…`;
+    try{
+      const rec = sjBuildRecord(r, SJ.edits[j]);
+      await dataSave(rec);
+      Object.assign(r, rec);                // update in place so the table shows saved values
+      delete SJ.edits[j];
+      done++;
+    }catch(e){
+      console.error('Save failed for', j, e); failed.push(j);
+    }
+  }
+  SJ.savedMsg = `✓ Saved ${done} งาน · ${new Date().toLocaleTimeString('en-GB')}`;
+  if(failed.length) alert('บันทึกไม่สำเร็จ ' + failed.length + ' งาน (ยังเป็นสีเหลืองอยู่) — กด Save อีกครั้ง\n\n' + failed.join(', '));
+  else showToast('✓ Saved ' + done + ' job(s)');
+  renderListPage();
+}
+function sjDiscard(){
+  if(!Object.keys(SJ.edits).length) return;
+  if(!confirm('ยกเลิกการแก้ไขที่ยังไม่ได้ Save ทั้งหมด?')) return;
+  SJ.edits = {}; SJ.savedMsg = '';
+  renderListPage();
+}
+
 async function refreshList(){
+  if(Object.keys(SJ.edits).length && !confirm('มีงานที่แก้ใน Saved Job Sheets ยังไม่ได้ Save — Refresh แล้วการแก้ไขจะหาย ต้องการทำต่อไหม?')) return;
+  SJ.edits = {}; SJ.savedMsg = '';
   const body = document.getElementById('listBody');
   body.innerHTML = '<div class="empty">Loading...</div>';
   selectedJobNos.clear();
@@ -4397,12 +4650,15 @@ async function refreshList(){
 }
 
 function goToListPage(n){
-  const totalPages = Math.max(1, Math.ceil(currentFilteredRecords.length / LIST_PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(currentFilteredRecords.length / (sjMode() ? SJ_PAGE : LIST_PAGE_SIZE)));
   currentListPage = Math.min(Math.max(1, n), totalPages);
   renderListPage();
 }
 
 function renderListPage(){
+  sjInitEvents();
+  if(sjMode()){ sjRenderTable(); return; }
+  sjUpdateBar();
   const body = document.getElementById('listBody');
   const total = currentFilteredRecords.length;
   const totalPages = Math.max(1, Math.ceil(total / LIST_PAGE_SIZE));
@@ -4519,6 +4775,7 @@ function applyListFilters(){
   if(filtered.length===0){
     document.getElementById('listBody').innerHTML = '<div class="empty">No matching job sheets</div>';
     updateSelectedCount();
+    sjUpdateBar();
   }else{
     renderListRows(filtered);
   }
