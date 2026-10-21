@@ -265,6 +265,7 @@ select.sj-cr{font-size:12px;padding:4px 6px;border:1px solid #C9CDD3;border-radi
 .sj-ltype{font-size:10px;font-weight:700;border:1px solid #C9CDD3;border-radius:3px;padding:0 4px;margin-right:4px;color:#2E5A8F}
 .sj-lc{display:block;font-size:10.5px;color:#8a8a8a}
 .sj-auto{display:block;font-size:10.5px;color:#B25E00}
+.sj-dup{display:inline-block;font-size:10.5px;font-weight:700;color:#A32D2D;background:#FBE4E1;border-radius:3px;padding:1px 6px;margin-left:6px;white-space:nowrap;cursor:help;font-family:inherit}
 .sj-pos{color:#2F7A46;font-weight:700}.sj-neg{color:#A32D2D;font-weight:700}
 /* ===== OPS Dashboard v2 (E.1–E.4) ===== */
 #opsDashPanel{--s-tender:#2a78d6; --s-depart:#eb6834; --s-transit:#6250d6; --s-arrival:#eda100; --s-pod:#1baf7a; --s-issue:#e34948; --s-cancel:#9aa0a6; --s-none:#D5D7DB; --ops-warn:#B25E00; --ops-warn-bg:#FFF1DE;}
@@ -441,13 +442,9 @@ select.sj-cr{font-size:12px;padding:4px 6px;border:1px solid #C9CDD3;border-radi
     </div>
     <div id="statusSummary" style="margin-bottom:14px;"></div>
     <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
-      <input type="text" id="listSearchBox" placeholder="Search MAWB or Job No..." oninput="applyListFilters()" style="flex:1; min-width:180px;">
+      <input type="text" id="listSearchBox" list="listMawbOptions" placeholder="MAWB / Job No — พิมพ์หรือเลือกจากรายการ" oninput="applyListFilters()" style="flex:1; min-width:220px;"><datalist id="listMawbOptions"></datalist>
       <select id="listMonthFilter" onchange="applyListFilters()" style="min-width:130px;">
         <option value="">All Months</option>
-        <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
-        <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
-        <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
-        <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
       </select>
       <select id="listCargoServiceFilter" onchange="applyListFilters()" style="min-width:150px;">
         <option value="">All Cargo Service</option>
@@ -477,6 +474,7 @@ select.sj-cr{font-size:12px;padding:4px 6px;border:1px solid #C9CDD3;border-radi
         <option value="__pod_missing_cr__">⚠ POD — Missing Cost & Revenue</option>
         <option value="__weight_pending__">⚠ Chargeable Weight Pending (Booking)</option>
         <option value="__cr_weight_pending__">⚠ Chargeable Weight Pending (Cost &amp; Rev)</option>
+        <option value="__dup_mawb__">⚠ Duplicate MAWB (ซ้ำ)</option>
       </select>
     </div>
     <div class="sj-bar" id="sjSaveBar">
@@ -4482,15 +4480,16 @@ function sjRenderTable(){
       <td class="n ${gpCls}" data-c="gp">${(v.rev||v.costAmt)?sjFmt(v.gp,2):'—'}</td>
       <td class="n ${gpCls}" data-c="pct">${v.pct==null?'—':v.pct.toFixed(1)+'%'}</td>
       <td><select class="sj-cr" data-job="${sjEsc(r.jobNo)}"${dis}>${SJ_CR.map(([val,l])=>`<option value="${val}"${val===v.cr?' selected':''}>${l}</option>`).join('')}</select>${v.autoCr?'<span class="sj-auto">ตั้งให้อัตโนมัติ</span>':''}</td>
+      <td>${listDupBadge(r)}${listDupInfo(r)?`<span class="sj-lc">ซ้ำกับ ${listDupInfo(r).map(x=>sjEsc(x.jobNo)).join(', ')}</span>`:''}</td>
     </tr>`;
   }).join('');
   body.innerHTML = `
     <div class="sj-wrap"><table class="sj-table">
       <thead><tr><th></th><th>Job No</th><th>Customer</th><th>MAWB</th><th>ETD</th><th class="n">Booking Wt</th>
         <th class="n ed">Chargeable Wt ✏️</th><th class="n ed">Selling ✏️</th><th class="n ed">Cost ✏️</th>
-        <th class="n g">Revenue</th><th class="n g">Cost</th><th class="n g">GP</th><th class="n g">GP %</th><th class="ed">CR Status ✏️</th></tr></thead>
+        <th class="n g">Revenue</th><th class="n g">Cost</th><th class="n g">GP</th><th class="n g">GP %</th><th class="ed">CR Status ✏️</th><th>Remark</th></tr></thead>
       <tbody>${rows}
-        <tr class="sj-tot"><td colspan="9">Total (this page) — ${page.length} jobs</td><td class="n">${sjFmt(T.rev,2)}</td><td class="n">${sjFmt(T.cost,2)}</td><td class="n">${sjFmt(T.rev-T.cost,2)}</td><td class="n">${T.rev?((T.rev-T.cost)/T.rev*100).toFixed(1)+'%':'—'}</td><td></td></tr>
+        <tr class="sj-tot"><td colspan="9">Total (this page) — ${page.length} jobs</td><td class="n">${sjFmt(T.rev,2)}</td><td class="n">${sjFmt(T.cost,2)}</td><td class="n">${sjFmt(T.rev-T.cost,2)}</td><td class="n">${T.rev?((T.rev-T.cost)/T.rev*100).toFixed(1)+'%':'—'}</td><td></td><td></td></tr>
       </tbody></table></div>
     <div style="font-size:11.5px; color:#8a8a8a; margin-top:6px;">✏️ = แก้ได้ · หัวสีเขียว = คำนวณให้ · Revenue / Cost = ราคา × CW (Sea FCL × ตู้ · LCL × CBM) + Local / Dest Charge ที่มีอยู่ · ใส่ราคาแล้ว CR Status ว่าง → ตั้งเป็น Freight Input ให้ · กด Job No เพื่อเปิดฟอร์มเต็ม</div>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:10px; border-top:1px solid var(--line); font-size:12px; color:var(--steel);">
@@ -4618,6 +4617,38 @@ function sjDiscard(){
   renderListPage();
 }
 
+// ---- Saved Job Sheets: month list, MAWB suggestions, duplicate-MAWB map ----
+let LIST_DUP = {};
+function listMawbKey(r){ return String(r.mawb||r.crMawb||'').replace(/[\s-]/g,'').toUpperCase(); }
+function listBuildMeta(){
+  const bookings = allListRecords.filter(r=>r.type==='booking');
+  LIST_DUP = {};
+  bookings.forEach(r=>{ const k=listMawbKey(r); if(k) (LIST_DUP[k]=LIST_DUP[k]||[]).push(r); });
+  Object.keys(LIST_DUP).forEach(k=>{ if(LIST_DUP[k].length<2) delete LIST_DUP[k]; });
+  const mSel = document.getElementById('listMonthFilter');
+  if(mSel){
+    const cur = mSel.value;
+    const months = Array.from(new Set(allListRecords.map(r=>String((r.type==='inquiry'?r.date:(r.etd||r.date))||'').slice(0,7)).filter(k=>/^\d{4}-\d{2}$/.test(k)))).sort().reverse();
+    mSel.innerHTML = '<option value="">All Months</option>' + months.map(k=>`<option value="${k}">${monthShortNames[parseInt(k.slice(5),10)-1]} ${k.slice(0,4)}</option>`).join('');
+    mSel.value = months.indexOf(cur)!==-1 ? cur : '';
+  }
+  const dl = document.getElementById('listMawbOptions');
+  if(dl){
+    const mawbs = Array.from(new Set(bookings.map(r=>r.mawb).filter(Boolean))).sort();
+    dl.innerHTML = mawbs.map(m=>`<option value="${String(m).replace(/"/g,'&quot;')}"></option>`).join('');
+  }
+}
+function listDupInfo(r){
+  if(r.type!=='booking') return null;
+  const g = LIST_DUP[listMawbKey(r)];
+  return g ? g.filter(x=>x.jobNo!==r.jobNo) : null;
+}
+function listDupBadge(r){
+  const o = listDupInfo(r); if(!o) return '';
+  const tip = o.map(x=>`${x.jobNo} · ${x.customer||''} · ETD ${x.etd||''}`).join('\n');
+  return `<span class="sj-dup" title="MAWB ซ้ำกับ:\n${tip.replace(/"/g,'&quot;')}">⚠ Dup ×${o.length+1}</span>`;
+}
+
 async function refreshList(){
   if(Object.keys(SJ.edits).length && !confirm('มีงานที่แก้ใน Saved Job Sheets ยังไม่ได้ Save — Refresh แล้วการแก้ไขจะหาย ต้องการทำต่อไหม?')) return;
   SJ.edits = {}; SJ.savedMsg = '';
@@ -4645,6 +4676,7 @@ async function refreshList(){
     customerSelect.innerHTML = '<option value="">All Customers</option>' + customers.map(c=>`<option value="${c}">${c}</option>`).join('');
     customerSelect.value = currentVal;
   }
+  listBuildMeta();
   renderStatusSummary(allListRecords);
   renderListRows(allListRecords);
 }
@@ -4673,7 +4705,7 @@ function renderListPage(){
       <div style="display:flex; align-items:center; gap:10px;">
         <input type="checkbox" class="row-checkbox" data-jobno="${i.jobNo}" onclick="event.stopPropagation();" onchange="if(this.checked){selectedJobNos.add('${i.jobNo}');}else{selectedJobNos.delete('${i.jobNo}');} updateSelectedCount();">
         <div>
-          <span class="mono">${(i.crMawb||i.mawb) || (i.type==='inquiry' ? i.jobNo : '—')}</span>
+          <span class="mono">${(i.crMawb||i.mawb) || (i.type==='inquiry' ? i.jobNo : '—')}</span>${listDupBadge(i)}
           <span class="meta"> — ${i.type==='inquiry'?'Inquiry':(i.revAmount||i.costAmount?'Booking + Cost & Revenue':(i.type==='finance'?'Cost & Revenue':'Booking'))} · ${i.customer||''} · ${i.route||''} · ${i.type==='inquiry' ? (i.date||'') : (i.etd||i.date||'')}</span>
         </div>
       </div>
@@ -4741,8 +4773,7 @@ function applyListFilters(){
     filtered = filtered.filter(i=>{
       const dateVal = i.type==='inquiry' ? i.date : (i.etd||i.date);
       if(!dateVal) return false;
-      const d = new Date(dateVal+'T00:00:00');
-      return d.getMonth()===parseInt(monthFilter,10);
+      return String(dateVal).slice(0,7)===monthFilter;      // 'YYYY-MM'
     });
   }
   if(cargoServiceFilter){
@@ -4752,13 +4783,17 @@ function applyListFilters(){
     filtered = filtered.filter(i=>i.customer===customerFilter);
   }
   if(query){
+    const q2 = query.replace(/[\s-]/g,'');
     filtered = filtered.filter(i=>
-      (i.mawb && String(i.mawb).toLowerCase().indexOf(query)!==-1) ||
+      (i.mawb && String(i.mawb).toLowerCase().replace(/[\s-]/g,'').indexOf(q2)!==-1) ||
+      (i.crMawb && String(i.crMawb).toLowerCase().replace(/[\s-]/g,'').indexOf(q2)!==-1) ||
       (i.jobNo && String(i.jobNo).toLowerCase().indexOf(query)!==-1)
     );
   }
   const CR_STATUSES = ['freight-input','local-charge-input','cost-rev-input-completed','accrued','reconcile','invoice-issued'];
-  if(status==='__pod_missing_cr__'){
+  if(status==='__dup_mawb__'){
+    filtered = filtered.filter(i=>listDupInfo(i));
+  }else if(status==='__pod_missing_cr__'){
     filtered = filtered.filter(i=>i.type==='booking' && i.status && i.status.toLowerCase()==='pod' && !(i.revAmount||i.costAmount));
   }else if(status==='__weight_pending__'){
     filtered = filtered.filter(i=>i.type==='booking' && !isSeaRecord(i) && !(parseFloat(i.weight)>0));
