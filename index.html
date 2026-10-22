@@ -4485,7 +4485,7 @@ function sjRenderTable(){
   }).join('');
   body.innerHTML = `
     <div class="sj-wrap"><table class="sj-table">
-      <thead><tr><th></th><th>MAWB</th><th>Customer</th><th>ETD</th><th>Destination</th><th class="n">Booking Wt</th>
+      <thead><tr><th></th><th>MAWB</th><th>Customer</th><th style="cursor:pointer;" onclick="listToggleSort()" title="คลิกเพื่อสลับลำดับ">ETD ${listSortAsc?'▲':'▼'}</th><th>Destination</th><th class="n">Booking Wt</th>
         <th class="n ed">Chargeable Wt ✏️</th><th class="n ed">Selling ✏️</th><th class="n ed">Cost ✏️</th>
         <th class="n g">Revenue</th><th class="n g">Cost</th><th class="n g">GP</th><th class="n g">GP %</th><th class="ed">CR Status ✏️</th><th>Remark</th></tr></thead>
       <tbody>${rows}
@@ -4619,6 +4619,8 @@ function sjDiscard(){
 
 // ---- Saved Job Sheets: month list, MAWB suggestions, duplicate-MAWB map ----
 let LIST_DUP = {};
+let listSortAsc = true;   // ETD oldest → newest; click the ETD header to flip
+function listToggleSort(){ listSortAsc = !listSortAsc; applyListFilters(); }
 function listMawbKey(r){ return String(r.mawb||r.crMawb||'').replace(/[\s-]/g,'').toUpperCase(); }
 function listBuildMeta(){
   const bookings = allListRecords.filter(r=>r.type==='booking');
@@ -4630,7 +4632,10 @@ function listBuildMeta(){
     const cur = mSel.value;
     const months = Array.from(new Set(allListRecords.map(r=>String((r.type==='inquiry'?r.date:(r.etd||r.date))||'').slice(0,7)).filter(k=>/^\d{4}-\d{2}$/.test(k)))).sort().reverse();
     mSel.innerHTML = '<option value="">All Months</option>' + months.map(k=>`<option value="${k}">${monthShortNames[parseInt(k.slice(5),10)-1]} ${k.slice(0,4)}</option>`).join('');
-    mSel.value = months.indexOf(cur)!==-1 ? cur : '';
+    // First load → default to the current month (if it has data); afterwards keep the user's choice
+    const thisMonth = todayStr().slice(0,7);
+    if(!window._listMonthInit){ window._listMonthInit = true; mSel.value = months.indexOf(thisMonth)!==-1 ? thisMonth : ''; }
+    else mSel.value = months.indexOf(cur)!==-1 ? cur : '';
   }
   const dl = document.getElementById('listMawbOptions');
   if(dl){
@@ -4678,7 +4683,7 @@ async function refreshList(){
   }
   listBuildMeta();
   renderStatusSummary(allListRecords);
-  renderListRows(allListRecords);
+  applyListFilters();
 }
 
 function goToListPage(n){
@@ -4807,6 +4812,13 @@ function applyListFilters(){
   }else if(status){
     filtered = filtered.filter(i=>i.status && i.status.toLowerCase()===status.toLowerCase());
   }
+  // Sort by ETD (Inquiry uses its date); rows without a date go last
+  const dkey = i => String((i.type==='inquiry' ? i.date : (i.etd||i.date)) || '');
+  filtered = filtered.slice().sort((a,b)=>{
+    const A = dkey(a), B = dkey(b);
+    if(!A && !B) return 0; if(!A) return 1; if(!B) return -1;
+    return listSortAsc ? A.localeCompare(B) : B.localeCompare(A);
+  });
   if(filtered.length===0){
     document.getElementById('listBody').innerHTML = '<div class="empty">No matching job sheets</div>';
     updateSelectedCount();
