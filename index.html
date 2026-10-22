@@ -266,7 +266,28 @@ select.sj-cr{font-size:12px;padding:4px 4px;border:1px solid #C9CDD3;border-radi
 .sj-ltype{font-size:10px;font-weight:700;border:1px solid #C9CDD3;border-radius:3px;padding:0 4px;margin-right:4px;color:#2E5A8F}
 .sj-lc{display:block;font-size:10.5px;color:#8a8a8a}
 .sj-auto{display:block;font-size:10.5px;color:#B25E00}
-.sj-dup-l{margin:0 6px 0 0 !important}
+.sj-dup-l{margin:0 4px 0 0 !important}
+.sj-section{margin-bottom:22px}
+.sj-sec-head{display:flex;align-items:center;gap:10px;margin:0 0 6px}
+.sj-sec-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:6px 10px;border-radius:3px;background:#DCE1EA;color:#1B2A44}
+.sj-sec-title.sj-AI,.sj-sec-title.sj-SI{background:#FBE9DC;color:#A0501A}
+.sj-sec-title.sj-AX{background:#EAF4E5;color:#2F7A46}
+.sj-sec-title.sj-SE{background:#D6E6F4;color:#2E5A8F}
+.sj-sec-count{font-size:12px;color:#5B6573}
+.sj-add{margin-left:auto;font-size:12px;font-weight:700;padding:5px 12px;border-radius:4px;border:1px dashed #1B2A44;background:#fff;color:#1B2A44;cursor:pointer}
+.sj-add:hover{background:#F2F4F7}
+input.sj-in{font-size:12px;padding:5px 6px;border:1px solid #D5D7DB;border-radius:4px;background:#fff}
+input.sj-in:disabled,select.sj-sel:disabled{background:#F2F3F5;color:#8a8a8a}
+input.sj-mawb{width:118px;font-family:Consolas,Menlo,monospace}
+input.sj-place{width:58px;text-transform:uppercase}
+input.sj-colo{width:96px}
+input.sj-date{width:122px}
+select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-radius:4px;max-width:190px}
+.sj-mawbcell{white-space:nowrap}
+.sj-open{margin-left:4px;color:#2E5A8F;text-decoration:none;font-weight:700}
+.sj-x{border:0;background:#FBE4E1;color:#A32D2D;border-radius:3px;cursor:pointer;font-weight:700;padding:2px 6px}
+.sj-table tr.sj-newrow td{background:#EEF6FF}
+.sj-table tr.sj-missing td{background:#FBE4E1}
 .list-panel.sj-wide{width:calc(100vw - 40px);max-width:1900px;margin-left:50%;transform:translateX(-50%)}
 .sj-dup{display:inline-block;font-size:10.5px;font-weight:700;color:#A32D2D;background:#FBE4E1;border-radius:3px;padding:1px 6px;margin-left:6px;white-space:nowrap;cursor:help;font-family:inherit}
 .sj-pos{color:#2F7A46;font-weight:700}.sj-neg{color:#A32D2D;font-weight:700}
@@ -4400,14 +4421,22 @@ async function renderOpsDashboard(){
 }
 
 // =====================================================================
-// SAVED JOB SHEETS — editable table (Booking / Cost & Revenue tabs)
-// Writes back to the MAIN Job Sheet raw data using the existing columns
-// (chargeableWeight + items, sellingPerKg / costPerKg, sellingPerContainer /
-// costPerContainer, crStatus, revAmount / costAmount / gpAmount / gpPercent).
+// SAVED JOB SHEETS — editable tables (Booking / Cost & Revenue tabs)
+// 5 sections: Air Export / Air Import / Air Express / Sea Export / Sea Import.
+// Every cell of a Booking row can be edited, and "+ Add row" keys in a new
+// Booking right here. Save writes to the MAIN Job Sheet raw data using the
+// same columns the Booking / Cost & Revenue forms use.
 // =====================================================================
-const SJ_PAGE = 100000;   // no paging — the editable table shows every matching row
+const SJ_PAGE = 100000;   // no paging — the editable tables show every matching row
 const SJ_CR = [['','—'],['freight-input','Freight Input'],['local-charge-input','Local Charge Input'],['cost-rev-input-completed','Cost & Rev Completed'],['accrued','Accrued'],['reconcile','Reconcile'],['invoice-issued','Invoice Issued']];
-const SJ = { edits:{}, savedMsg:'' };       // jobNo → {cw, sell, cost, cr, autoCr}
+const SJ_SECTIONS = [
+  {key:'AE', title:'Air Export',  mode:'Air', svc:'Freight Forwarding', dir:'Export', place:'dest',   placeLbl:'Destination'},
+  {key:'AI', title:'Air Import',  mode:'Air', svc:'Freight Forwarding', dir:'Import', place:'origin', placeLbl:'Origin'},
+  {key:'AX', title:'Air Express', mode:'Air', svc:'Express',            dir:'Export', place:'auto',   placeLbl:'Dest / Origin'},
+  {key:'SE', title:'Sea Export',  mode:'Sea', svc:'Freight Forwarding', dir:'Export', place:'dest',   placeLbl:'Destination'},
+  {key:'SI', title:'Sea Import',  mode:'Sea', svc:'Freight Forwarding', dir:'Import', place:'origin', placeLbl:'Origin'}
+];
+const SJ = { edits:{}, newRows:[], newSeq:0, savedMsg:'' };   // edits: jobNo → {field:value}
 
 function sjMode(){ return listTypeFilter==='booking' || listTypeFilter==='finance'; }
 function sjNum(v){ return parseFloat(v)||0; }
@@ -4415,96 +4444,146 @@ function sjEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</
 function sjFmt(n,d){ d=d||0; return n ? Number(n).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d}) : '—'; }
 function sjItems(r){ let it=r.items||[]; if(typeof it==='string'){ try{ it=JSON.parse(it);}catch(e){ it=[]; } } return Array.isArray(it)?it:[]; }
 function sjCbm(r){ return sjItems(r).reduce((s,it)=>s+(parseFloat(it.cbm)||0),0); }
-function sjKind(r){
-  if(r.mode==='Sea'){
-    if(sjNum(r.containers)>0) return 'FCL';
-    if(sjCbm(r)>0) return 'LCL';
-    return 'SEA';
+function sjModeOf(r){ return r.mode || r.crMode || ''; }
+function sjSvcOf(r){ return r.cargoService || r.crCargoService || ''; }
+function sjDirOf(r){ return r.expImp || r.crExpImp || 'Export'; }
+function sjSectionOf(r){
+  const m = sjModeOf(r), svc = sjSvcOf(r), dir = sjDirOf(r);
+  if(m==='Sea') return dir==='Import' ? 'SI' : 'SE';
+  if(m==='Air'){
+    if(svc==='Express') return 'AX';
+    return dir==='Import' ? 'AI' : 'AE';
   }
-  return 'AIR';
+  return 'OT';
 }
-// Current values for a row = saved record + any unsaved edit
-function sjView(r){
+function sjFind(job){ return SJ.newRows.find(x=>x.jobNo===job) || allListRecords.find(x=>x.jobNo===job); }
+function sjEditable(r){ return r._new || r.type==='booking'; }
+function sjPlaceField(sec, r){
+  if(sec.place!=='auto') return sec.place;
+  return sjDirOf(r)==='Import' ? 'origin' : 'dest';
+}
+
+// current value = saved record + unsaved edit
+function sjGet(r, f){
   const e = SJ.edits[r.jobNo] || {};
-  const kind = sjKind(r);
-  const perCntr = kind==='FCL';
-  const v = {
-    kind,
-    cw:   e.cw   !== undefined ? e.cw   : sjNum(r.weight),
-    sell: e.sell !== undefined ? e.sell : sjNum(perCntr ? r.sellingPerContainer : r.sellingPerKg),
-    cost: e.cost !== undefined ? e.cost : sjNum(perCntr ? r.costPerContainer : r.costPerKg),
-    cr:   e.cr   !== undefined ? e.cr   : (r.crStatus||''),
-    autoCr: !!e.autoCr
-  };
-  const qty = kind==='FCL' ? sjNum(r.containers) : (kind==='LCL' ? sjCbm(r) : v.cw);
-  const lcR = sjNum(r.lcRevAmount)+sjNum(r.dcRevAmount), lcC = sjNum(r.lcCostAmount)+sjNum(r.dcCostAmount);
-  const hasRate = v.sell || v.cost;
-  if(hasRate || !(sjNum(r.revAmount)||sjNum(r.costAmount))){
-    v.rev = qty*v.sell + lcR; v.costAmt = qty*v.cost + lcC;
-  }else{                                   // totals-only rows (e.g. Express upload): show stored totals
-    v.rev = sjNum(r.revAmount); v.costAmt = sjNum(r.costAmount);
+  if(e[f] !== undefined) return e[f];
+  switch(f){
+    case 'mawb': return r.mawb || r.crMawb || '';
+    case 'customer': return r.customer || r.crCustomer || '';
+    case 'etd': return r.etd || r.crEtd || '';
+    case 'dest': return r.dest || r.crDest || '';
+    case 'origin': return r.origin || r.crOrigin || '';
+    case 'coloader': return r.coloader || '';
+    case 'bw': return sjNum(r.bookingWeight);
+    case 'cw': return sjNum(r.weight);
+    case 'cntr': return sjNum(r.containers);
+    case 'cbm': return sjCbm(r);
+    case 'cr': return r.crStatus || '';
+    case 'sell': return sjNum(sjGet(r,'cntr')>0 ? r.sellingPerContainer : r.sellingPerKg);
+    case 'cost': return sjNum(sjGet(r,'cntr')>0 ? r.costPerContainer : r.costPerKg);
   }
-  v.lcR = lcR; v.lcC = lcC;
-  v.gp = v.rev - v.costAmt; v.pct = v.rev>0 ? v.gp/v.rev*100 : null;
-  return v;
+  return '';
+}
+function sjCalc(r){
+  const sea = sjModeOf(r)==='Sea';
+  const cntr = sjGet(r,'cntr');
+  const qty = sea ? (cntr>0 ? cntr : sjGet(r,'cbm')) : sjGet(r,'cw');
+  const sell = sjGet(r,'sell'), cost = sjGet(r,'cost');
+  const lcR = sjNum(r.lcRevAmount)+sjNum(r.dcRevAmount), lcC = sjNum(r.lcCostAmount)+sjNum(r.dcCostAmount);
+  let rev, costAmt;
+  if(sell || cost || !(sjNum(r.revAmount)||sjNum(r.costAmount))){ rev = qty*sell + lcR; costAmt = qty*cost + lcC; }
+  else { rev = sjNum(r.revAmount); costAmt = sjNum(r.costAmount); }   // totals-only rows (e.g. Express upload)
+  const gp = rev - costAmt;
+  return {rev, costAmt, gp, pct: rev>0 ? gp/rev*100 : null, lcR, lcC, unit: sea ? (cntr>0?'/cntr':'/CBM') : '/kg'};
+}
+
+function sjCustomerOptions(){
+  const sel = document.getElementById('f_customer');
+  const names = new Set();
+  if(sel) Array.from(sel.options).forEach(o=>{ if(o.value && o.value!=='New Customer') names.add(o.value); });
+  allListRecords.forEach(r=>{ if(r.customer) names.add(r.customer); });
+  return Array.from(names).sort();
+}
+
+function sjRowHtml(r, sec){
+  const ed = sjEditable(r);
+  const dis = ed ? '' : ' disabled title="Cost & Revenue record — open the form to edit"';
+  const j = sjEsc(r.jobNo);
+  const inp = (f, val, cls, extra) => `<input class="sj-in ${cls||''}" data-job="${j}" data-f="${f}" value="${sjEsc(val)}"${extra||''}${dis}>`;
+  const num = (f, val) => `<input class="sj-num" data-job="${j}" data-f="${f}" value="${val||''}" inputmode="decimal"${dis}>`;
+  const sea = sec.mode==='Sea';
+  const c = sjCalc(r);
+  const pf = sjPlaceField(sec, r);
+  const cust = sjGet(r,'customer');
+  const custOpts = sjCustomerOptions(); if(cust && custOpts.indexOf(cust)===-1) custOpts.unshift(cust);
+  const gpCls = c.gp>=0 ? 'sj-pos' : 'sj-neg';
+  const cr = sjGet(r,'cr');
+  const autoCr = (SJ.edits[r.jobNo]||{})._autoCr;
+  const dup = r._new ? '' : listDupBadge(r).replace('sj-dup','sj-dup sj-dup-l');
+  return `<tr data-job="${j}" class="${(SJ.edits[r.jobNo]||r._new)?'dirty':''}${r._new?' sj-newrow':''}">
+    <td>${r._new ? `<button type="button" class="sj-x" title="ลบแถวใหม่นี้" onclick="sjRemoveNew('${j}')">✕</button>`
+      : `<input type="checkbox" class="row-checkbox" data-jobno="${j}"${selectedJobNos.has(r.jobNo)?' checked':''} onchange="if(this.checked){selectedJobNos.add(this.dataset.jobno);}else{selectedJobNos.delete(this.dataset.jobno);} updateSelectedCount();">`}</td>
+    <td class="sj-mawbcell">${dup}${inp('mawb', sjGet(r,'mawb'), 'sj-mawb', ' placeholder="MAWB"')}${r._new ? '<span class="sj-lc">งานใหม่</span>' : `<a href="#" class="sj-open" title="${j} — เปิดฟอร์มเต็ม" onclick="loadSheet('${j}'); return false;">↗</a>`}</td>
+    <td><select class="sj-sel sj-cust" data-job="${j}" data-f="customer"${dis}><option value="">— เลือก —</option>${custOpts.map(n=>`<option${n===cust?' selected':''}>${sjEsc(n)}</option>`).join('')}</select></td>
+    <td><input type="date" class="sj-in sj-date" data-job="${j}" data-f="etd" value="${sjEsc(sjGet(r,'etd'))}"${dis}></td>
+    <td>${inp(pf, sjGet(r,pf), 'sj-place', ' maxlength="5" placeholder="'+(pf==='dest'?'DEST':'ORG')+'"')}</td>
+    <td>${inp('coloader', sjGet(r,'coloader'), 'sj-colo', ' list="sjColoaderList" placeholder="Co-loader"')}</td>
+    ${sea
+      ? `<td class="n">${num('cntr', sjGet(r,'cntr'))}<span class="sj-unit">Cntr</span></td><td class="n">${num('cbm', sjGet(r,'cbm'))}<span class="sj-unit">CBM</span></td>`
+      : `<td class="n">${num('bw', sjGet(r,'bw'))}<span class="sj-unit">kg</span></td><td class="n">${num('cw', sjGet(r,'cw'))}<span class="sj-unit">kg</span></td>`}
+    <td class="n">${num('sell', sjGet(r,'sell'))}<span class="sj-unit" data-u>${c.unit}</span></td>
+    <td class="n">${num('cost', sjGet(r,'cost'))}<span class="sj-unit" data-u>${c.unit}</span></td>
+    <td class="n" data-c="rev">${sjFmt(c.rev,2)}${c.lcR?`<span class="sj-lc">incl. LC ${sjFmt(c.lcR)}</span>`:''}</td>
+    <td class="n" data-c="cost">${sjFmt(c.costAmt,2)}${c.lcC?`<span class="sj-lc">incl. LC ${sjFmt(c.lcC)}</span>`:''}</td>
+    <td class="n ${gpCls}" data-c="gp">${(c.rev||c.costAmt)?sjFmt(c.gp,2):'—'}</td>
+    <td class="n ${gpCls}" data-c="pct">${c.pct==null?'—':c.pct.toFixed(1)+'%'}</td>
+    <td><select class="sj-cr" data-job="${j}" data-f="cr"${dis}>${SJ_CR.map(([v,l])=>`<option value="${v}"${v===cr?' selected':''}>${l}</option>`).join('')}</select>${autoCr?'<span class="sj-auto">ตั้งให้อัตโนมัติ</span>':''}</td>
+  </tr>`;
+}
+
+function sjSectionHtml(sec, rows){
+  const sea = sec.mode==='Sea';
+  const news = SJ.newRows.filter(x=>x._sec===sec.key);
+  const all = news.concat(rows);
+  let T = {rev:0, cost:0};
+  all.forEach(r=>{ const c=sjCalc(r); T.rev+=c.rev; T.cost+=c.costAmt; });
+  const colspan = 10;
+  return `<div class="sj-section" data-sec="${sec.key}">
+    <div class="sj-sec-head"><span class="sj-sec-title sj-${sec.key}">${sec.title}</span><span class="sj-sec-count">${rows.length} job${rows.length===1?'':'s'}${news.length?` + ${news.length} ใหม่`:''}</span>
+      ${sec.key==='OT' ? '' : `<button type="button" class="sj-add" onclick="sjAddRow('${sec.key}')">+ Add row</button>`}</div>
+    <div class="sj-wrap"><table class="sj-table">
+      <thead><tr><th></th><th>MAWB</th><th>Customer</th><th style="cursor:pointer;" onclick="listToggleSort()" title="คลิกเพื่อสลับลำดับ">ETD ${listSortAsc?'▲':'▼'}</th><th>${sec.placeLbl}</th><th>Co-loader</th>
+        ${sea ? '<th class="n ed">Container ✏️</th><th class="n ed">CBM ✏️</th>' : '<th class="n ed">Booking Wt ✏️</th><th class="n ed">Chargeable Wt ✏️</th>'}
+        <th class="n ed">Selling ✏️</th><th class="n ed">Cost ✏️</th><th class="n g">Revenue</th><th class="n g">Cost</th><th class="n g">GP</th><th class="n g">GP %</th><th class="ed">CR Status ✏️</th></tr></thead>
+      <tbody>${all.length ? all.map(r=>sjRowHtml(r, sec)).join('') : `<tr><td colspan="15" class="empty" style="padding:14px;">ไม่มีงานในเดือน/ตัวกรองนี้ — กด + Add row เพื่อเพิ่ม</td></tr>`}
+        ${all.length ? `<tr class="sj-tot"><td colspan="${colspan}">Total — ${all.length} jobs</td><td class="n">${sjFmt(T.rev,2)}</td><td class="n">${sjFmt(T.cost,2)}</td><td class="n">${sjFmt(T.rev-T.cost,2)}</td><td class="n">${T.rev?((T.rev-T.cost)/T.rev*100).toFixed(1)+'%':'—'}</td><td></td></tr>` : ''}
+      </tbody></table></div></div>`;
 }
 
 function sjRenderTable(){
   const body = document.getElementById('listBody');
-  const all = currentFilteredRecords;
-  const total = all.length;
-  const totalPages = Math.max(1, Math.ceil(total / SJ_PAGE));
-  if(currentListPage>totalPages) currentListPage = totalPages;
-  const start = (currentListPage-1)*SJ_PAGE;
-  const page = all.slice(start, start+SJ_PAGE);
-  let T = {rev:0, cost:0};
-  const rows = page.map(r=>{
-    const v = sjView(r); T.rev += v.rev; T.cost += v.costAmt;
-    const editable = r.type==='booking';
-    const dis = editable ? '' : ' disabled title="Cost & Revenue record — open the form to edit"';
-    const unit = v.kind==='FCL' ? '/cntr' : (v.kind==='LCL' ? '/CBM' : '/kg');
-    const qtyCell = v.kind==='FCL' ? `<span class="sj-ltype">FCL</span>${sjFmt(sjNum(r.containers))}<span class="sj-unit">Cntr</span>`
-                  : v.kind==='LCL' ? `<span class="sj-ltype">LCL</span>${sjFmt(sjCbm(r),3)}<span class="sj-unit">CBM</span>`
-                  : `<input class="sj-num" data-job="${sjEsc(r.jobNo)}" data-k="cw" value="${v.cw||''}" inputmode="decimal"${dis}><span class="sj-unit">kg</span>`;
-    const gpCls = v.gp>=0 ? 'sj-pos' : 'sj-neg';
-    const checked = selectedJobNos.has(r.jobNo) ? ' checked' : '';
-    return `<tr data-job="${sjEsc(r.jobNo)}" class="${SJ.edits[r.jobNo]?'dirty':''}">
-      <td><input type="checkbox" class="row-checkbox" data-jobno="${sjEsc(r.jobNo)}"${checked} onchange="if(this.checked){selectedJobNos.add(this.dataset.jobno);}else{selectedJobNos.delete(this.dataset.jobno);} updateSelectedCount();"></td>
-      <td class="mono">${listDupBadge(r).replace('sj-dup','sj-dup sj-dup-l')}<a href="#" class="sj-job" title="${sjEsc(r.jobNo)} — คลิกเพื่อเปิดฟอร์ม" onclick="loadSheet('${sjEsc(r.jobNo)}'); return false;">${sjEsc(r.crMawb||r.mawb||r.jobNo)}</a></td>
-      <td class="sj-cust">${sjEsc(r.customer||'—')}</td>
-      <td>${r.etd ? r.etd.split('-').reverse().join('/') : '—'}</td>
-      <td>${sjEsc(r.dest||r.crDest||'—')}</td>
-      <td class="n">${(r.mode==='Sea' || !sjNum(r.bookingWeight)) ? '—' : sjFmt(sjNum(r.bookingWeight))+'<span class="sj-unit">kg</span>'}</td>
-      <td class="n">${qtyCell}</td>
-      <td class="n"><input class="sj-num" data-job="${sjEsc(r.jobNo)}" data-k="sell" value="${v.sell||''}" inputmode="decimal"${dis}><span class="sj-unit">${unit}</span></td>
-      <td class="n"><input class="sj-num" data-job="${sjEsc(r.jobNo)}" data-k="cost" value="${v.cost||''}" inputmode="decimal"${dis}><span class="sj-unit">${unit}</span></td>
-      <td class="n" data-c="rev">${sjFmt(v.rev,2)}${v.lcR?`<span class="sj-lc">incl. LC ${sjFmt(v.lcR)}</span>`:''}</td>
-      <td class="n" data-c="cost">${sjFmt(v.costAmt,2)}${v.lcC?`<span class="sj-lc">incl. LC ${sjFmt(v.lcC)}</span>`:''}</td>
-      <td class="n ${gpCls}" data-c="gp">${(v.rev||v.costAmt)?sjFmt(v.gp,2):'—'}</td>
-      <td class="n ${gpCls}" data-c="pct">${v.pct==null?'—':v.pct.toFixed(1)+'%'}</td>
-      <td><select class="sj-cr" data-job="${sjEsc(r.jobNo)}"${dis}>${SJ_CR.map(([val,l])=>`<option value="${val}"${val===v.cr?' selected':''}>${l}</option>`).join('')}</select>${v.autoCr?'<span class="sj-auto">ตั้งให้อัตโนมัติ</span>':''}</td>
-    </tr>`;
-  }).join('');
-  body.innerHTML = `
-    <div class="sj-wrap"><table class="sj-table">
-      <thead><tr><th></th><th>MAWB</th><th>Customer</th><th style="cursor:pointer;" onclick="listToggleSort()" title="คลิกเพื่อสลับลำดับ">ETD ${listSortAsc?'▲':'▼'}</th><th>Destination</th><th class="n">Booking Wt</th>
-        <th class="n ed">Chargeable Wt ✏️</th><th class="n ed">Selling ✏️</th><th class="n ed">Cost ✏️</th>
-        <th class="n g">Revenue</th><th class="n g">Cost</th><th class="n g">GP</th><th class="n g">GP %</th><th class="ed">CR Status ✏️</th></tr></thead>
-      <tbody>${rows}
-        <tr class="sj-tot"><td colspan="9">Total — ${page.length} jobs</td><td class="n">${sjFmt(T.rev,2)}</td><td class="n">${sjFmt(T.cost,2)}</td><td class="n">${sjFmt(T.rev-T.cost,2)}</td><td class="n">${T.rev?((T.rev-T.cost)/T.rev*100).toFixed(1)+'%':'—'}</td><td></td></tr>
-      </tbody></table></div>
-    <div style="font-size:11.5px; color:#8a8a8a; margin-top:6px;">✏️ = แก้ได้ · หัวสีเขียว = คำนวณให้ · Revenue / Cost = ราคา × CW (Sea FCL × ตู้ · LCL × CBM) + Local / Dest Charge ที่มีอยู่ · ใส่ราคาแล้ว CR Status ว่าง → ตั้งเป็น Freight Input ให้ · กด MAWB เพื่อเปิดฟอร์มเต็ม</div>
-    <div style="margin-top:10px; padding-top:8px; border-top:1px solid var(--line); font-size:12px; color:var(--steel);">Showing ${total} job${total===1?'':'s'}</div>`;
+  const groups = {AE:[],AI:[],AX:[],SE:[],SI:[],OT:[]};
+  currentFilteredRecords.forEach(r=>{ groups[sjSectionOf(r)].push(r); });
+  const coloaders = Array.from(new Set(allListRecords.map(r=>r.coloader).filter(Boolean))).sort();
+  body.innerHTML =
+    `<datalist id="sjColoaderList">${coloaders.map(c=>`<option value="${sjEsc(c)}"></option>`).join('')}</datalist>` +
+    SJ_SECTIONS.map(sec=>sjSectionHtml(sec, groups[sec.key])).join('') +
+    (groups.OT.length ? sjSectionHtml({key:'OT', title:'Other (no Mode)', mode:'Air', place:'dest', placeLbl:'Destination'}, groups.OT) : '') +
+    `<div style="font-size:11.5px; color:#8a8a8a; margin-top:6px;">✏️ = แก้ได้ทุกช่องสีขาว · หัวสีเขียว = คำนวณให้ · Revenue / Cost = ราคา × CW (Sea: × ตู้ ถ้ามีจำนวนตู้ ไม่งั้น × CBM) + Local / Dest Charge ที่มีอยู่ · ใส่ราคาแล้ว CR Status ว่าง → Freight Input · กด ↗ เพื่อเปิดฟอร์มเต็ม · แถวสีเหลือง = ยังไม่ได้ Save</div>
+     <div style="margin-top:10px; padding-top:8px; border-top:1px solid var(--line); font-size:12px; color:var(--steel);">Showing ${currentFilteredRecords.length} job${currentFilteredRecords.length===1?'':'s'}</div>`;
   updateSelectedCount();
   sjUpdateBar();
 }
 
+function sjPendingCount(){
+  return new Set(Object.keys(SJ.edits).concat(SJ.newRows.map(x=>x.jobNo))).size;
+}
 function sjUpdateBar(){
   const lp = document.getElementById('listPanel'); if(lp) lp.classList.toggle('sj-wide', sjMode());
   const bar = document.getElementById('sjSaveBar');
   if(!bar) return;
   bar.style.display = sjMode() ? 'flex' : 'none';
-  const n = Object.keys(SJ.edits).length;
+  const n = sjPendingCount();
   document.getElementById('sjSaveBtn').disabled = !n;
   document.getElementById('sjDiscardBtn').disabled = !n;
   document.getElementById('sjSaveBtn').textContent = n ? `💾 Save (${n})` : '💾 Save';
@@ -4513,88 +4592,169 @@ function sjUpdateBar(){
   else { m.textContent = SJ.savedMsg; m.className='msg'; }
 }
 
+function sjAddRow(secKey){
+  const sec = SJ_SECTIONS.find(s=>s.key===secKey); if(!sec) return;
+  SJ.newSeq++;
+  const today = todayStr();
+  SJ.newRows.unshift({
+    jobNo:'NEW-'+SJ.newSeq, _new:true, _sec:secKey, type:'booking',
+    mode:sec.mode, cargoService:sec.svc, expImp:sec.dir, status:'flight-booked',
+    origin: sec.dir==='Export' ? 'BKK' : '', dest: sec.dir==='Import' && sec.mode==='Air' ? 'BKK' : '',
+    date: today, items:[]
+  });
+  renderListPage();
+  const first = document.querySelector(`.sj-section[data-sec="${secKey}"] tr.sj-newrow input.sj-mawb`);
+  if(first) first.focus();
+}
+function sjRemoveNew(job){
+  SJ.newRows = SJ.newRows.filter(x=>x.jobNo!==job);
+  delete SJ.edits[job];
+  renderListPage();
+}
+
 function sjRecalcRow(tr, r){
-  const v = sjView(r);
-  tr.querySelector('[data-c=rev]').firstChild.textContent = sjFmt(v.rev,2);
-  tr.querySelector('[data-c=cost]').firstChild.textContent = sjFmt(v.costAmt,2);
+  const c = sjCalc(r);
+  tr.querySelector('[data-c=rev]').firstChild.textContent = sjFmt(c.rev,2);
+  tr.querySelector('[data-c=cost]').firstChild.textContent = sjFmt(c.costAmt,2);
   const g = tr.querySelector('[data-c=gp]'), p = tr.querySelector('[data-c=pct]');
-  g.textContent = (v.rev||v.costAmt) ? sjFmt(v.gp,2) : '—';
-  p.textContent = v.pct==null ? '—' : v.pct.toFixed(1)+'%';
-  [g,p].forEach(el=>{ el.classList.toggle('sj-pos', v.gp>=0); el.classList.toggle('sj-neg', v.gp<0); });
+  g.textContent = (c.rev||c.costAmt) ? sjFmt(c.gp,2) : '—';
+  p.textContent = c.pct==null ? '—' : c.pct.toFixed(1)+'%';
+  [g,p].forEach(el=>{ el.classList.toggle('sj-pos', c.gp>=0); el.classList.toggle('sj-neg', c.gp<0); });
+  tr.querySelectorAll('[data-u]').forEach(u=>u.textContent = c.unit);
+}
+
+function sjUpdateSectionTotal(sec){
+  if(!sec) return;
+  const tot = sec.querySelector('tr.sj-tot'); if(!tot) return;
+  let rev=0, cost=0;
+  sec.querySelectorAll('tbody tr[data-job]').forEach(tr=>{ const r=sjFind(tr.dataset.job); if(r){ const c=sjCalc(r); rev+=c.rev; cost+=c.costAmt; } });
+  const cells = tot.querySelectorAll('td.n');
+  cells[0].textContent = sjFmt(rev,2); cells[1].textContent = sjFmt(cost,2); cells[2].textContent = sjFmt(rev-cost,2);
+  cells[3].textContent = rev ? ((rev-cost)/rev*100).toFixed(1)+'%' : '—';
+}
+function sjOnEdit(t){
+  const r = sjFind(t.dataset.job); if(!r) return;
+  const f = t.dataset.f;
+  const ed = SJ.edits[r.jobNo] = SJ.edits[r.jobNo] || {};
+  const numeric = ['bw','cw','cntr','cbm','sell','cost'].indexOf(f)!==-1;
+  let v = t.value;
+  if(numeric) v = parseFloat(v)||0;
+  else if(f==='dest' || f==='origin' || f==='mawb') v = String(v).toUpperCase();
+  ed[f] = v;
+  if(f==='cr') ed._autoCr = false;
+  const tr = t.closest('tr'); tr.classList.add('dirty');
+  // price entered but no CR status yet → Freight Input (shows as "On track" in Billing Monitoring)
+  if((f==='sell'||f==='cost') && (sjGet(r,'sell')||sjGet(r,'cost')) && !sjGet(r,'cr')){
+    ed.cr = 'freight-input'; ed._autoCr = true;
+    const sel = tr.querySelector('select.sj-cr'); sel.value = 'freight-input';
+    if(!tr.querySelector('.sj-auto')) sel.insertAdjacentHTML('afterend','<span class="sj-auto">ตั้งให้อัตโนมัติ</span>');
+  }
+  if(numeric){ sjRecalcRow(tr, r); sjUpdateSectionTotal(tr.closest('.sj-section')); }
+  sjUpdateBar();
 }
 
 function sjInitEvents(){
   if(window._sjReady) return; window._sjReady = true;
   const body = document.getElementById('listBody');
   body.addEventListener('input', e=>{
-    const t = e.target; if(!t.matches || !t.matches('input.sj-num')) return;
-    const r = allListRecords.find(x=>x.jobNo===t.dataset.job); if(!r) return;
-    const ed = SJ.edits[r.jobNo] = SJ.edits[r.jobNo] || {};
-    ed[t.dataset.k] = parseFloat(t.value)||0;
-    const tr = t.closest('tr'); tr.classList.add('dirty');
-    // price entered but no CR status yet → Freight Input (shows as "On track" in Billing Monitoring)
-    if((t.dataset.k==='sell'||t.dataset.k==='cost') && (ed.sell||ed.cost) && !(ed.cr!==undefined ? ed.cr : r.crStatus)){
-      ed.cr = 'freight-input'; ed.autoCr = true;
-      const sel = tr.querySelector('select.sj-cr'); sel.value = 'freight-input';
-      if(!tr.querySelector('.sj-auto')) sel.insertAdjacentHTML('afterend','<span class="sj-auto">ตั้งให้อัตโนมัติ</span>');
-    }
-    sjRecalcRow(tr, r);
-    sjUpdateBar();
+    const t = e.target;
+    if(t.matches && t.matches('input.sj-num, input.sj-in') && t.type!=='date') sjOnEdit(t);
   });
   body.addEventListener('change', e=>{
-    const s = e.target; if(!s.matches || !s.matches('select.sj-cr')) return;
-    const r = allListRecords.find(x=>x.jobNo===s.dataset.job); if(!r) return;
-    const ed = SJ.edits[r.jobNo] = SJ.edits[r.jobNo] || {};
-    ed.cr = s.value; ed.autoCr = false;
-    const a = s.parentElement.querySelector('.sj-auto'); if(a) a.remove();
-    s.closest('tr').classList.add('dirty');
-    sjUpdateBar();
+    const t = e.target;
+    if(t.matches && (t.matches('select.sj-cr, select.sj-sel') || (t.matches('input.sj-in') && t.type==='date'))) sjOnEdit(t);
   });
-  window.addEventListener('beforeunload', e=>{ if(Object.keys(SJ.edits).length){ e.preventDefault(); e.returnValue=''; } });
+  body.addEventListener('blur', e=>{ const t=e.target; if(t.matches && t.matches('input.sj-place, input.sj-mawb')) t.value = t.value.toUpperCase(); }, true);
+  window.addEventListener('beforeunload', e=>{ if(sjPendingCount()){ e.preventDefault(); e.returnValue=''; } });
+}
+
+// Next BK-YYYYMM-NNN numbers, worked out once from the loaded records
+function sjJobNoMaker(){
+  const d = new Date();
+  const prefix = 'BK-' + d.getFullYear() + pad(d.getMonth()+1) + '-';
+  let max = 0;
+  allListRecords.forEach(r=>{ if(r.jobNo && r.jobNo.indexOf(prefix)===0){ const n=parseInt(r.jobNo.slice(prefix.length),10); if(!isNaN(n) && n>max) max=n; } });
+  return ()=> prefix + String(++max).padStart(3,'0');
 }
 
 // Build the full record to write back (same shape the Booking / C&R forms save)
-function sjBuildRecord(r, ed){
-  const rec = Object.assign({}, r);
-  const kind = sjKind(r);
-  if(ed.cw !== undefined && kind==='AIR'){
-    const items = sjItems(r).map(it=>Object.assign({}, it));
-    if(items.length) items[0].chargeableWeight = String(ed.cw);
-    else items.push({product:'', bookingWeight:'', chargeableWeight:String(ed.cw), container:'', pieces:'', remarks:''});
-    rec.items = items;
-    rec.chargeableWeight = String(ed.cw);
-  }
-  if(kind==='FCL'){
-    if(ed.sell !== undefined) rec.sellingPerContainer = String(ed.sell);
-    if(ed.cost !== undefined) rec.costPerContainer = String(ed.cost);
+function sjBuildRecord(base, ed, newJobNo){
+  const rec = Object.assign({}, base);
+  delete rec._new; delete rec._sec;
+  if(newJobNo) rec.jobNo = newJobNo;
+  const get = f => (ed[f] !== undefined ? ed[f] : sjGet(base, f));
+  const sea = sjModeOf(base)==='Sea';
+  // booking fields
+  const mawbOld = base.mawb || '';
+  rec.mawb = get('mawb'); rec.customer = get('customer'); rec.etd = get('etd');
+  rec.dest = get('dest'); rec.origin = get('origin'); rec.coloader = get('coloader');
+  rec.route = (rec.origin||rec.dest) ? (rec.origin||'?')+'-'+(rec.dest||'?') : (rec.route||'');
+  // quantities live on the first item line (1 booking = 1 item)
+  const items = sjItems(base).map(it=>Object.assign({}, it));
+  if(!items.length) items.push({product:'', bookingWeight:'', chargeableWeight:'', container:'', cbm:'', pieces:'', remarks:''});
+  if(sea){
+    items[0].container = get('cntr') ? String(get('cntr')) : '';
+    items[0].cbm = get('cbm') ? String(get('cbm')) : '';
+    rec.containers = get('cntr') || 0;
   }else{
-    if(ed.sell !== undefined) rec.sellingPerKg = String(ed.sell);     // LCL: rate per CBM
-    if(ed.cost !== undefined) rec.costPerKg = String(ed.cost);
+    items[0].bookingWeight = get('bw') ? String(get('bw')) : '';
+    items[0].chargeableWeight = get('cw') ? String(get('cw')) : '';
+    rec.bookingWeight = get('bw') || 0;
+    rec.chargeableWeight = String(get('cw') || 0);
   }
-  if(ed.cr !== undefined) rec.crStatus = ed.cr;
-  // Copy booking details into the C&R fields the Revenue / Billing dashboards read
-  const fill = (k,v)=>{ if(!rec[k] && v) rec[k] = v; };
-  fill('crMawb', r.mawb); fill('crCustomer', r.customer); fill('crMode', r.mode); fill('crExpImp', r.expImp);
-  fill('crOrigin', r.origin); fill('crDest', r.dest); fill('crEtd', r.etd); fill('crCargoService', r.cargoService);
-  if(rec.crStatus && !rec.reconcileDate && rec.crStatus==='reconcile') rec.reconcileDate = todayStr();
+  rec.items = items;
+  // rates: Sea with containers → per container; otherwise per kg (LCL: per CBM)
+  const sell = get('sell'), cost = get('cost');
+  if(sea && get('cntr')>0){ rec.sellingPerContainer = String(sell||''); rec.costPerContainer = String(cost||''); }
+  else { rec.sellingPerKg = String(sell||''); rec.costPerKg = String(cost||''); }
+  rec.crStatus = get('cr');
+  if(rec.crStatus==='reconcile' && !rec.reconcileDate) rec.reconcileDate = todayStr();
+  // keep the C&R copy of the booking details in step (Revenue / Billing dashboards read these)
+  const sync = (k, v, wasEdited) => { if(v && (wasEdited || !rec[k])) rec[k] = v; };
+  const editedMawb = ed.mawb !== undefined;
+  sync('crMawb', rec.mawb, editedMawb);
+  if(editedMawb && (!base.refJobNo || base.refJobNo===mawbOld)) rec.refJobNo = rec.mawb;
+  sync('crCustomer', rec.customer, ed.customer!==undefined);
+  sync('crEtd', rec.etd, ed.etd!==undefined);
+  sync('crDest', rec.dest, ed.dest!==undefined);
+  sync('crOrigin', rec.origin, ed.origin!==undefined);
+  sync('crMode', rec.mode, false); sync('crExpImp', rec.expImp, false); sync('crCargoService', rec.cargoService, false);
+  if(rec.date){ const d = new Date(rec.date+'T00:00:00'); if(!isNaN(d)) rec.month = monthNames[d.getMonth()]+'-'+String(d.getFullYear()).slice(2); }
   rec.savedAt = new Date().toISOString();
-  return normalizeRecord(rec);              // recompute revAmount / costAmount / gpAmount / gpPercent
+  return normalizeRecord(rec);              // recompute weight, revAmount / costAmount / gpAmount / gpPercent
 }
 
 async function sjSaveAll(){
-  const jobs = Object.keys(SJ.edits);
+  const jobs = Array.from(new Set(SJ.newRows.map(x=>x.jobNo).concat(Object.keys(SJ.edits))));
   if(!jobs.length) return;
+  // new rows need MAWB, Customer and ETD
+  const missing = SJ.newRows.filter(r=>{
+    const e = SJ.edits[r.jobNo]||{};
+    return !(e.mawb||'').trim() || !(e.customer||'').trim() || !(e.etd||'').trim();
+  });
+  if(missing.length){
+    alert('งานใหม่ ' + missing.length + ' แถว ยังกรอกไม่ครบ — ต้องมี MAWB, Customer และ ETD ก่อน Save');
+    missing.forEach(r=>{ const tr=document.querySelector(`#listBody tr[data-job="${CSS.escape(r.jobNo)}"]`); if(tr) tr.classList.add('sj-missing'); });
+    return;
+  }
   const btn = document.getElementById('sjSaveBtn');
   btn.disabled = true;
+  const nextJobNo = sjJobNoMaker();
   let done = 0; const failed = [];
   for(const j of jobs){
-    const r = allListRecords.find(x=>x.jobNo===j);
-    if(!r){ delete SJ.edits[j]; continue; }
+    const base = sjFind(j);
+    if(!base){ delete SJ.edits[j]; continue; }
     btn.textContent = `Saving ${done+1}/${jobs.length}…`;
     try{
-      const rec = sjBuildRecord(r, SJ.edits[j]);
+      const rec = sjBuildRecord(base, SJ.edits[j]||{}, base._new ? nextJobNo() : null);
       await dataSave(rec);
-      Object.assign(r, rec);                // update in place so the table shows saved values
+      if(base._new){
+        SJ.newRows = SJ.newRows.filter(x=>x.jobNo!==j);
+        allListRecords.unshift(rec);
+      }else{
+        Object.keys(base).forEach(k=>{ if(!(k in rec)) delete base[k]; });
+        Object.assign(base, rec);
+      }
       delete SJ.edits[j];
       done++;
     }catch(e){
@@ -4602,14 +4762,15 @@ async function sjSaveAll(){
     }
   }
   SJ.savedMsg = `✓ Saved ${done} งาน · ${new Date().toLocaleTimeString('en-GB')}`;
-  if(failed.length) alert('บันทึกไม่สำเร็จ ' + failed.length + ' งาน (ยังเป็นสีเหลืองอยู่) — กด Save อีกครั้ง\n\n' + failed.join(', '));
+  if(failed.length) alert('บันทึกไม่สำเร็จ ' + failed.length + ' งาน (ยังเป็นสีเหลืองอยู่) — กด Save อีกครั้ง');
   else showToast('✓ Saved ' + done + ' job(s)');
-  renderListPage();
+  listBuildMeta();
+  applyListFilters();
 }
 function sjDiscard(){
-  if(!Object.keys(SJ.edits).length) return;
-  if(!confirm('ยกเลิกการแก้ไขที่ยังไม่ได้ Save ทั้งหมด?')) return;
-  SJ.edits = {}; SJ.savedMsg = '';
+  if(!sjPendingCount()) return;
+  if(!confirm('ยกเลิกการแก้ไข / งานใหม่ที่ยังไม่ได้ Save ทั้งหมด?')) return;
+  SJ.edits = {}; SJ.newRows = []; SJ.savedMsg = '';
   renderListPage();
 }
 
@@ -4651,8 +4812,8 @@ function listDupBadge(r){
 }
 
 async function refreshList(){
-  if(Object.keys(SJ.edits).length && !confirm('มีงานที่แก้ใน Saved Job Sheets ยังไม่ได้ Save — Refresh แล้วการแก้ไขจะหาย ต้องการทำต่อไหม?')) return;
-  SJ.edits = {}; SJ.savedMsg = '';
+  if(sjPendingCount() && !confirm('มีงานที่แก้ / งานใหม่ใน Saved Job Sheets ยังไม่ได้ Save — Refresh แล้วจะหาย ต้องการทำต่อไหม?')) return;
+  SJ.edits = {}; SJ.newRows = []; SJ.savedMsg = '';
   const body = document.getElementById('listBody');
   body.innerHTML = '<div class="empty">Loading...</div>';
   selectedJobNos.clear();
