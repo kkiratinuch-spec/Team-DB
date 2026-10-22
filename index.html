@@ -2547,7 +2547,7 @@ function gatherRecord(){
     dest: document.getElementById('f_dest').value,
     route: computeRoute(),
     carrier: document.getElementById('f_carrier').value,
-    coloader: document.getElementById('f_coloader').value,
+    coloader: canonColoader(document.getElementById('f_coloader').value),
     etd: document.getElementById('f_etd').value,
     eta: document.getElementById('f_eta').value,
     transit: document.getElementById('f_transit').value,
@@ -3299,7 +3299,27 @@ function itemContainer(it){
   return parseFloat(it.container) || 0;
 }
 
+// ---- Co-loader / Vendor name clean-up: typos and short forms → one standard name ----
+const COLOADER_ALIASES = {
+  'FREIGHT MASTER':'FREIGHT MASTER',
+  'GOLDEN WELL':'GOLDEN WELL', 'GLODEN WELL':'GOLDEN WELL', 'GODEN WELL':'GOLDEN WELL',
+  'NIPPON EXPRESS':'NIPPON EXPRESS', 'NIPPON EXPRESS EXPRESS':'NIPPON EXPRESS', 'NIPPON':'NIPPON EXPRESS', 'NIP':'NIPPON EXPRESS',
+  'SPARX':'SPARX',
+  'TELEPORT':'TELEPORT', 'TEREPORT':'TELEPORT',
+  'REACH WIN':'REACH WIN', 'RW':'REACH WIN',
+  'SINO-THAI':'SINO-THAI', 'SINO':'SINO-THAI',
+  'MASS':'MASS', 'SUBMASS':'MASS'
+};
+function canonColoader(v){
+  if(v==null) return v;
+  // strip stray Thai marks / punctuation at the edges, collapse spaces, upper-case
+  let k = String(v).replace(/[\u0E00-\u0E7F]/g,'').replace(/\s+/g,' ').trim().toUpperCase();
+  if(!k) return '';
+  return COLOADER_ALIASES[k] || k;
+}
+
 function normalizeRecord(r){
+  if(r && r.coloader) r = Object.assign({}, r, {coloader: canonColoader(r.coloader)});
   // items normally arrives as an array; tolerate a JSON string or junk typed by hand in the sheet
   let items = r.items||[];
   if(typeof items === 'string'){ try{ items = JSON.parse(items); }catch(e){ items = []; } }
@@ -4521,7 +4541,7 @@ function sjAddNewOption(sel){
   const isCust = sel.dataset.f==='customer';
   const r = sjFind(sel.dataset.job);
   const prev = r ? sjGet(r, sel.dataset.f) : '';
-  let name = prompt(isCust ? 'พิมพ์ชื่อลูกค้าใหม่ (จะบันทึกเป็นตัวพิมพ์ใหญ่):' : 'พิมพ์ชื่อ Vendor / Co-loader ใหม่:');
+  let name = prompt(isCust ? 'พิมพ์ชื่อลูกค้าใหม่ (จะบันทึกเป็นตัวพิมพ์ใหญ่):' : 'พิมพ์ชื่อ Vendor / Co-loader ใหม่ (จะบันทึกเป็นตัวพิมพ์ใหญ่):');
   name = (name||'').trim();
   if(!name){ sel.value = prev; return; }
   if(isCust){
@@ -4530,6 +4550,7 @@ function sjAddNewOption(sel){
     const f = document.getElementById('f_customer');       // also offer it in the Booking form
     if(f && !Array.from(f.options).some(o=>o.value===name)){ const o=document.createElement('option'); o.value=o.textContent=name; f.insertBefore(o, f.options[2]||null); }
   }else{
+    name = canonColoader(name);
     if(SJ.extraVendors.indexOf(name)===-1) SJ.extraVendors.push(name);
   }
   // add to every dropdown of the same kind on the page, then select it here
