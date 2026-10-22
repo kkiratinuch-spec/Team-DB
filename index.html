@@ -282,7 +282,7 @@ input.sj-in{font-size:12px;padding:5px 6px;border:1px solid #D5D7DB;border-radiu
 input.sj-in:disabled,select.sj-sel:disabled{background:#F2F3F5;color:#8a8a8a}
 input.sj-mawb{width:118px;font-family:Consolas,Menlo,monospace}
 input.sj-place{width:58px;text-transform:uppercase}
-input.sj-colo{width:96px}
+select.sj-colo{width:120px}
 input.sj-date{width:122px}
 select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-radius:4px;max-width:190px}
 .sj-mawbcell{white-space:nowrap}
@@ -4440,7 +4440,7 @@ const SJ_SECTIONS = [
   {key:'TE', title:'Truck Export', mode:'Truck', svc:'Freight Forwarding', dir:'Export', place:'dest',   placeLbl:'Destination'},
   {key:'TI', title:'Truck Import', mode:'Truck', svc:'Freight Forwarding', dir:'Import', place:'origin', placeLbl:'Origin'}
 ];
-const SJ = { edits:{}, newRows:[], newSeq:0, savedMsg:'' };   // edits: jobNo → {field:value}
+const SJ = { edits:{}, newRows:[], newSeq:0, savedMsg:'', extraCustomers:[], extraVendors:[] };   // edits: jobNo → {field:value}
 
 function sjMode(){ return listTypeFilter==='booking' || listTypeFilter==='finance'; }
 function sjNum(v){ return parseFloat(v)||0; }
@@ -4507,7 +4507,37 @@ function sjCustomerOptions(){
   const names = new Set();
   if(sel) Array.from(sel.options).forEach(o=>{ if(o.value && o.value!=='New Customer') names.add(o.value); });
   allListRecords.forEach(r=>{ if(r.customer) names.add(r.customer); });
+  SJ.extraCustomers.forEach(n=>names.add(n));
   return Array.from(names).sort();
+}
+function sjVendorOptions(){
+  const names = new Set();
+  allListRecords.forEach(r=>{ if(r.coloader && String(r.coloader).trim()) names.add(String(r.coloader).trim()); });
+  SJ.extraVendors.forEach(n=>names.add(n));
+  return Array.from(names).sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
+}
+// "+ New Customer" / "+ New Vendor" picked in a dropdown → type the name, add it to every dropdown, select it
+function sjAddNewOption(sel){
+  const isCust = sel.dataset.f==='customer';
+  const r = sjFind(sel.dataset.job);
+  const prev = r ? sjGet(r, sel.dataset.f) : '';
+  let name = prompt(isCust ? 'พิมพ์ชื่อลูกค้าใหม่ (จะบันทึกเป็นตัวพิมพ์ใหญ่):' : 'พิมพ์ชื่อ Vendor / Co-loader ใหม่:');
+  name = (name||'').trim();
+  if(!name){ sel.value = prev; return; }
+  if(isCust){
+    name = name.toUpperCase();
+    if(SJ.extraCustomers.indexOf(name)===-1) SJ.extraCustomers.push(name);
+    const f = document.getElementById('f_customer');       // also offer it in the Booking form
+    if(f && !Array.from(f.options).some(o=>o.value===name)){ const o=document.createElement('option'); o.value=o.textContent=name; f.insertBefore(o, f.options[2]||null); }
+  }else{
+    if(SJ.extraVendors.indexOf(name)===-1) SJ.extraVendors.push(name);
+  }
+  // add to every dropdown of the same kind on the page, then select it here
+  document.querySelectorAll(`#listBody select[data-f="${sel.dataset.f}"]`).forEach(s2=>{
+    if(!Array.from(s2.options).some(o=>o.value===name)){ const o=document.createElement('option'); o.value=o.textContent=name; s2.insertBefore(o, s2.querySelector('option[value="__new__"]')); }
+  });
+  sel.value = name;
+  sjOnEdit(sel);
 }
 
 function sjRowHtml(r, sec){
@@ -4529,10 +4559,11 @@ function sjRowHtml(r, sec){
     <td>${r._new ? `<button type="button" class="sj-x" title="ลบแถวใหม่นี้" onclick="sjRemoveNew('${j}')">✕</button>`
       : `<input type="checkbox" class="row-checkbox" data-jobno="${j}"${selectedJobNos.has(r.jobNo)?' checked':''} onchange="if(this.checked){selectedJobNos.add(this.dataset.jobno);}else{selectedJobNos.delete(this.dataset.jobno);} updateSelectedCount();">`}</td>
     <td class="sj-mawbcell">${dup}${inp('mawb', sjGet(r,'mawb'), 'sj-mawb', ' placeholder="MAWB"')}${r._new ? '<span class="sj-lc">งานใหม่</span>' : `<a href="#" class="sj-open" title="${j} — เปิดฟอร์มเต็ม" onclick="loadSheet('${j}'); return false;">↗</a>`}</td>
-    <td><select class="sj-sel sj-cust" data-job="${j}" data-f="customer"${dis}><option value="">— เลือก —</option>${custOpts.map(n=>`<option${n===cust?' selected':''}>${sjEsc(n)}</option>`).join('')}</select></td>
+    <td><select class="sj-sel sj-cust" data-job="${j}" data-f="customer"${dis}><option value="">— เลือก —</option>${custOpts.map(n=>`<option${n===cust?' selected':''}>${sjEsc(n)}</option>`).join('')}<option value="__new__">+ New Customer</option></select></td>
     <td><input type="date" class="sj-in sj-date" data-job="${j}" data-f="etd" value="${sjEsc(sjGet(r,'etd'))}"${dis}></td>
     <td>${inp(pf, sjGet(r,pf), 'sj-place', ' maxlength="5" placeholder="'+(pf==='dest'?'DEST':'ORG')+'"')}</td>
-    <td>${inp('coloader', sjGet(r,'coloader'), 'sj-colo', ' list="sjColoaderList" placeholder="Co-loader"')}</td>
+    <td>${(()=>{ const v=sjGet(r,'coloader'); const opts=sjVendorOptions(); if(v && opts.indexOf(v)===-1) opts.unshift(v);
+      return `<select class="sj-sel sj-colo" data-job="${j}" data-f="coloader"${dis}><option value="">—</option>${opts.map(n=>`<option${n===v?' selected':''}>${sjEsc(n)}</option>`).join('')}<option value="__new__">+ New Vendor</option></select>`; })()}</td>
     ${sea
       ? `<td class="n">${num('cntr', sjGet(r,'cntr'))}<span class="sj-unit">Cntr</span></td><td class="n">${num('cbm', sjGet(r,'cbm'))}<span class="sj-unit">CBM</span></td>`
       : `<td class="n">${num('bw', sjGet(r,'bw'))}<span class="sj-unit">kg</span></td><td class="n">${num('cw', sjGet(r,'cw'))}<span class="sj-unit">kg</span></td>`}
@@ -4674,6 +4705,7 @@ function sjInitEvents(){
   });
   body.addEventListener('change', e=>{
     const t = e.target;
+    if(t.matches && t.matches('select.sj-sel') && t.value==='__new__'){ sjAddNewOption(t); return; }
     if(t.matches && (t.matches('select.sj-cr, select.sj-sel') || (t.matches('input.sj-in') && t.type==='date'))) sjOnEdit(t);
   });
   body.addEventListener('blur', e=>{ const t=e.target; if(t.matches && t.matches('input.sj-place, input.sj-mawb')) t.value = t.value.toUpperCase(); }, true);
