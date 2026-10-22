@@ -249,7 +249,7 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
 .sj-bar button{font-size:12px;font-weight:700;padding:6px 14px;border-radius:4px;cursor:pointer;border:1px solid #1B2A44;background:#fff;color:#1B2A44}
 .sj-bar button.primary{background:#1B2A44;color:#fff}
 .sj-bar button:disabled{opacity:.4;cursor:default}
-.sj-wrap{max-height:620px;overflow:auto;border:1px solid var(--line);border-radius:6px}
+.sj-wrap{border:1px solid var(--line);border-radius:6px}
 .sj-table{width:100%;border-collapse:collapse;font-size:12px}
 .sj-table th{position:sticky;top:0;z-index:1;text-align:left;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;color:#3A3A3A;background:#EDEDED;border-bottom:1px solid #1B2A44;padding:7px 6px;white-space:nowrap}
 .sj-table th.g{background:#E2EFDA;color:#1F4A2E}.sj-table th.ed{background:#FFF3D6}
@@ -4405,7 +4405,7 @@ async function renderOpsDashboard(){
 // (chargeableWeight + items, sellingPerKg / costPerKg, sellingPerContainer /
 // costPerContainer, crStatus, revAmount / costAmount / gpAmount / gpPercent).
 // =====================================================================
-const SJ_PAGE = 50;
+const SJ_PAGE = 100000;   // no paging — the editable table shows every matching row
 const SJ_CR = [['','—'],['freight-input','Freight Input'],['local-charge-input','Local Charge Input'],['cost-rev-input-completed','Cost & Rev Completed'],['accrued','Accrued'],['reconcile','Reconcile'],['invoice-issued','Invoice Issued']];
 const SJ = { edits:{}, savedMsg:'' };       // jobNo → {cw, sell, cost, cr, autoCr}
 
@@ -4491,17 +4491,10 @@ function sjRenderTable(){
         <th class="n ed">Chargeable Wt ✏️</th><th class="n ed">Selling ✏️</th><th class="n ed">Cost ✏️</th>
         <th class="n g">Revenue</th><th class="n g">Cost</th><th class="n g">GP</th><th class="n g">GP %</th><th class="ed">CR Status ✏️</th></tr></thead>
       <tbody>${rows}
-        <tr class="sj-tot"><td colspan="9">Total (this page) — ${page.length} jobs</td><td class="n">${sjFmt(T.rev,2)}</td><td class="n">${sjFmt(T.cost,2)}</td><td class="n">${sjFmt(T.rev-T.cost,2)}</td><td class="n">${T.rev?((T.rev-T.cost)/T.rev*100).toFixed(1)+'%':'—'}</td><td></td></tr>
+        <tr class="sj-tot"><td colspan="9">Total — ${page.length} jobs</td><td class="n">${sjFmt(T.rev,2)}</td><td class="n">${sjFmt(T.cost,2)}</td><td class="n">${sjFmt(T.rev-T.cost,2)}</td><td class="n">${T.rev?((T.rev-T.cost)/T.rev*100).toFixed(1)+'%':'—'}</td><td></td></tr>
       </tbody></table></div>
     <div style="font-size:11.5px; color:#8a8a8a; margin-top:6px;">✏️ = แก้ได้ · หัวสีเขียว = คำนวณให้ · Revenue / Cost = ราคา × CW (Sea FCL × ตู้ · LCL × CBM) + Local / Dest Charge ที่มีอยู่ · ใส่ราคาแล้ว CR Status ว่าง → ตั้งเป็น Freight Input ให้ · กด MAWB เพื่อเปิดฟอร์มเต็ม</div>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:10px; border-top:1px solid var(--line); font-size:12px; color:var(--steel);">
-      <span>Showing ${total===0?0:start+1}–${Math.min(start+SJ_PAGE,total)} of ${total}</span>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <button class="ghost" style="padding:5px 10px; font-size:12px;" onclick="goToListPage(${currentListPage-1})" ${currentListPage<=1?'disabled':''}>‹ Prev</button>
-        <span>Page ${currentListPage} of ${totalPages}</span>
-        <button class="ghost" style="padding:5px 10px; font-size:12px;" onclick="goToListPage(${currentListPage+1})" ${currentListPage>=totalPages?'disabled':''}>Next ›</button>
-      </div>
-    </div>`;
+    <div style="margin-top:10px; padding-top:8px; border-top:1px solid var(--line); font-size:12px; color:var(--steel);">Showing ${total} job${total===1?'':'s'}</div>`;
   updateSelectedCount();
   sjUpdateBar();
 }
