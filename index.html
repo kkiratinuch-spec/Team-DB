@@ -273,6 +273,8 @@ select.sj-cr{font-size:12px;padding:4px 4px;border:1px solid #C9CDD3;border-radi
 .sj-sec-title.sj-AI,.sj-sec-title.sj-SI{background:#FBE9DC;color:#A0501A}
 .sj-sec-title.sj-AX{background:#EAF4E5;color:#2F7A46}
 .sj-sec-title.sj-SE{background:#D6E6F4;color:#2E5A8F}
+.sj-sec-title.sj-TE{background:#E6DDF2;color:#5B3A7A}
+.sj-sec-title.sj-TI{background:#F3E8D2;color:#7A5A1F}
 .sj-sec-count{font-size:12px;color:#5B6573}
 .sj-add{margin-left:auto;font-size:12px;font-weight:700;padding:5px 12px;border-radius:4px;border:1px dashed #1B2A44;background:#fff;color:#1B2A44;cursor:pointer}
 .sj-add:hover{background:#F2F4F7}
@@ -4213,7 +4215,7 @@ function opsRenderE4(){
       (E4.month==='all' || x.mk===E4.month) && (!E4.cust || x.cust===E4.cust) &&
       (!E4.q || x.mawb.replace(/[\s-]/g,'').toUpperCase().indexOf(E4.q)!==-1) &&
       (!E4.dupOnly || !!OPS.dup[x.mkey]))
-    .sort((a,b)=>a.cust.localeCompare(b.cust) || a.etd-b.etd);
+    .sort((a,b)=>(a.etd-b.etd) || a.cust.localeCompare(b.cust));   // ETD oldest → newest
   const colOf = k=>(OPS_STATUSES_ALL.find(s=>s[0]===k)||['','#ccc'])[1];
   const fmtVol = x=> x.unit ? `${x.load?`<span class="ops-ltype">${x.load}</span>`:''}${x.vol.toLocaleString(undefined,{maximumFractionDigits:3})}<span class="ops-unit">${x.unit}</span>` : '—';
   const act = list.filter(x=>x.st!=='Cancelled');
@@ -4309,7 +4311,7 @@ function opsRenderE5(){
   const list = all.filter(x=>
       (E5.month==='all' || x.mk===E5.month) && (!E5.cust || x.cust===E5.cust) &&
       (!E5.status || (x.issueStatus||'Pending')===E5.status))
-    .sort((a,b)=>((a.issueStatus||'Pending')==='Solved') - ((b.issueStatus||'Pending')==='Solved') || a.cust.localeCompare(b.cust) || a.etd-b.etd);
+    .sort((a,b)=>((a.issueStatus||'Pending')==='Solved') - ((b.issueStatus||'Pending')==='Solved') || (a.etd-b.etd) || a.cust.localeCompare(b.cust));
   const fmtVol = x=> x.unit ? `${x.load?`<span class="ops-ltype">${x.load}</span>`:''}${x.vol.toLocaleString(undefined,{maximumFractionDigits:3})}<span class="ops-unit">${x.unit}</span>` : '—';
   document.getElementById('opsE5Body').innerHTML = list.length
     ? list.map(x=>{ const ist = x.issueStatus || 'Pending'; return `<tr data-job="${opsEsc(x.jobNo)}" class="${ist==='Solved'?'solved':''}${OPS.pending[x.jobNo]?' dirty':''}">
@@ -4434,7 +4436,9 @@ const SJ_SECTIONS = [
   {key:'AI', title:'Air Import',  mode:'Air', svc:'Freight Forwarding', dir:'Import', place:'origin', placeLbl:'Origin'},
   {key:'AX', title:'Air Express', mode:'Air', svc:'Express',            dir:'Export', place:'auto',   placeLbl:'Dest / Origin'},
   {key:'SE', title:'Sea Export',  mode:'Sea', svc:'Freight Forwarding', dir:'Export', place:'dest',   placeLbl:'Destination'},
-  {key:'SI', title:'Sea Import',  mode:'Sea', svc:'Freight Forwarding', dir:'Import', place:'origin', placeLbl:'Origin'}
+  {key:'SI', title:'Sea Import',  mode:'Sea', svc:'Freight Forwarding', dir:'Import', place:'origin', placeLbl:'Origin'},
+  {key:'TE', title:'Truck Export', mode:'Truck', svc:'Freight Forwarding', dir:'Export', place:'dest',   placeLbl:'Destination'},
+  {key:'TI', title:'Truck Import', mode:'Truck', svc:'Freight Forwarding', dir:'Import', place:'origin', placeLbl:'Origin'}
 ];
 const SJ = { edits:{}, newRows:[], newSeq:0, savedMsg:'' };   // edits: jobNo → {field:value}
 
@@ -4450,6 +4454,7 @@ function sjDirOf(r){ return r.expImp || r.crExpImp || 'Export'; }
 function sjSectionOf(r){
   const m = sjModeOf(r), svc = sjSvcOf(r), dir = sjDirOf(r);
   if(m==='Sea') return dir==='Import' ? 'SI' : 'SE';
+  if(m==='Truck') return dir==='Import' ? 'TI' : 'TE';
   if(m==='Air'){
     if(svc==='Express') return 'AX';
     return dir==='Import' ? 'AI' : 'AE';
@@ -4545,9 +4550,11 @@ function sjSectionHtml(sec, rows){
   const sea = sec.mode==='Sea';
   const news = SJ.newRows.filter(x=>x._sec===sec.key);
   const all = news.concat(rows);
-  let T = {rev:0, cost:0};
-  all.forEach(r=>{ const c=sjCalc(r); T.rev+=c.rev; T.cost+=c.costAmt; });
-  const colspan = 10;
+  let T = {rev:0, cost:0, q1:0, q2:0};
+  all.forEach(r=>{ const c=sjCalc(r); T.rev+=c.rev; T.cost+=c.costAmt;
+    T.q1 += sea ? sjNum(sjGet(r,'cntr')) : sjNum(sjGet(r,'bw'));
+    T.q2 += sea ? sjNum(sjGet(r,'cbm'))  : sjNum(sjGet(r,'cw')); });
+  const u1 = sea ? 'Cntr' : 'kg', u2 = sea ? 'CBM' : 'kg';
   return `<div class="sj-section" data-sec="${sec.key}">
     <div class="sj-sec-head"><span class="sj-sec-title sj-${sec.key}">${sec.title}</span><span class="sj-sec-count">${rows.length} job${rows.length===1?'':'s'}${news.length?` + ${news.length} ใหม่`:''}</span>
       ${sec.key==='OT' ? '' : `<button type="button" class="sj-add" onclick="sjAddRow('${sec.key}')">+ Add row</button>`}</div>
@@ -4556,13 +4563,13 @@ function sjSectionHtml(sec, rows){
         ${sea ? '<th class="n ed">Container ✏️</th><th class="n ed">CBM ✏️</th>' : '<th class="n ed">Booking Wt ✏️</th><th class="n ed">Chargeable Wt ✏️</th>'}
         <th class="n ed">Selling ✏️</th><th class="n ed">Cost ✏️</th><th class="n g">Revenue</th><th class="n g">Cost</th><th class="n g">GP</th><th class="n g">GP %</th><th class="ed">CR Status ✏️</th></tr></thead>
       <tbody>${all.length ? all.map(r=>sjRowHtml(r, sec)).join('') : `<tr><td colspan="15" class="empty" style="padding:14px;">ไม่มีงานในเดือน/ตัวกรองนี้ — กด + Add row เพื่อเพิ่ม</td></tr>`}
-        ${all.length ? `<tr class="sj-tot"><td colspan="${colspan}">Total — ${all.length} jobs</td><td class="n">${sjFmt(T.rev,2)}</td><td class="n">${sjFmt(T.cost,2)}</td><td class="n">${sjFmt(T.rev-T.cost,2)}</td><td class="n">${T.rev?((T.rev-T.cost)/T.rev*100).toFixed(1)+'%':'—'}</td><td></td></tr>` : ''}
+        ${all.length ? `<tr class="sj-tot"><td colspan="6">Total — ${all.length} jobs</td><td class="n" data-t="q1">${sjFmt(T.q1, sea?0:2)}<span class="sj-unit">${u1}</span></td><td class="n" data-t="q2">${sjFmt(T.q2, sea?3:2)}<span class="sj-unit">${u2}</span></td><td colspan="2"></td><td class="n" data-t="rev">${sjFmt(T.rev,2)}</td><td class="n" data-t="cost">${sjFmt(T.cost,2)}</td><td class="n" data-t="gp">${sjFmt(T.rev-T.cost,2)}</td><td class="n" data-t="pct">${T.rev?((T.rev-T.cost)/T.rev*100).toFixed(1)+'%':'—'}</td><td></td></tr>` : ''}
       </tbody></table></div></div>`;
 }
 
 function sjRenderTable(){
   const body = document.getElementById('listBody');
-  const groups = {AE:[],AI:[],AX:[],SE:[],SI:[],OT:[]};
+  const groups = {AE:[],AI:[],AX:[],SE:[],SI:[],TE:[],TI:[],OT:[]};
   currentFilteredRecords.forEach(r=>{ groups[sjSectionOf(r)].push(r); });
   const coloaders = Array.from(new Set(allListRecords.map(r=>r.coloader).filter(Boolean))).sort();
   body.innerHTML =
@@ -4599,7 +4606,7 @@ function sjAddRow(secKey){
   SJ.newRows.unshift({
     jobNo:'NEW-'+SJ.newSeq, _new:true, _sec:secKey, type:'booking',
     mode:sec.mode, cargoService:sec.svc, expImp:sec.dir, status:'flight-booked',
-    origin: sec.dir==='Export' ? 'BKK' : '', dest: sec.dir==='Import' && sec.mode==='Air' ? 'BKK' : '',
+    origin: sec.dir==='Export' ? 'BKK' : '', dest: sec.dir==='Import' && sec.mode!=='Sea' ? 'BKK' : '',
     date: today, items:[]
   });
   renderListPage();
@@ -4626,11 +4633,16 @@ function sjRecalcRow(tr, r){
 function sjUpdateSectionTotal(sec){
   if(!sec) return;
   const tot = sec.querySelector('tr.sj-tot'); if(!tot) return;
-  let rev=0, cost=0;
-  sec.querySelectorAll('tbody tr[data-job]').forEach(tr=>{ const r=sjFind(tr.dataset.job); if(r){ const c=sjCalc(r); rev+=c.rev; cost+=c.costAmt; } });
-  const cells = tot.querySelectorAll('td.n');
-  cells[0].textContent = sjFmt(rev,2); cells[1].textContent = sjFmt(cost,2); cells[2].textContent = sjFmt(rev-cost,2);
-  cells[3].textContent = rev ? ((rev-cost)/rev*100).toFixed(1)+'%' : '—';
+  const sea = (SJ_SECTIONS.find(x=>x.key===sec.dataset.sec)||{}).mode==='Sea';
+  let rev=0, cost=0, q1=0, q2=0;
+  sec.querySelectorAll('tbody tr[data-job]').forEach(tr=>{ const r=sjFind(tr.dataset.job); if(!r) return;
+    const c=sjCalc(r); rev+=c.rev; cost+=c.costAmt;
+    q1 += sea ? sjNum(sjGet(r,'cntr')) : sjNum(sjGet(r,'bw'));
+    q2 += sea ? sjNum(sjGet(r,'cbm'))  : sjNum(sjGet(r,'cw')); });
+  const set = (k,v)=>{ const el=tot.querySelector(`[data-t="${k}"]`); if(el) el.firstChild.textContent = v; };
+  set('q1', sjFmt(q1, sea?0:2)); set('q2', sjFmt(q2, sea?3:2));
+  set('rev', sjFmt(rev,2)); set('cost', sjFmt(cost,2)); set('gp', sjFmt(rev-cost,2));
+  set('pct', rev ? ((rev-cost)/rev*100).toFixed(1)+'%' : '—');
 }
 function sjOnEdit(t){
   const r = sjFind(t.dataset.job); if(!r) return;
