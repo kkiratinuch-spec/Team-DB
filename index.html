@@ -609,7 +609,7 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
     <div class="bar-section">
       <h3>A.4 — Summary Truck</h3>
       <table class="dash-table">
-        <thead><tr><th>Period</th><th>Total shipments</th><th>Total truck</th></tr></thead>
+        <thead><tr><th>Period</th><th>Total shipments</th><th>FTL (Container)</th><th>LTL (CBM)</th></tr></thead>
         <tbody id="bookingTruckBody"></tbody>
       </table>
     </div>
@@ -618,7 +618,7 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
       <h3 style="color:var(--navy);">A.4.1) Export</h3>
       <div style="padding-left:14px;">
         <table class="dash-table">
-          <thead><tr><th>Period</th><th>Total shipments</th><th>Total truck</th></tr></thead>
+          <thead><tr><th>Period</th><th>Total shipments</th><th>FTL (Container)</th><th>LTL (CBM)</th></tr></thead>
           <tbody id="truckExportBody"></tbody>
         </table>
       </div>
@@ -628,7 +628,7 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
       <h3 style="color:var(--navy);">A.4.2) Import</h3>
       <div style="padding-left:14px;">
         <table class="dash-table">
-          <thead><tr><th>Period</th><th>Total shipments</th><th>Total truck</th></tr></thead>
+          <thead><tr><th>Period</th><th>Total shipments</th><th>FTL (Container)</th><th>LTL (CBM)</th></tr></thead>
           <tbody id="truckImportBody"></tbody>
         </table>
       </div>
@@ -652,9 +652,9 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
     </div>
 
     <div class="bar-section">
-      <h3>B.2 — Total Shipment (all modes, by MAWB)</h3>
+      <h3>B.2 — Total Shipment (all modes, by MAWB; Truck counted with or without MAWB)</h3>
       <table class="dash-table">
-        <thead><tr><th>Month</th><th>Total Shipment</th><th>Total Chargeable Weight</th><th>Total Container</th></tr></thead>
+        <thead><tr><th>Month</th><th>Total Shipment</th><th>Total Chargeable Weight</th><th>Total Container</th><th>Total Truck (FTL Container)</th><th>Total Truck (LTL CBM)</th></tr></thead>
         <tbody id="monthlyTotalShipmentBody"></tbody>
       </table>
     </div>
@@ -673,11 +673,11 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
     </div>
 
     <div class="bar-section">
-      <h3>B.3.2 — Monthly Volume by Export / Import (kg / Container / Truck)</h3>
+      <h3>B.3.2 — Monthly Volume by Export / Import (kg / Container)</h3>
       <div style="overflow-x:auto;">
         <table class="dash-table" style="min-width:900px;">
           <thead>
-            <tr><th rowspan="2">Month</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Air Freight (kg)</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Air Express (kg)</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Sea Freight (Container)</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Truck (Truck)</th></tr>
+            <tr><th rowspan="2">Month</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Air Freight (kg)</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Air Express (kg)</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Sea Freight (Container)</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Truck (FTL Container)</th></tr>
             <tr><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th></tr>
           </thead>
           <tbody id="monthlyExpImpBody"></tbody>
@@ -730,6 +730,24 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
         </table>
       </div>
     </div>
+    <div class="bar-section">
+      <h3>B.6.1 — Vol by customer — Truck — EXPORT (FTL Container) — <span id="volYearTruck">—</span></h3>
+      <div style="overflow-x:auto;">
+        <table class="dash-table" style="min-width:820px;">
+          <thead><tr id="volHeaderRowTruck"><th>Customer</th></tr></thead>
+          <tbody id="volByCustomerBodyTruck"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="bar-section">
+      <h3>B.6.2 — Vol by customer — Truck — IMPORT (FTL Container) — <span id="volYearTruckImp">—</span></h3>
+      <div style="overflow-x:auto;">
+        <table class="dash-table" style="min-width:820px;">
+          <thead><tr id="volHeaderRowTruckImp"><th>Customer</th></tr></thead>
+          <tbody id="volByCustomerBodyTruckImp"></tbody>
+        </table>
+      </div>
+    </div>
 
     <div class="bar-section">
       <h3>B.7 — Monthly Air Freight (kg)</h3>
@@ -752,6 +770,14 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
       <table class="dash-table">
         <thead><tr><th>Month</th><th>Shipments</th><th>Container</th></tr></thead>
         <tbody id="monthlySeaFreightBody"></tbody>
+      </table>
+    </div>
+
+    <div class="bar-section">
+      <h3>B.9.1 — Monthly Truck (FTL Container / LTL CBM)</h3>
+      <table class="dash-table">
+        <thead><tr><th>Month</th><th>Shipments</th><th>FTL (Container)</th><th>LTL (CBM)</th></tr></thead>
+        <tbody id="monthlyTruckBody"></tbody>
       </table>
     </div>
 
@@ -3351,6 +3377,20 @@ function canonColoader(v){
   return COLOADER_ALIASES[k] || k;
 }
 
+// ---- Sea / Truck load type for dashboards: Sea LCL/FCL, Truck LTL/FTL ----
+function recCbm(r){ const it = Array.isArray(r.items) ? r.items : []; return it.reduce((s,x)=>s+(parseFloat(x.cbm)||0),0); }
+function loadTypeOf(r){
+  const full = r.mode==='Truck' ? 'FTL' : 'FCL', part = r.mode==='Truck' ? 'LTL' : 'LCL';
+  const it = (Array.isArray(r.items) ? r.items : [])[0] || {};
+  if(it.load===full || it.load===part) return it.load;
+  if((parseFloat(r.containers)||0)>0) return full;
+  if(recCbm(r)>0) return part;
+  return full;
+}
+// Truck FTL → containers (else Total truck, else 1 per job); Truck LTL → CBM
+function truckCount(r){ return loadTypeOf(r)==='LTL' ? 0 : (parseFloat(r.containers)||parseFloat(r.totalTruck)||1); }
+function truckCbm(r){ return loadTypeOf(r)==='LTL' ? recCbm(r) : 0; }
+
 function normalizeRecord(r){
   if(r && r.coloader) r = Object.assign({}, r, {coloader: canonColoader(r.coloader)});
   // items normally arrives as an array; tolerate a JSON string or junk typed by hand in the sheet
@@ -3410,10 +3450,12 @@ function normalizeRecord(r){
     // have a weight-based rate filled in (no container count yet). Only use the
     // container-based calculation when there's actually container data to use;
     // otherwise fall back to the weight-based rate so existing revenue isn't lost.
-    const useContainerCalc = rec.mode==='Sea' && containers>0 && (costPerContainer>0 || sellingPerContainer>0);
+    // Truck FTL / LTL is priced the same way as Sea FCL / LCL (per container / per CBM)
+    const volMode = rec.mode==='Sea' || rec.mode==='Truck';
+    const useContainerCalc = volMode && containers>0 && (costPerContainer>0 || sellingPerContainer>0);
     // Sea LCL (no containers, CBM on the item lines): the per-kg rate fields hold the rate per CBM
     const cbm = items.reduce((t,it)=>t+(parseFloat(it.cbm)||0),0);
-    const useCbmCalc = !useContainerCalc && rec.mode==='Sea' && !(containers>0) && cbm>0;
+    const useCbmCalc = !useContainerCalc && volMode && !(containers>0) && cbm>0;
     const frCostAmount = useContainerCalc ? (containers * costPerContainer) : (useCbmCalc ? cbm * costPerKg : weight * costPerKg);
     const frRevAmount = useContainerCalc ? (containers * sellingPerContainer) : (useCbmCalc ? cbm * sellingPerKg : weight * sellingPerKg);
 
@@ -4537,13 +4579,14 @@ function sjGet(r, f){
     case 'cntr': return sjNum(r.containers);
     case 'cbm': return sjCbm(r);
     case 'cr': return r.crStatus || '';
-    // Sea load type: LCL (priced per CBM) or FCL (priced per container, 20'GP / 40'HC)
+    // Load type — Sea: LCL (per CBM) / FCL (per container, 20'GP / 40'HC); Truck: LTL (per CBM) / FTL (per container)
     case 'load': {
+      const cfg = sjLoadCfg(sjModeOf(r)); if(!cfg) return '';
       const it = sjItems(r)[0] || {};
-      if(it.load==='LCL' || it.load==='FCL') return it.load;
-      if(sjNum(r.containers)>0) return 'FCL';
-      if(sjCbm(r)>0) return 'LCL';
-      return 'FCL';
+      if(it.load===cfg.full || it.load===cfg.part) return it.load;
+      if(sjNum(r.containers)>0) return cfg.full;
+      if(sjCbm(r)>0) return cfg.part;
+      return cfg.full;
     }
     case 'ctype': { const it = sjItems(r)[0] || {}; return it.containerType || '20GP'; }
     case 'sell': return sjNum(sjIsFcl(r) ? r.sellingPerContainer : r.sellingPerKg);
@@ -4551,12 +4594,15 @@ function sjGet(r, f){
   }
   return '';
 }
-// true when the row is priced per container (Sea FCL)
-function sjIsFcl(r){ return sjModeOf(r)==='Sea' && sjGet(r,'load')==='FCL'; }
+// Modes that are measured by load type instead of weight
+const SJ_LOADCFG = { Sea:{full:'FCL', part:'LCL'}, Truck:{full:'FTL', part:'LTL'} };
+function sjLoadCfg(mode){ return SJ_LOADCFG[mode] || null; }
+// true when the row is priced per container (Sea FCL / Truck FTL)
+function sjIsFcl(r){ const cfg = sjLoadCfg(sjModeOf(r)); return !!cfg && sjGet(r,'load')===cfg.full; }
 const SJ_CTYPES = [['20GP',"20'GP"],['40HC',"40'HC"]];
 function sjCtypeLabel(v){ const t = SJ_CTYPES.find(x=>x[0]===v); return t ? t[1] : v; }
 function sjCalc(r){
-  const sea = sjModeOf(r)==='Sea';
+  const sea = !!sjLoadCfg(sjModeOf(r));   // Sea or Truck — priced per container or per CBM
   const fcl = sjIsFcl(r);
   const cntr = sjGet(r,'cntr');
   const qty = sea ? (fcl ? cntr : sjGet(r,'cbm')) : sjGet(r,'cw');
@@ -4614,7 +4660,8 @@ function sjRowHtml(r, sec){
   const j = sjEsc(r.jobNo);
   const inp = (f, val, cls, extra) => `<input class="sj-in ${cls||''}" data-job="${j}" data-f="${f}" value="${sjEsc(val)}"${extra||''}${dis}>`;
   const num = (f, val) => `<input class="sj-num" data-job="${j}" data-f="${f}" value="${val||''}" inputmode="decimal"${dis}>`;
-  const sea = sec.mode==='Sea';
+  const cfg = sjLoadCfg(sec.mode);
+  const sea = !!cfg;
   const c = sjCalc(r);
   const pf = sjPlaceField(sec, r);
   const cust = sjGet(r,'customer');
@@ -4634,9 +4681,11 @@ function sjRowHtml(r, sec){
       return `<select class="sj-sel sj-colo" data-job="${j}" data-f="coloader"${dis}><option value="">—</option>${opts.map(n=>`<option${n===v?' selected':''}>${sjEsc(n)}</option>`).join('')}<option value="__new__">+ New Vendor</option></select>`; })()}</td>
     ${sea
       ? (()=>{ const load = sjGet(r,'load'), ct = sjGet(r,'ctype');
-          const loadSel = `<select class="sj-load" data-job="${j}" data-f="load"${dis}>${['LCL','FCL'].map(v=>`<option${v===load?' selected':''}>${v}</option>`).join('')}</select>`;
-          const qtyCell = load==='FCL'
-            ? `${num('cntr', sjGet(r,'cntr'))}<select class="sj-ctype" data-job="${j}" data-f="ctype"${dis}>${SJ_CTYPES.map(([v,l])=>`<option value="${v}"${v===ct?' selected':''}>${l}</option>`).join('')}</select>`
+          const loadSel = `<select class="sj-load" data-job="${j}" data-f="load"${dis}>${[cfg.part, cfg.full].map(v=>`<option${v===load?' selected':''}>${v}</option>`).join('')}</select>`;
+          const qtyCell = load===cfg.full
+            ? (sec.mode==='Sea'
+                ? `${num('cntr', sjGet(r,'cntr'))}<select class="sj-ctype" data-job="${j}" data-f="ctype"${dis}>${SJ_CTYPES.map(([v,l])=>`<option value="${v}"${v===ct?' selected':''}>${l}</option>`).join('')}</select>`
+                : `${num('cntr', sjGet(r,'cntr'))}<span class="sj-unit">Cntr</span>`)
             : `${num('cbm', sjGet(r,'cbm'))}<span class="sj-unit">CBM</span>`;
           return `<td>${loadSel}</td><td class="n sj-qtycell">${qtyCell}</td>`; })()
       : `<td class="n">${num('bw', sjGet(r,'bw'))}<span class="sj-unit">kg</span></td><td class="n">${num('cw', sjGet(r,'cw'))}<span class="sj-unit">kg</span></td>`}
@@ -4650,27 +4699,30 @@ function sjRowHtml(r, sec){
   </tr>`;
 }
 
-// Sea total: FCL containers by type (20'GP / 40'HC) + LCL CBM
+// Sea / Truck total: full loads in containers (Sea split 20'GP / 40'HC) + part loads in CBM
 function sjSeaTotals(rows){
-  const t = {c20:0, c40:0, cbm:0};
+  const t = {c20:0, c40:0, cntr:0, cbm:0};
   rows.forEach(r=>{
-    if(sjGet(r,'load')==='FCL'){ const n = sjNum(sjGet(r,'cntr')); if(sjGet(r,'ctype')==='40HC') t.c40 += n; else t.c20 += n; }
+    if(sjIsFcl(r)){ const n = sjNum(sjGet(r,'cntr')); t.cntr += n;
+      if(sjModeOf(r)==='Sea'){ if(sjGet(r,'ctype')==='40HC') t.c40 += n; else t.c20 += n; } }
     else t.cbm += sjNum(sjGet(r,'cbm'));
   });
   return t;
 }
-function sjSeaTotalText(t){
+function sjSeaTotalText(t, mode){
+  if(mode!=='Sea') return t.cntr ? sjFmt(t.cntr)+' Cntr' : '—';
   const parts = [];
   if(t.c20) parts.push(sjFmt(t.c20)+" × 20'GP");
   if(t.c40) parts.push(sjFmt(t.c40)+" × 40'HC");
   return parts.join(' · ') || '—';
 }
-function sjSeaTotalCells(rows){
-  const t = sjSeaTotals(rows);
-  return `<td class="n" data-t="fcl">FCL ${sjSeaTotalText(t)}</td><td class="n" data-t="lcl">LCL ${sjFmt(t.cbm,3)}<span class="sj-unit">CBM</span></td>`;
+function sjSeaTotalCells(rows, mode){
+  const cfg = sjLoadCfg(mode), t = sjSeaTotals(rows);
+  return `<td class="n" data-t="fcl">${cfg.full} ${sjSeaTotalText(t, mode)}</td><td class="n" data-t="lcl">${cfg.part} ${sjFmt(t.cbm,3)}<span class="sj-unit">CBM</span></td>`;
 }
 function sjSectionHtml(sec, rows){
-  const sea = sec.mode==='Sea';
+  const cfg = sjLoadCfg(sec.mode);
+  const sea = !!cfg;
   const news = SJ.newRows.filter(x=>x._sec===sec.key);
   const all = news.concat(rows);
   let T = {rev:0, cost:0, q1:0, q2:0};
@@ -4684,10 +4736,10 @@ function sjSectionHtml(sec, rows){
       ${sec.key==='OT' ? '' : `<button type="button" class="sj-add" onclick="sjAddRow('${sec.key}')">+ Add row</button>`}</div>
     <div class="sj-wrap"><table class="sj-table">
       <thead><tr><th></th><th>MAWB</th><th>Customer</th><th style="cursor:pointer;" onclick="listToggleSort()" title="คลิกเพื่อสลับลำดับ">ETD ${listSortAsc?'▲':'▼'}</th><th>${sec.placeLbl}</th><th>Co-loader</th>
-        ${sea ? '<th class="ed">LCL / FCL ✏️</th><th class="n ed">Qty ✏️ <span style="font-weight:400;text-transform:none;">(CBM / ตู้)</span></th>' : '<th class="n ed">Booking Wt ✏️</th><th class="n ed">Chargeable Wt ✏️</th>'}
+        ${sea ? `<th class="ed">${cfg.part} / ${cfg.full} ✏️</th><th class="n ed">Qty ✏️ <span style="font-weight:400;text-transform:none;">(CBM / ตู้)</span></th>` : '<th class="n ed">Booking Wt ✏️</th><th class="n ed">Chargeable Wt ✏️</th>'}
         <th class="n ed">Selling ✏️</th><th class="n ed">Cost ✏️</th><th class="n g">Revenue</th><th class="n g">Cost</th><th class="n g">GP</th><th class="n g">GP %</th><th class="ed">CR Status ✏️</th></tr></thead>
       <tbody>${all.length ? all.map(r=>sjRowHtml(r, sec)).join('') : `<tr><td colspan="15" class="empty" style="padding:14px;">ไม่มีงานในเดือน/ตัวกรองนี้ — กด + Add row เพื่อเพิ่ม</td></tr>`}
-        ${all.length ? `<tr class="sj-tot"><td colspan="6">Total — ${all.length} jobs</td>${sea ? sjSeaTotalCells(all) : `<td class="n" data-t="q1">${sjFmt(T.q1,2)}<span class="sj-unit">${u1}</span></td><td class="n" data-t="q2">${sjFmt(T.q2,2)}<span class="sj-unit">${u2}</span></td>`}<td colspan="2"></td><td class="n" data-t="rev">${sjFmt(T.rev,2)}</td><td class="n" data-t="cost">${sjFmt(T.cost,2)}</td><td class="n" data-t="gp">${sjFmt(T.rev-T.cost,2)}</td><td class="n" data-t="pct">${T.rev?((T.rev-T.cost)/T.rev*100).toFixed(1)+'%':'—'}</td><td></td></tr>` : ''}
+        ${all.length ? `<tr class="sj-tot"><td colspan="6">Total — ${all.length} jobs</td>${sea ? sjSeaTotalCells(all, sec.mode) : `<td class="n" data-t="q1">${sjFmt(T.q1,2)}<span class="sj-unit">${u1}</span></td><td class="n" data-t="q2">${sjFmt(T.q2,2)}<span class="sj-unit">${u2}</span></td>`}<td colspan="2"></td><td class="n" data-t="rev">${sjFmt(T.rev,2)}</td><td class="n" data-t="cost">${sjFmt(T.cost,2)}</td><td class="n" data-t="gp">${sjFmt(T.rev-T.cost,2)}</td><td class="n" data-t="pct">${T.rev?((T.rev-T.cost)/T.rev*100).toFixed(1)+'%':'—'}</td><td></td></tr>` : ''}
       </tbody></table></div></div>`;
 }
 
@@ -4757,14 +4809,15 @@ function sjRecalcRow(tr, r){
 function sjUpdateSectionTotal(sec){
   if(!sec) return;
   const tot = sec.querySelector('tr.sj-tot'); if(!tot) return;
-  const sea = (SJ_SECTIONS.find(x=>x.key===sec.dataset.sec)||{}).mode==='Sea';
+  const secMode = (SJ_SECTIONS.find(x=>x.key===sec.dataset.sec)||{}).mode;
+  const cfg = sjLoadCfg(secMode), sea = !!cfg;
   let rev=0, cost=0, q1=0, q2=0; const rows=[];
   sec.querySelectorAll('tbody tr[data-job]').forEach(tr=>{ const r=sjFind(tr.dataset.job); if(!r) return;
     rows.push(r);
     const c=sjCalc(r); rev+=c.rev; cost+=c.costAmt;
     if(!sea){ q1 += sjNum(sjGet(r,'bw')); q2 += sjNum(sjGet(r,'cw')); } });
   const set = (k,v)=>{ const el=tot.querySelector(`[data-t="${k}"]`); if(el) el.firstChild.textContent = v; };
-  if(sea){ const t = sjSeaTotals(rows); set('fcl', 'FCL '+sjSeaTotalText(t)); set('lcl', 'LCL '+sjFmt(t.cbm,3)); }
+  if(sea){ const t = sjSeaTotals(rows); set('fcl', cfg.full+' '+sjSeaTotalText(t, secMode)); set('lcl', cfg.part+' '+sjFmt(t.cbm,3)); }
   else { set('q1', sjFmt(q1,2)); set('q2', sjFmt(q2,2)); }
   set('rev', sjFmt(rev,2)); set('cost', sjFmt(cost,2)); set('gp', sjFmt(rev-cost,2));
   set('pct', rev ? ((rev-cost)/rev*100).toFixed(1)+'%' : '—');
@@ -4832,7 +4885,8 @@ function sjBuildRecord(base, ed, newJobNo){
   delete rec._new; delete rec._sec;
   if(newJobNo) rec.jobNo = newJobNo;
   const get = f => (ed[f] !== undefined ? ed[f] : sjGet(base, f));
-  const sea = sjModeOf(base)==='Sea';
+  const cfg = sjLoadCfg(sjModeOf(base));
+  const sea = !!cfg;   // Sea or Truck
   // booking fields
   const mawbOld = base.mawb || '';
   rec.mawb = get('mawb'); rec.customer = get('customer'); rec.etd = get('etd');
@@ -4843,11 +4897,11 @@ function sjBuildRecord(base, ed, newJobNo){
   if(!items.length) items.push({product:'', bookingWeight:'', chargeableWeight:'', container:'', cbm:'', pieces:'', remarks:''});
   const load = sea ? get('load') : '';
   if(sea){
-    // FCL → containers (+ 20'GP / 40'HC), no CBM; LCL → CBM only, no containers
+    // FCL / FTL → containers (Sea also 20'GP / 40'HC), no CBM; LCL / LTL → CBM only, no containers
     items[0].load = load;
-    if(load==='FCL'){
+    if(load===cfg.full){
       items[0].container = get('cntr') ? String(get('cntr')) : '';
-      items[0].containerType = get('ctype') || '20GP';
+      if(sjModeOf(base)==='Sea') items[0].containerType = get('ctype') || '20GP'; else delete items[0].containerType;
       items[0].cbm = '';
       rec.containers = get('cntr') || 0;
     }else{
@@ -4865,7 +4919,7 @@ function sjBuildRecord(base, ed, newJobNo){
   rec.items = items;
   // rates: Sea with containers → per container; otherwise per kg (LCL: per CBM)
   const sell = get('sell'), cost = get('cost');
-  if(sea && load==='FCL'){ rec.sellingPerContainer = String(sell||''); rec.costPerContainer = String(cost||''); rec.sellingPerKg = ''; rec.costPerKg = ''; }
+  if(sea && load===cfg.full){ rec.sellingPerContainer = String(sell||''); rec.costPerContainer = String(cost||''); rec.sellingPerKg = ''; rec.costPerKg = ''; }
   else if(sea){ rec.sellingPerKg = String(sell||''); rec.costPerKg = String(cost||''); rec.sellingPerContainer = ''; rec.costPerContainer = ''; }   // LCL: per-kg fields hold the rate per CBM
   else { rec.sellingPerKg = String(sell||''); rec.costPerKg = String(cost||''); }
   rec.crStatus = get('cr');
@@ -6252,9 +6306,10 @@ async function renderDashboard(){
       const matches = records.filter(filterFn);
       const shipments = matches.length;
       if(metric==='truck'){
-        // trucks per job = Total truck, else the container count, else 1 (same rule as Monthly B.3)
-        const trucks = matches.reduce((sum,i)=>sum+(parseFloat(i.totalTruck)||parseFloat(i.containers)||1),0);
-        return `<tr><td>${label}</td><td>${fmtNum(shipments)}</td><td>${fmtNum(trucks)}</td></tr>` + (withBreakdown ? customerBreakdownRow(matches, 3) : '');
+        // FTL = containers (same rule as Monthly B.3), LTL = CBM
+        const trucks = matches.reduce((sum,i)=>sum+truckCount(i),0);
+        const cbm = matches.reduce((sum,i)=>sum+truckCbm(i),0);
+        return `<tr><td>${label}</td><td>${fmtNum(shipments)}</td><td>${fmtNum(trucks)}</td><td>${fmtNum(cbm,3)}</td></tr>` + (withBreakdown ? customerBreakdownRow(matches, 4) : '');
       }
       if(metric==='sea'){
         const containers = matches.reduce((sum,i)=>sum+(parseFloat(i.containers)||0),0);
@@ -6325,6 +6380,12 @@ async function renderMonthlyDashboard(){
   ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(aeCount)}</td><td>${fmtNum(aeWeight)}</td></tr>`;
 
   const seaFreightRecords = idx.filter(i=>i.type==='booking' && i.mode==='Sea' && i.cargoService==='Freight Forwarding');
+  // Truck: any cargo service; _trucks = FTL containers, _truckCbm = LTL CBM
+  const truckRecords = idx.filter(i=>i.type==='booking' && i.mode==='Truck').map(i=>Object.assign({}, i, {_trucks: truckCount(i), _truckCbm: truckCbm(i)}));
+  const truckMonthly = monthlyRows(truckRecords, ['_trucks','_truckCbm']);
+  document.getElementById('monthlyTruckBody').innerHTML = monthShortNames.map((m,i)=>
+    `<tr><td>${m}</td><td>${fmtNum(truckMonthly[i].count)}</td><td>${fmtNum(truckMonthly[i].a)}</td><td>${fmtNum(truckMonthly[i].b,3)}</td></tr>`
+  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(truckMonthly.reduce((s,m)=>s+m.count,0))}</td><td>${fmtNum(truckMonthly.reduce((s,m)=>s+m.a,0))}</td><td>${fmtNum(truckMonthly.reduce((s,m)=>s+m.b,0),3)}</td></tr>`;
   const seaFreightMonthly = monthlyRows(seaFreightRecords, ['containers']);
   const sfCount = seaFreightMonthly.reduce((s,m)=>s+m.count,0);
   const sfContainers = seaFreightMonthly.reduce((s,m)=>s+m.a,0);
@@ -6353,7 +6414,8 @@ async function renderMonthlyDashboard(){
   const shipmentByMonth = new Array(12).fill(0);
   const chargeableWeightByMonth = new Array(12).fill(0);
   const containerByMonth = new Array(12).fill(0);
-  idx.filter(i=>i.type==='booking' && i.mawb).forEach(i=>{
+  const truckByMonth = new Array(12).fill(0), truckCbmByMonth = new Array(12).fill(0);
+  idx.filter(i=>i.type==='booking' && (i.mawb || i.mode==='Truck')).forEach(i=>{
     if(!i.etd) return;
     const d = new Date(i.etd+'T00:00:00');
     if(d.getFullYear()!==year) return;
@@ -6361,10 +6423,11 @@ async function renderMonthlyDashboard(){
     shipmentByMonth[m]++;
     chargeableWeightByMonth[m] += parseFloat(i.weight)||0;
     if(i.mode==='Sea') containerByMonth[m] += parseFloat(i.containers)||0;
+    if(i.mode==='Truck'){ truckByMonth[m] += truckCount(i); truckCbmByMonth[m] += truckCbm(i); }
   });
   document.getElementById('monthlyTotalShipmentBody').innerHTML = monthShortNames.map((m,i)=>
-    `<tr><td>${m}</td><td>${fmtNum(shipmentByMonth[i])}</td><td>${fmtNum(chargeableWeightByMonth[i])}</td><td>${fmtNum(containerByMonth[i])}</td></tr>`
-  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(shipmentByMonth.reduce((s,v)=>s+v,0))}</td><td>${fmtNum(chargeableWeightByMonth.reduce((s,v)=>s+v,0))}</td><td>${fmtNum(containerByMonth.reduce((s,v)=>s+v,0))}</td></tr>`;
+    `<tr><td>${m}</td><td>${fmtNum(shipmentByMonth[i])}</td><td>${fmtNum(chargeableWeightByMonth[i])}</td><td>${fmtNum(containerByMonth[i])}</td><td>${fmtNum(truckByMonth[i])}</td><td>${fmtNum(truckCbmByMonth[i],3)}</td></tr>`
+  ).join('') + `<tr style="font-weight:500;"><td>Grand total</td><td>${fmtNum(shipmentByMonth.reduce((s,v)=>s+v,0))}</td><td>${fmtNum(chargeableWeightByMonth.reduce((s,v)=>s+v,0))}</td><td>${fmtNum(containerByMonth.reduce((s,v)=>s+v,0))}</td><td>${fmtNum(truckByMonth.reduce((s,v)=>s+v,0))}</td><td>${fmtNum(truckCbmByMonth.reduce((s,v)=>s+v,0),3)}</td></tr>`;
 
   function renderVolTable(headerRowId, bodyId, yearSpanId, records, valueField, unitLabel){
     const dec = 0;
@@ -6438,15 +6501,17 @@ async function renderMonthlyDashboard(){
   renderVolTable('volHeaderRowAirExpress', 'volByCustomerBodyAirExpress', 'volYearAirExpress', airExpressRecords, 'weight', 'kg');
   renderVolTable('volHeaderRowSeaFreight', 'volByCustomerBodySeaFreight', 'volYearSeaFreight', seaFreightRecords.filter(i=>!isImport(i)), 'containers', 'container');
   renderVolTable('volHeaderRowSeaFreightImp', 'volByCustomerBodySeaFreightImp', 'volYearSeaFreightImp', seaFreightRecords.filter(isImport), 'containers', 'container');
+  renderVolTable('volHeaderRowTruck', 'volByCustomerBodyTruck', 'volYearTruck', truckRecords.filter(i=>!isImport(i) && i._trucks>0), '_trucks', 'container');
+  renderVolTable('volHeaderRowTruckImp', 'volByCustomerBodyTruckImp', 'volYearTruckImp', truckRecords.filter(i=>isImport(i) && i._trucks>0), '_trucks', 'container');
 
   // B.3 — Export / Import split (by ETD)
   const expImpCats = [
     {recs:airFreightRecords, field:'weight'},
     {recs:airExpressRecords, field:'weight'},
     {recs:seaFreightRecords, field:'containers'},
-    // Truck jobs: volume = number of trucks (Total truck, else the container count, else 1 truck per job);
+    // Truck jobs: volume = FTL containers (LTL CBM is shown in B.9.1);
     // counted with or without a MAWB, since truck jobs often have none
-    {recs:idx.filter(i=>i.type==='booking' && i.mode==='Truck').map(i=>Object.assign({}, i, {_trucks: parseFloat(i.totalTruck)||parseFloat(i.containers)||1})), field:'_trucks', noMawb:true}
+    {recs:truckRecords, field:'_trucks', noMawb:true}
   ];
   // B.3.1 — Shipment count (bookings with a MAWB, same rule as B.2)
   const expImpShip = expImpCats.map(c=>['Export','Import'].map(dir=>monthlyRows(c.recs.filter(i=>(c.noMawb || i.mawb) && (i.expImp||'Export')===dir), [c.field])));
@@ -6464,11 +6529,12 @@ async function renderMonthlyDashboard(){
 const REV_MODE_CATS = [
   {key:'airFreight', label:'Air Freight', mode:'Air', cargoService:'Freight Forwarding'},
   {key:'airExpress', label:'Air Express', mode:'Air', cargoService:'Express'},
-  {key:'seaFreight', label:'Sea Freight', mode:'Sea', cargoService:'Freight Forwarding'}
+  {key:'seaFreight', label:'Sea Freight', mode:'Sea', cargoService:'Freight Forwarding'},
+  {key:'truck', label:'Truck (FTL / LTL)', mode:'Truck', cargoService:null}   // null = any cargo service
 ];
 
 function revFilterByCat(records, cat){
-  return records.filter(i=>(i.crMode||i.mode)===cat.mode && (i.crCargoService||i.cargoService)===cat.cargoService);
+  return records.filter(i=>(i.crMode||i.mode)===cat.mode && (cat.cargoService==null || (i.crCargoService||i.cargoService)===cat.cargoService));
 }
 
 function revMonthlyTotals(records, year, valueField){
