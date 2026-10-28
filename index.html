@@ -605,6 +605,34 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
         </table>
       </div>
     </div>
+
+    <div class="bar-section">
+      <h3>A.4 — Summary Truck</h3>
+      <table class="dash-table">
+        <thead><tr><th>Period</th><th>Total shipments</th><th>Total truck</th></tr></thead>
+        <tbody id="bookingTruckBody"></tbody>
+      </table>
+    </div>
+
+    <div class="bar-section" style="padding-left:14px; border-left:2px solid var(--line);">
+      <h3 style="color:var(--navy);">A.4.1) Export</h3>
+      <div style="padding-left:14px;">
+        <table class="dash-table">
+          <thead><tr><th>Period</th><th>Total shipments</th><th>Total truck</th></tr></thead>
+          <tbody id="truckExportBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bar-section" style="padding-left:14px; border-left:2px solid var(--line);">
+      <h3 style="color:var(--navy);">A.4.2) Import</h3>
+      <div style="padding-left:14px;">
+        <table class="dash-table">
+          <thead><tr><th>Period</th><th>Total shipments</th><th>Total truck</th></tr></thead>
+          <tbody id="truckImportBody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <div class="dash" id="monthlyDashPanel" style="display:none;">
@@ -6223,6 +6251,11 @@ async function renderDashboard(){
     function row(label, filterFn, withBreakdown){
       const matches = records.filter(filterFn);
       const shipments = matches.length;
+      if(metric==='truck'){
+        // trucks per job = Total truck, else the container count, else 1 (same rule as Monthly B.3)
+        const trucks = matches.reduce((sum,i)=>sum+(parseFloat(i.totalTruck)||parseFloat(i.containers)||1),0);
+        return `<tr><td>${label}</td><td>${fmtNum(shipments)}</td><td>${fmtNum(trucks)}</td></tr>` + (withBreakdown ? customerBreakdownRow(matches, 3) : '');
+      }
       if(metric==='sea'){
         const containers = matches.reduce((sum,i)=>sum+(parseFloat(i.containers)||0),0);
         return `<tr><td>${label}</td><td>${fmtNum(shipments)}</td><td>${fmtNum(containers)}</td></tr>` + (withBreakdown ? customerBreakdownRow(matches, 3) : '');
@@ -6246,6 +6279,10 @@ async function renderDashboard(){
   document.getElementById('ffSeaExportBody').innerHTML = periodTableRows(idx.filter(i=>i.type==='booking' && i.mode==='Sea' && i.cargoService==='Freight Forwarding' && i.expImp==='Export'), 'sea');
   document.getElementById('ffSeaImportBody').innerHTML = periodTableRows(idx.filter(i=>i.type==='booking' && i.mode==='Sea' && i.cargoService==='Freight Forwarding' && i.expImp==='Import'), 'sea');
   document.getElementById('expressBody').innerHTML = periodTableRows(idx.filter(i=>i.type==='booking' && i.cargoService==='Express' && i.expImp==='Export'), 'air');
+  const truckRecs = idx.filter(i=>i.type==='booking' && i.mode==='Truck');
+  document.getElementById('bookingTruckBody').innerHTML = periodTableRows(truckRecs, 'truck');
+  document.getElementById('truckExportBody').innerHTML = periodTableRows(truckRecs.filter(i=>i.expImp!=='Import'), 'truck');
+  document.getElementById('truckImportBody').innerHTML = periodTableRows(truckRecs.filter(i=>i.expImp==='Import'), 'truck');
 
 }
 
