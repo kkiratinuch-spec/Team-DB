@@ -261,6 +261,10 @@ body.mode-air .sea-col, body.mode-truck .sea-col{display:none;}
 .sj-job{color:#2E5A8F;text-decoration:none;font-weight:600}.sj-job:hover{text-decoration:underline}
 input.sj-num{width:68px;text-align:right;font-size:12.5px;padding:5px 7px;border:1px solid #D5D7DB;border-radius:4px;background:#FFFCF2}
 input.sj-num:disabled,select.sj-cr:disabled{background:#F2F3F5;color:#8a8a8a}
+select.sj-load,select.sj-ctype{font-size:12px;padding:4px 4px;border:1px solid #C9CDD3;border-radius:4px;font-weight:600;background:#fff}
+select.sj-load{min-width:64px}
+select.sj-ctype{margin-left:4px;min-width:66px}
+select.sj-load:disabled,select.sj-ctype:disabled{background:#F2F3F5;color:#8a8a8a}
 select.sj-cr{font-size:12px;padding:4px 4px;border:1px solid #C9CDD3;border-radius:4px;font-weight:600;min-width:140px}
 .sj-unit{color:#8a8a8a;font-size:11px;margin-left:3px}
 .sj-ltype{font-size:10px;font-weight:700;border:1px solid #C9CDD3;border-radius:3px;padding:0 4px;margin-right:4px;color:#2E5A8F}
@@ -630,10 +634,10 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
     <div class="bar-section">
       <h3>B.3.1 — Monthly Shipment by Export / Import (by MAWB)</h3>
       <div style="overflow-x:auto;">
-        <table class="dash-table" style="min-width:720px;">
+        <table class="dash-table" style="min-width:900px;">
           <thead>
-            <tr><th rowspan="2">Month</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Air Freight</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Air Express</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Sea Freight</th></tr>
-            <tr><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th></tr>
+            <tr><th rowspan="2">Month</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Air Freight</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Air Express</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Sea Freight</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Truck</th></tr>
+            <tr><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th></tr>
           </thead>
           <tbody id="monthlyExpImpShipBody"></tbody>
         </table>
@@ -641,12 +645,12 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
     </div>
 
     <div class="bar-section">
-      <h3>B.3.2 — Monthly Volume by Export / Import (kg / Container)</h3>
+      <h3>B.3.2 — Monthly Volume by Export / Import (kg / Container / Truck)</h3>
       <div style="overflow-x:auto;">
-        <table class="dash-table" style="min-width:720px;">
+        <table class="dash-table" style="min-width:900px;">
           <thead>
-            <tr><th rowspan="2">Month</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Air Freight (kg)</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Air Express (kg)</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Sea Freight (Container)</th></tr>
-            <tr><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th></tr>
+            <tr><th rowspan="2">Month</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Air Freight (kg)</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Air Express (kg)</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Sea Freight (Container)</th><th colspan="2" style="text-align:center; border-left:2px solid #fff;">Truck (Truck)</th></tr>
+            <tr><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th><th style="background:#EEF4FB;">Export</th><th style="background:#FBF1EA;">Import</th></tr>
           </thead>
           <tbody id="monthlyExpImpBody"></tbody>
         </table>
@@ -2190,6 +2194,7 @@ function addItemRow(data){
     <td><input type="text" class="it-remarks" value="${data?data.remarks:''}"></td>
     <td class="rmcol"><button class="rm-btn" onclick="this.closest('tr').remove()">×</button></td>
   `;
+  tr._orig = data ? Object.assign({}, data) : null;   // keep fields the form doesn't show (CBM, LCL/FCL, container type)
   document.getElementById('itemsBody').appendChild(tr);
 }
 
@@ -2197,14 +2202,14 @@ function collectItems(){
   const rows = document.querySelectorAll('#itemsBody tr');
   const items = [];
   rows.forEach(r=>{
-    items.push({
+    items.push(Object.assign({}, r._orig || {}, {
       product: r.querySelector('.it-product').value,
       bookingWeight: r.querySelector('.it-bookingweight').value,
       chargeableWeight: r.querySelector('.it-chargeableweight').value,
       container: r.querySelector('.it-container').value,
       pieces: r.querySelector('.it-pieces').value,
       remarks: r.querySelector('.it-remarks').value
-    });
+    }));
   });
   return items;
 }
@@ -4504,22 +4509,36 @@ function sjGet(r, f){
     case 'cntr': return sjNum(r.containers);
     case 'cbm': return sjCbm(r);
     case 'cr': return r.crStatus || '';
-    case 'sell': return sjNum(sjGet(r,'cntr')>0 ? r.sellingPerContainer : r.sellingPerKg);
-    case 'cost': return sjNum(sjGet(r,'cntr')>0 ? r.costPerContainer : r.costPerKg);
+    // Sea load type: LCL (priced per CBM) or FCL (priced per container, 20'GP / 40'HC)
+    case 'load': {
+      const it = sjItems(r)[0] || {};
+      if(it.load==='LCL' || it.load==='FCL') return it.load;
+      if(sjNum(r.containers)>0) return 'FCL';
+      if(sjCbm(r)>0) return 'LCL';
+      return 'FCL';
+    }
+    case 'ctype': { const it = sjItems(r)[0] || {}; return it.containerType || '20GP'; }
+    case 'sell': return sjNum(sjIsFcl(r) ? r.sellingPerContainer : r.sellingPerKg);
+    case 'cost': return sjNum(sjIsFcl(r) ? r.costPerContainer : r.costPerKg);
   }
   return '';
 }
+// true when the row is priced per container (Sea FCL)
+function sjIsFcl(r){ return sjModeOf(r)==='Sea' && sjGet(r,'load')==='FCL'; }
+const SJ_CTYPES = [['20GP',"20'GP"],['40HC',"40'HC"]];
+function sjCtypeLabel(v){ const t = SJ_CTYPES.find(x=>x[0]===v); return t ? t[1] : v; }
 function sjCalc(r){
   const sea = sjModeOf(r)==='Sea';
+  const fcl = sjIsFcl(r);
   const cntr = sjGet(r,'cntr');
-  const qty = sea ? (cntr>0 ? cntr : sjGet(r,'cbm')) : sjGet(r,'cw');
+  const qty = sea ? (fcl ? cntr : sjGet(r,'cbm')) : sjGet(r,'cw');
   const sell = sjGet(r,'sell'), cost = sjGet(r,'cost');
   const lcR = sjNum(r.lcRevAmount)+sjNum(r.dcRevAmount), lcC = sjNum(r.lcCostAmount)+sjNum(r.dcCostAmount);
   let rev, costAmt;
   if(sell || cost || !(sjNum(r.revAmount)||sjNum(r.costAmount))){ rev = qty*sell + lcR; costAmt = qty*cost + lcC; }
   else { rev = sjNum(r.revAmount); costAmt = sjNum(r.costAmount); }   // totals-only rows (e.g. Express upload)
   const gp = rev - costAmt;
-  return {rev, costAmt, gp, pct: rev>0 ? gp/rev*100 : null, lcR, lcC, unit: sea ? (cntr>0?'/cntr':'/CBM') : '/kg'};
+  return {rev, costAmt, gp, pct: rev>0 ? gp/rev*100 : null, lcR, lcC, unit: sea ? (fcl?'/cntr':'/CBM') : '/kg'};
 }
 
 function sjCustomerOptions(){
@@ -4586,7 +4605,12 @@ function sjRowHtml(r, sec){
     <td>${(()=>{ const v=sjGet(r,'coloader'); const opts=sjVendorOptions(); if(v && opts.indexOf(v)===-1) opts.unshift(v);
       return `<select class="sj-sel sj-colo" data-job="${j}" data-f="coloader"${dis}><option value="">—</option>${opts.map(n=>`<option${n===v?' selected':''}>${sjEsc(n)}</option>`).join('')}<option value="__new__">+ New Vendor</option></select>`; })()}</td>
     ${sea
-      ? `<td class="n">${num('cntr', sjGet(r,'cntr'))}<span class="sj-unit">Cntr</span></td><td class="n">${num('cbm', sjGet(r,'cbm'))}<span class="sj-unit">CBM</span></td>`
+      ? (()=>{ const load = sjGet(r,'load'), ct = sjGet(r,'ctype');
+          const loadSel = `<select class="sj-load" data-job="${j}" data-f="load"${dis}>${['LCL','FCL'].map(v=>`<option${v===load?' selected':''}>${v}</option>`).join('')}</select>`;
+          const qtyCell = load==='FCL'
+            ? `${num('cntr', sjGet(r,'cntr'))}<select class="sj-ctype" data-job="${j}" data-f="ctype"${dis}>${SJ_CTYPES.map(([v,l])=>`<option value="${v}"${v===ct?' selected':''}>${l}</option>`).join('')}</select>`
+            : `${num('cbm', sjGet(r,'cbm'))}<span class="sj-unit">CBM</span>`;
+          return `<td>${loadSel}</td><td class="n sj-qtycell">${qtyCell}</td>`; })()
       : `<td class="n">${num('bw', sjGet(r,'bw'))}<span class="sj-unit">kg</span></td><td class="n">${num('cw', sjGet(r,'cw'))}<span class="sj-unit">kg</span></td>`}
     <td class="n">${num('sell', sjGet(r,'sell'))}<span class="sj-unit" data-u>${c.unit}</span></td>
     <td class="n">${num('cost', sjGet(r,'cost'))}<span class="sj-unit" data-u>${c.unit}</span></td>
@@ -4598,24 +4622,44 @@ function sjRowHtml(r, sec){
   </tr>`;
 }
 
+// Sea total: FCL containers by type (20'GP / 40'HC) + LCL CBM
+function sjSeaTotals(rows){
+  const t = {c20:0, c40:0, cbm:0};
+  rows.forEach(r=>{
+    if(sjGet(r,'load')==='FCL'){ const n = sjNum(sjGet(r,'cntr')); if(sjGet(r,'ctype')==='40HC') t.c40 += n; else t.c20 += n; }
+    else t.cbm += sjNum(sjGet(r,'cbm'));
+  });
+  return t;
+}
+function sjSeaTotalText(t){
+  const parts = [];
+  if(t.c20) parts.push(sjFmt(t.c20)+" × 20'GP");
+  if(t.c40) parts.push(sjFmt(t.c40)+" × 40'HC");
+  return parts.join(' · ') || '—';
+}
+function sjSeaTotalCells(rows){
+  const t = sjSeaTotals(rows);
+  return `<td class="n" data-t="fcl">FCL ${sjSeaTotalText(t)}</td><td class="n" data-t="lcl">LCL ${sjFmt(t.cbm,3)}<span class="sj-unit">CBM</span></td>`;
+}
 function sjSectionHtml(sec, rows){
   const sea = sec.mode==='Sea';
   const news = SJ.newRows.filter(x=>x._sec===sec.key);
   const all = news.concat(rows);
   let T = {rev:0, cost:0, q1:0, q2:0};
   all.forEach(r=>{ const c=sjCalc(r); T.rev+=c.rev; T.cost+=c.costAmt;
-    T.q1 += sea ? sjNum(sjGet(r,'cntr')) : sjNum(sjGet(r,'bw'));
-    T.q2 += sea ? sjNum(sjGet(r,'cbm'))  : sjNum(sjGet(r,'cw')); });
-  const u1 = sea ? 'Cntr' : 'kg', u2 = sea ? 'CBM' : 'kg';
+    if(sea) return;
+    T.q1 += sjNum(sjGet(r,'bw'));
+    T.q2 += sjNum(sjGet(r,'cw')); });
+  const u1 = 'kg', u2 = 'kg';
   return `<div class="sj-section" data-sec="${sec.key}">
     <div class="sj-sec-head"><span class="sj-sec-title sj-${sec.key}">${sec.title}</span><span class="sj-sec-count">${rows.length} job${rows.length===1?'':'s'}${news.length?` + ${news.length} ใหม่`:''}</span>
       ${sec.key==='OT' ? '' : `<button type="button" class="sj-add" onclick="sjAddRow('${sec.key}')">+ Add row</button>`}</div>
     <div class="sj-wrap"><table class="sj-table">
       <thead><tr><th></th><th>MAWB</th><th>Customer</th><th style="cursor:pointer;" onclick="listToggleSort()" title="คลิกเพื่อสลับลำดับ">ETD ${listSortAsc?'▲':'▼'}</th><th>${sec.placeLbl}</th><th>Co-loader</th>
-        ${sea ? '<th class="n ed">Container ✏️</th><th class="n ed">CBM ✏️</th>' : '<th class="n ed">Booking Wt ✏️</th><th class="n ed">Chargeable Wt ✏️</th>'}
+        ${sea ? '<th class="ed">LCL / FCL ✏️</th><th class="n ed">Qty ✏️ <span style="font-weight:400;text-transform:none;">(CBM / ตู้)</span></th>' : '<th class="n ed">Booking Wt ✏️</th><th class="n ed">Chargeable Wt ✏️</th>'}
         <th class="n ed">Selling ✏️</th><th class="n ed">Cost ✏️</th><th class="n g">Revenue</th><th class="n g">Cost</th><th class="n g">GP</th><th class="n g">GP %</th><th class="ed">CR Status ✏️</th></tr></thead>
       <tbody>${all.length ? all.map(r=>sjRowHtml(r, sec)).join('') : `<tr><td colspan="15" class="empty" style="padding:14px;">ไม่มีงานในเดือน/ตัวกรองนี้ — กด + Add row เพื่อเพิ่ม</td></tr>`}
-        ${all.length ? `<tr class="sj-tot"><td colspan="6">Total — ${all.length} jobs</td><td class="n" data-t="q1">${sjFmt(T.q1, sea?0:2)}<span class="sj-unit">${u1}</span></td><td class="n" data-t="q2">${sjFmt(T.q2, sea?3:2)}<span class="sj-unit">${u2}</span></td><td colspan="2"></td><td class="n" data-t="rev">${sjFmt(T.rev,2)}</td><td class="n" data-t="cost">${sjFmt(T.cost,2)}</td><td class="n" data-t="gp">${sjFmt(T.rev-T.cost,2)}</td><td class="n" data-t="pct">${T.rev?((T.rev-T.cost)/T.rev*100).toFixed(1)+'%':'—'}</td><td></td></tr>` : ''}
+        ${all.length ? `<tr class="sj-tot"><td colspan="6">Total — ${all.length} jobs</td>${sea ? sjSeaTotalCells(all) : `<td class="n" data-t="q1">${sjFmt(T.q1,2)}<span class="sj-unit">${u1}</span></td><td class="n" data-t="q2">${sjFmt(T.q2,2)}<span class="sj-unit">${u2}</span></td>`}<td colspan="2"></td><td class="n" data-t="rev">${sjFmt(T.rev,2)}</td><td class="n" data-t="cost">${sjFmt(T.cost,2)}</td><td class="n" data-t="gp">${sjFmt(T.rev-T.cost,2)}</td><td class="n" data-t="pct">${T.rev?((T.rev-T.cost)/T.rev*100).toFixed(1)+'%':'—'}</td><td></td></tr>` : ''}
       </tbody></table></div></div>`;
 }
 
@@ -4686,13 +4730,14 @@ function sjUpdateSectionTotal(sec){
   if(!sec) return;
   const tot = sec.querySelector('tr.sj-tot'); if(!tot) return;
   const sea = (SJ_SECTIONS.find(x=>x.key===sec.dataset.sec)||{}).mode==='Sea';
-  let rev=0, cost=0, q1=0, q2=0;
+  let rev=0, cost=0, q1=0, q2=0; const rows=[];
   sec.querySelectorAll('tbody tr[data-job]').forEach(tr=>{ const r=sjFind(tr.dataset.job); if(!r) return;
+    rows.push(r);
     const c=sjCalc(r); rev+=c.rev; cost+=c.costAmt;
-    q1 += sea ? sjNum(sjGet(r,'cntr')) : sjNum(sjGet(r,'bw'));
-    q2 += sea ? sjNum(sjGet(r,'cbm'))  : sjNum(sjGet(r,'cw')); });
+    if(!sea){ q1 += sjNum(sjGet(r,'bw')); q2 += sjNum(sjGet(r,'cw')); } });
   const set = (k,v)=>{ const el=tot.querySelector(`[data-t="${k}"]`); if(el) el.firstChild.textContent = v; };
-  set('q1', sjFmt(q1, sea?0:2)); set('q2', sjFmt(q2, sea?3:2));
+  if(sea){ const t = sjSeaTotals(rows); set('fcl', 'FCL '+sjSeaTotalText(t)); set('lcl', 'LCL '+sjFmt(t.cbm,3)); }
+  else { set('q1', sjFmt(q1,2)); set('q2', sjFmt(q2,2)); }
   set('rev', sjFmt(rev,2)); set('cost', sjFmt(cost,2)); set('gp', sjFmt(rev-cost,2));
   set('pct', rev ? ((rev-cost)/rev*100).toFixed(1)+'%' : '—');
 }
@@ -4713,7 +4758,18 @@ function sjOnEdit(t){
     const sel = tr.querySelector('select.sj-cr'); sel.value = 'freight-input';
     if(!tr.querySelector('.sj-auto')) sel.insertAdjacentHTML('afterend','<span class="sj-auto">ตั้งให้อัตโนมัติ</span>');
   }
-  if(numeric){ sjRecalcRow(tr, r); sjUpdateSectionTotal(tr.closest('.sj-section')); }
+  if(numeric || f==='ctype'){ sjRecalcRow(tr, r); sjUpdateSectionTotal(tr.closest('.sj-section')); }
+  // LCL ↔ FCL changes the quantity cell (CBM vs containers + type) → redraw just this row
+  if(f==='load'){
+    const secEl = tr.closest('.sj-section');
+    const sec = SJ_SECTIONS.find(x=>x.key===(secEl&&secEl.dataset.sec));
+    if(sec){
+      tr.outerHTML = sjRowHtml(r, sec);
+      const tr2 = secEl.querySelector(`tr[data-job="${CSS.escape(r.jobNo)}"]`);
+      if(tr2){ tr2.classList.add('dirty'); const q = tr2.querySelector('.sj-qtycell input'); if(q) q.focus(); }
+      sjUpdateSectionTotal(secEl);
+    }
+  }
   sjUpdateBar();
 }
 
@@ -4727,7 +4783,7 @@ function sjInitEvents(){
   body.addEventListener('change', e=>{
     const t = e.target;
     if(t.matches && t.matches('select.sj-sel') && t.value==='__new__'){ sjAddNewOption(t); return; }
-    if(t.matches && (t.matches('select.sj-cr, select.sj-sel') || (t.matches('input.sj-in') && t.type==='date'))) sjOnEdit(t);
+    if(t.matches && (t.matches('select.sj-cr, select.sj-sel, select.sj-load, select.sj-ctype') || (t.matches('input.sj-in') && t.type==='date'))) sjOnEdit(t);
   });
   body.addEventListener('blur', e=>{ const t=e.target; if(t.matches && t.matches('input.sj-place, input.sj-mawb')) t.value = t.value.toUpperCase(); }, true);
   window.addEventListener('beforeunload', e=>{ if(sjPendingCount()){ e.preventDefault(); e.returnValue=''; } });
@@ -4757,10 +4813,21 @@ function sjBuildRecord(base, ed, newJobNo){
   // quantities live on the first item line (1 booking = 1 item)
   const items = sjItems(base).map(it=>Object.assign({}, it));
   if(!items.length) items.push({product:'', bookingWeight:'', chargeableWeight:'', container:'', cbm:'', pieces:'', remarks:''});
+  const load = sea ? get('load') : '';
   if(sea){
-    items[0].container = get('cntr') ? String(get('cntr')) : '';
-    items[0].cbm = get('cbm') ? String(get('cbm')) : '';
-    rec.containers = get('cntr') || 0;
+    // FCL → containers (+ 20'GP / 40'HC), no CBM; LCL → CBM only, no containers
+    items[0].load = load;
+    if(load==='FCL'){
+      items[0].container = get('cntr') ? String(get('cntr')) : '';
+      items[0].containerType = get('ctype') || '20GP';
+      items[0].cbm = '';
+      rec.containers = get('cntr') || 0;
+    }else{
+      items[0].cbm = get('cbm') ? String(get('cbm')) : '';
+      items[0].container = '';
+      delete items[0].containerType;
+      rec.containers = 0;
+    }
   }else{
     items[0].bookingWeight = get('bw') ? String(get('bw')) : '';
     items[0].chargeableWeight = get('cw') ? String(get('cw')) : '';
@@ -4770,7 +4837,8 @@ function sjBuildRecord(base, ed, newJobNo){
   rec.items = items;
   // rates: Sea with containers → per container; otherwise per kg (LCL: per CBM)
   const sell = get('sell'), cost = get('cost');
-  if(sea && get('cntr')>0){ rec.sellingPerContainer = String(sell||''); rec.costPerContainer = String(cost||''); }
+  if(sea && load==='FCL'){ rec.sellingPerContainer = String(sell||''); rec.costPerContainer = String(cost||''); rec.sellingPerKg = ''; rec.costPerKg = ''; }
+  else if(sea){ rec.sellingPerKg = String(sell||''); rec.costPerKg = String(cost||''); rec.sellingPerContainer = ''; rec.costPerContainer = ''; }   // LCL: per-kg fields hold the rate per CBM
   else { rec.sellingPerKg = String(sell||''); rec.costPerKg = String(cost||''); }
   rec.crStatus = get('cr');
   if(rec.crStatus==='reconcile' && !rec.reconcileDate) rec.reconcileDate = todayStr();
@@ -6338,10 +6406,13 @@ async function renderMonthlyDashboard(){
   const expImpCats = [
     {recs:airFreightRecords, field:'weight'},
     {recs:airExpressRecords, field:'weight'},
-    {recs:seaFreightRecords, field:'containers'}
+    {recs:seaFreightRecords, field:'containers'},
+    // Truck jobs: volume = number of trucks (Total truck, else the container count, else 1 truck per job);
+    // counted with or without a MAWB, since truck jobs often have none
+    {recs:idx.filter(i=>i.type==='booking' && i.mode==='Truck').map(i=>Object.assign({}, i, {_trucks: parseFloat(i.totalTruck)||parseFloat(i.containers)||1})), field:'_trucks', noMawb:true}
   ];
   // B.3.1 — Shipment count (bookings with a MAWB, same rule as B.2)
-  const expImpShip = expImpCats.map(c=>['Export','Import'].map(dir=>monthlyRows(c.recs.filter(i=>i.mawb && (i.expImp||'Export')===dir), [c.field])));
+  const expImpShip = expImpCats.map(c=>['Export','Import'].map(dir=>monthlyRows(c.recs.filter(i=>(c.noMawb || i.mawb) && (i.expImp||'Export')===dir), [c.field])));
   document.getElementById('monthlyExpImpShipBody').innerHTML = monthShortNames.map((m,mi)=>
     `<tr><td>${m}</td>` + expImpShip.map(pair=>pair.map(arr=>`<td>${fmtNum(arr[mi].count)}</td>`).join('')).join('') + '</tr>'
   ).join('') + '<tr style="font-weight:500;"><td>Grand total</td>' + expImpShip.map(pair=>pair.map(arr=>`<td>${fmtNum(arr.reduce((s,r)=>s+r.count,0))}</td>`).join('')).join('') + '</tr>';
