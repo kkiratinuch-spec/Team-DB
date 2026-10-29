@@ -328,6 +328,7 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
 .ops-wcell{color:var(--ops-warn);font-weight:700}
 .ops-wcell:before{content:"⚠ "}
 .ops-grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+@media(min-width:1100px){.ops-grid4{grid-template-columns:repeat(6,minmax(0,1fr))}}
 .ops-card{border:1px solid var(--line);border-radius:6px;padding:12px 14px;background:#fff}
 .ops-card .t{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#555;display:flex;justify-content:space-between;gap:6px}
 .ops-card .big{font-size:22px;font-weight:700;margin:4px 0 8px;font-variant-numeric:tabular-nums}
@@ -1169,7 +1170,7 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
 
     <div class="ops-filters">
       <label>Month (ETD)<select id="opsMonth" onchange="opsSetMonth(this.value)"></select></label>
-      <label>Mode<span class="ops-seg" data-f="mode"><button class="on" data-v="">All</button><button data-v="Air">Air</button><button data-v="Sea">Sea</button></span></label>
+      <label>Mode<span class="ops-seg" data-f="mode"><button class="on" data-v="">All</button><button data-v="Air">Air</button><button data-v="Sea">Sea</button><button data-v="Truck">Truck</button></span></label>
       <label>Export / Import<span class="ops-seg" data-f="dir"><button class="on" data-v="">All</button><button data-v="Export">Export</button><button data-v="Import">Import</button></span></label>
       <label>Customer<select id="opsCust" onchange="OPS.F.cust=this.value; OPS.E4.cust=this.value; OPS.E5.cust=this.value; opsRender();"><option value="">All customers</option></select></label>
     </div>
@@ -1186,7 +1187,7 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
     </div>
 
     <div class="bar-section">
-      <h3>E.2 — Air / Sea × Export / Import — <span class="ops-mlbl"></span></h3>
+      <h3>E.2 — Air / Sea / Truck × Export / Import — <span class="ops-mlbl"></span></h3>
       <div class="ops-grid4" id="opsCards"></div>
     </div>
 
@@ -1229,7 +1230,7 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
           <button type="button" class="primary" id="opsSaveBtn5" onclick="opsSaveAll()" disabled>💾 Save</button>
         </div>
       </div>
-      <div class="ops-e5wrap"><table class="dash-table"><thead><tr><th>Customer</th><th>MAWB</th><th class="n">Chargeable Weight / Volume</th><th>ETD</th><th>Destination</th><th style="min-width:220px;">Issue</th><th style="min-width:220px;">Action Plan</th><th>Status</th></tr></thead><tbody id="opsE5Body"></tbody></table></div>
+      <div class="ops-e5wrap"><table class="dash-table"><thead><tr><th>Customer</th><th>MAWB</th><th>Mode</th><th class="n">Chargeable Weight / Volume</th><th>ETD</th><th>Destination</th><th style="min-width:220px;">Issue</th><th style="min-width:220px;">Action Plan</th><th>Status</th></tr></thead><tbody id="opsE5Body"></tbody></table></div>
       <div style="font-size:11.5px; color:#8a8a8a; margin-top:6px;">งานจะขึ้นใน E.5 เมื่อ OPS Status ใน E.4 เป็น <b style="color:#A32D2D">Issue Pending</b> · พิมพ์ Issue / Action Plan แล้วเลือก Status (Pending / Solved) แล้วกด <b>💾 Save</b> · งานที่ Solved แล้วยังเก็บไว้ในรายการเป็นประวัติ · เปลี่ยนเป็น <b style="color:#2F7A46">Solved</b> แล้ว OPS Status ใน E.4 จะกลับเป็นสถานะก่อนเกิด Issue อัตโนมัติ</div>
     </div>
 
@@ -4148,7 +4149,7 @@ const OPS_STATUSES = [
 const OPS_STATUSES_ALL = OPS_STATUSES.concat([['Cancelled','var(--s-cancel)']]);
 const OPS_DONE = new Set(['Arrival Destination','POD']);
 // "Transit > N Days" threshold, counted from ETD. Change here if Sea needs a longer window.
-const OPS_LATE_DAYS = {Air:7, Sea:7};
+const OPS_LATE_DAYS = {Air:7, Sea:7, Truck:7};
 // Separate Google Sheet for OPS Status / Remark (see OPSStatusBackend.gs).
 // The main Job Sheet raw data is never written from this page.
 let OPS_API_URL = 'https://script.google.com/macros/s/AKfycbxvh16vMAQazxTwhpCYIBrqSmRHTQgcU42BBiKFjjU1KTQd3L2aookPYhFWHMCuKwiB/exec';
@@ -4200,6 +4201,11 @@ function opsLoad(records, savedRows){
       if(cntr>0){ unit='Cntr'; vol=cntr; load='FCL'; }
       else if(cbm>0){ unit='CBM'; vol=Math.round(cbm*1000)/1000; load='LCL'; }
       else { unit=''; vol=0; }
+    }else if(r.mode==='Truck'){
+      // same rule as Monthly B.6 / B.9.1: FTL → containers (else Total truck, else 1), LTL → CBM
+      load = loadTypeOf(r);
+      if(load==='LTL'){ unit='CBM'; vol=Math.round(truckCbm(r)*1000)/1000; }
+      else { unit='Cntr'; vol=truckCount(r); }
     }
     const opsStatus = (s && s.opsStatus) ? s.opsStatus : opsDefaultStatus(r);
     return {
@@ -4291,9 +4297,9 @@ function opsRender(){
   const row = (lbl,x,cls)=>`<tr class="${cls||''}"><td>${lbl}</td><td class="n"><b>${opsFmt(x.total)}</b></td>${OPS_STATUSES.map(([k])=>`<td class="n">${opsFmt(x[k])}</td>`).join('')}<td class="n ${x.late?'ops-wcell':''}">${opsFmt(x.late)}</td><td class="n" style="color:#8a8a8a">${opsFmt(x.Cancelled)}</td></tr>`;
   document.getElementById('opsMonthTable').innerHTML = byM.map((x,i)=>row(monthShortNames[i], x, i===selIdx?'ops-sel':'')).join('') + row('Grand total', opsCount(scoped.filter(x=>x.mk.slice(0,4)===year)), 'ops-tot');
 
-  // E.2 — always the 4 combos (ignores Mode / Export-Import buttons)
+  // E.2 — always the 6 combos (ignores Mode / Export-Import buttons)
   const base = OPS.ships.filter(x=>x.mk===F.month && (!F.cust || x.cust===F.cust));
-  document.getElementById('opsCards').innerHTML = [['Air','Export'],['Air','Import'],['Sea','Export'],['Sea','Import']].map(([mo,di])=>{
+  document.getElementById('opsCards').innerHTML = [['Air','Export'],['Air','Import'],['Sea','Export'],['Sea','Import'],['Truck','Export'],['Truck','Import']].map(([mo,di])=>{
     const x = opsCount(base.filter(s=>s.mode===mo && s.dir===di));
     return `<div class="ops-card"><div class="t"><span>${mo} · ${di}</span>${x.late?`<span class="ops-badge">⚠ ${x.late} &gt; 7 days</span>`:''}</div>
       <div class="big">${opsFmt(x.total)} <small>MAWB</small></div>${opsSegBar(x)}
@@ -4333,7 +4339,7 @@ function opsRenderE4(){
   const totVol = [['kg',sumU('kg')],['Cntr',sumU('Cntr')],['CBM',sumU('CBM')]].filter(v=>v[1]).map(([u,v])=>`${v.toLocaleString(undefined,{maximumFractionDigits:3})}<span class="ops-unit">${u}</span>`).join(' · ');
   const body = document.getElementById('opsE4Body');
   body.innerHTML = list.length
-    ? list.map(x=>`<tr data-job="${opsEsc(x.jobNo)}" class="${x.st==='Cancelled'?'cx':''}${OPS.pending[x.jobNo]?' dirty':''}${OPS.dup[x.mkey]?' dup':''}"><td>${opsEsc(x.cust)}</td><td class="mono">${x.mawb?opsEsc(x.mawb):'<span style="color:#8a8a8a">—</span>'}${opsDupBadge(x)}</td><td style="white-space:nowrap;">${x.mode?`<span class="ops-mode${x.dir==='Import'?' imp':''}">${opsEsc(x.mode)}-${opsEsc(x.dir)}</span>`:'—'}</td><td class="n">${fmtVol(x)}</td><td style="white-space:nowrap;">${opsFmtDate(x.etdStr)}</td>
+    ? list.map(x=>`<tr data-job="${opsEsc(x.jobNo)}" class="${x.st==='Cancelled'?'cx':''}${OPS.pending[x.jobNo]?' dirty':''}${OPS.dup[x.mkey]?' dup':''}"><td>${opsEsc(x.cust)}</td><td class="mono">${x.mawb?opsEsc(x.mawb):'<span style="color:#8a8a8a">—</span>'}${opsDupBadge(x)}</td><td style="white-space:nowrap;">${opsModeTag(x)}</td><td class="n">${fmtVol(x)}</td><td style="white-space:nowrap;">${opsFmtDate(x.etdStr)}</td>
         <td style="white-space:nowrap;"><select data-job="${opsEsc(x.jobNo)}" style="--c:${colOf(x.st)}">${OPS_STATUSES_ALL.map(([k])=>`<option value="${k}"${k===x.st?' selected':''}>${k==='Not set'?'':k}</option>`).join('')}</select>${opsIsLate(x)?' <span class="ops-badge">⚠ &gt; 7 days</span>':''}</td>
         <td><input class="rmk" data-job="${opsEsc(x.jobNo)}" type="text" placeholder="พิมพ์หมายเหตุ…" value="${opsEsc(x.remark)}"></td></tr>`).join('') +
       `<tr class="ops-tot"><td>Total — ${act.length} MAWB</td><td></td><td></td><td class="n">${totVol||'—'}</td><td></td><td colspan="2" style="font-weight:400; color:#8a8a8a; font-size:12px;">ไม่รวม Cancelled</td></tr>`
@@ -4369,6 +4375,7 @@ function opsRenderE4Sts(){
   document.getElementById('opsE4StsLbl').textContent =
     n===keys.length ? 'All status' : n===0 ? 'ไม่ได้เลือก' : n===1 ? ([...E4.sts][0]==='Not set'?'(ว่าง)':[...E4.sts][0]) : n+' status';
 }
+function opsModeTag(x){ return x.mode ? `<span class="ops-mode${x.dir==='Import'?' imp':''}">${opsEsc(x.mode)}-${opsEsc(x.dir)}</span>` : '—'; }
 function opsDupBadge(x){
   const g = OPS.dup[x.mkey]; if(!g) return '';
   const others = g.filter(o=>o!==x).map(o=>`${o.jobNo} · ${o.cust} · ETD ${opsFmtDate(o.etdStr)}`).join('\n');
@@ -4451,12 +4458,12 @@ function opsRenderE5(){
   const fmtVol = x=> x.unit ? `${x.load?`<span class="ops-ltype">${x.load}</span>`:''}${x.vol.toLocaleString(undefined,{maximumFractionDigits:3})}<span class="ops-unit">${x.unit}</span>` : '—';
   document.getElementById('opsE5Body').innerHTML = list.length
     ? list.map(x=>{ const ist = x.issueStatus || 'Pending'; return `<tr data-job="${opsEsc(x.jobNo)}" class="${ist==='Solved'?'solved':''}${OPS.pending[x.jobNo]?' dirty':''}">
-        <td>${opsEsc(x.cust)}</td><td class="mono">${x.mawb?opsEsc(x.mawb):'—'}${opsDupBadge(x)}</td><td class="n">${fmtVol(x)}</td>
+        <td>${opsEsc(x.cust)}</td><td class="mono">${x.mawb?opsEsc(x.mawb):'—'}${opsDupBadge(x)}</td><td style="white-space:nowrap;">${opsModeTag(x)}</td><td class="n">${fmtVol(x)}</td>
         <td style="white-space:nowrap;">${opsFmtDate(x.etdStr)}</td><td>${opsEsc(x.dest||'—')}</td>
         <td><textarea data-job="${opsEsc(x.jobNo)}" data-f="issue" placeholder="ปัญหาที่เจอ…">${opsEsc(x.issue)}</textarea></td>
         <td><textarea data-job="${opsEsc(x.jobNo)}" data-f="actionPlan" placeholder="แผนแก้ไข…">${opsEsc(x.actionPlan)}</textarea></td>
         <td><select data-job="${opsEsc(x.jobNo)}" class="${ist==='Solved'?'solved':'pending'}"><option${ist==='Pending'?' selected':''}>Pending</option><option${ist==='Solved'?' selected':''}>Solved</option></select></td></tr>`; }).join('')
-    : '<tr><td colspan="8" class="empty">ไม่มี Issue ตามตัวกรองนี้ — ตั้ง OPS Status เป็น "Issue Pending" ใน E.4 เพื่อเพิ่มงานเข้ามา</td></tr>';
+    : '<tr><td colspan="9" class="empty">ไม่มี Issue ตามตัวกรองนี้ — ตั้ง OPS Status เป็น "Issue Pending" ใน E.4 เพื่อเพิ่มงานเข้ามา</td></tr>';
   const pend = all.filter(x=>(x.issueStatus||'Pending')==='Pending').length;
   document.getElementById('opsE5Count').innerHTML = `${list.length} รายการ · <b style="color:#A32D2D">Pending ทั้งหมด ${pend}</b>`;
   opsUpdateSaveBar();
