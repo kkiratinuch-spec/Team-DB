@@ -300,7 +300,7 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
 /* ===== OPS Dashboard v2 (E.1–E.4) ===== */
 #opsDashPanel{--s-tender:#2a78d6; --s-depart:#eb6834; --s-transit:#6250d6; --s-arrival:#eda100; --s-pod:#1baf7a; --s-issue:#e34948; --s-cancel:#9aa0a6; --s-none:#D5D7DB; --ops-warn:#B25E00; --ops-warn-bg:#FFF1DE;}
 .ops-filters{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-bottom:16px;padding:10px 12px;background:#F7F5FA;border:1px solid #E6DDF2;border-radius:6px}
-.ops-filters label{font-size:11px;font-weight:700;color:#5B3A7A;text-transform:uppercase;letter-spacing:.04em;display:flex;flex-direction:column;gap:4px}
+.ops-filters label,.ops-filters .ops-flab{font-size:11px;font-weight:700;color:#5B3A7A;text-transform:uppercase;letter-spacing:.04em;display:flex;flex-direction:column;gap:4px}
 .ops-filters select,.ops-filters input{font-size:12px;padding:4px 6px;border:1px solid #C9BEDA;border-radius:4px;background:#fff;text-transform:none;letter-spacing:0;font-weight:400}
 .ops-seg{display:inline-flex;border:1px solid #5B3A7A;border-radius:4px;overflow:hidden}
 .ops-seg button{border:0;background:#fff;color:#5B3A7A;font-size:12px;font-weight:600;padding:5px 12px;cursor:pointer;border-radius:0;margin:0}
@@ -342,7 +342,19 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
 .ops-cust .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ops-cust .tot{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
 .ops-cust .ops-bar{height:14px}
-.ops-e4wrap{max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:6px}
+.ops-e4wrap{border:1px solid var(--line);border-radius:6px}
+.ops-mode{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;white-space:nowrap;background:#EEF4FB;color:#185FA5}
+.ops-mode.imp{background:#FBF1EA;color:#9A4A12}
+.ops-msel{position:relative}
+.ops-msel>button{font-size:12px;padding:4px 8px;border:1px solid #C9BEDA;border-radius:4px;background:#fff;min-width:150px;display:flex;justify-content:space-between;gap:10px;cursor:pointer;text-transform:none;letter-spacing:0;font-weight:400;color:inherit}
+.ops-msel .menu{display:none;position:absolute;top:100%;left:0;margin-top:4px;z-index:30;background:#fff;border:1px solid #C9BEDA;border-radius:6px;padding:6px;min-width:210px;box-shadow:0 6px 18px rgba(0,0,0,.12);text-transform:none;letter-spacing:0;font-weight:400;color:#222}
+.ops-msel.open .menu{display:block}
+.ops-msel .menu .acts{display:flex;gap:6px;padding:2px 4px 6px;border-bottom:1px solid #eee;margin-bottom:4px}
+.ops-msel .menu .acts button{font-size:11px;padding:2px 8px;border:1px solid #C9BEDA;border-radius:4px;background:#fff;cursor:pointer}
+.ops-msel .menu label{display:flex!important;flex-direction:row!important;align-items:center;gap:8px;padding:4px 6px;border-radius:4px;cursor:pointer;font-size:12px!important;font-weight:400!important;color:#222!important;text-transform:none!important}
+.ops-msel .menu label:hover{background:#F7F5FA}
+.ops-msel .menu input[type=checkbox]{padding:0;margin:0;width:14px;height:14px}
+.ops-msel .menu .dot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
 .ops-e4wrap table th{position:sticky;top:0;z-index:1}
 .ops-e4wrap select{min-width:160px;font-weight:600;border:1px solid #C9BEDA;border-left:6px solid var(--c);border-radius:4px;padding:4px 6px;font-size:12px;background:#fff}
 .ops-e4wrap input.rmk{width:100%;min-width:180px;font-size:12px;padding:5px 7px;border:1px solid #D5D7DB;border-radius:4px}
@@ -1190,6 +1202,7 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
         <label>Month (ETD)<select id="opsE4Month" onchange="OPS.E4.month=this.value; opsRender();"></select></label>
         <label>Customer<select id="opsE4Cust" onchange="OPS.E4.cust=this.value; opsRender();"></select></label>
         <label>Search MAWB<input type="search" id="opsE4Search" placeholder="เช่น 217-0580" style="width:190px;" oninput="OPS.E4.q=this.value.replace(/[\s-]/g,'').toUpperCase(); opsRender();"></label>
+        <div class="ops-flab">Status<div class="ops-msel" id="opsE4Sts"><button type="button" onclick="this.parentNode.classList.toggle('open')"><span id="opsE4StsLbl">All status</span><span>▾</span></button><div class="menu" id="opsE4StsMenu"></div></div></div>
         <span id="opsE4Count" style="font-size:12px; color:#555; align-self:center;"></span>
         <div class="ops-savebar">
           <span class="msg" id="opsSaveMsg"></span>
@@ -1199,7 +1212,7 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
       </div>
       <div class="ops-dupwarn" id="opsDupWarn" style="display:none;"></div>
       <div class="ops-cfg" id="opsCfgWarn" style="display:none;">⚠️ ยังไม่ได้ตั้งค่า OPS Status Sheet — แก้ตัวแปร <code>OPS_API_URL</code> ในโค้ดให้เป็น URL ของ Web App จาก <b>OPSStatusBackend.gs</b> (ตอนนี้กด Save ไม่ได้)</div>
-      <div class="ops-e4wrap"><table class="dash-table"><thead><tr><th>Customer</th><th>MAWB</th><th class="n">Chargeable Weight / Volume</th><th>ETD</th><th>OPS Status</th><th style="min-width:200px;">Remark</th></tr></thead><tbody id="opsE4Body"></tbody></table></div>
+      <div class="ops-e4wrap"><table class="dash-table"><thead><tr><th>Customer</th><th>MAWB</th><th>Mode</th><th class="n">Chargeable Weight / Volume</th><th>ETD</th><th>OPS Status</th><th style="min-width:200px;">Remark</th></tr></thead><tbody id="opsE4Body"></tbody></table></div>
       <div style="font-size:11.5px; color:#8a8a8a; margin-top:6px;">เปลี่ยน OPS Status / Remark แล้วกด <b>💾 Save</b> เพื่อบันทึกลง Google Sheet "OPS Status" (แยกจาก Raw data ของ Job Sheet) · แถวสีเหลือง = ยังไม่ได้ Save · ช่อง Status ว่าง = ยังไม่ได้ตั้ง (Not set)</div>
     </div>
 
@@ -4156,7 +4169,7 @@ const OPS = {
   ships: [], byId: {}, months: [],
   pending: {},                                   // jobNo → true for unsaved edits
   F: {mode:'', dir:'', cust:'', month:''},       // top filters (month = 'YYYY-MM')
-  E4: {month:'', cust:'', q:'', dupOnly:false},
+  E4: {month:'', cust:'', q:'', dupOnly:false, sts:null},   // sts: null = all statuses, else Set of statuses to show
   E5: {month:'', cust:'', status:''}                  // E.4's own filters
 };
 
@@ -4304,12 +4317,14 @@ function opsRenderE4(){
   const E4 = OPS.E4;
   document.getElementById('opsE4Month').value = E4.month;
   document.getElementById('opsE4Cust').value = E4.cust;
+  opsRenderE4Sts();
   document.getElementById('opsE4Lbl').textContent = opsMonthLabel(E4.month) + (E4.cust ? ' · ' + E4.cust : '');
   const list = OPS.ships.filter(x=>
       (!OPS.F.mode || x.mode===OPS.F.mode) && (!OPS.F.dir || x.dir===OPS.F.dir) &&
       (E4.month==='all' || x.mk===E4.month) && (!E4.cust || x.cust===E4.cust) &&
       (!E4.q || x.mawb.replace(/[\s-]/g,'').toUpperCase().indexOf(E4.q)!==-1) &&
-      (!E4.dupOnly || !!OPS.dup[x.mkey]))
+      (!E4.dupOnly || !!OPS.dup[x.mkey]) &&
+      (!E4.sts || E4.sts.has(x.st) || OPS.pending[x.jobNo]))   // unsaved rows stay visible until Save
     .sort((a,b)=>(a.etd-b.etd) || a.cust.localeCompare(b.cust));   // ETD oldest → newest
   const colOf = k=>(OPS_STATUSES_ALL.find(s=>s[0]===k)||['','#ccc'])[1];
   const fmtVol = x=> x.unit ? `${x.load?`<span class="ops-ltype">${x.load}</span>`:''}${x.vol.toLocaleString(undefined,{maximumFractionDigits:3})}<span class="ops-unit">${x.unit}</span>` : '—';
@@ -4318,15 +4333,41 @@ function opsRenderE4(){
   const totVol = [['kg',sumU('kg')],['Cntr',sumU('Cntr')],['CBM',sumU('CBM')]].filter(v=>v[1]).map(([u,v])=>`${v.toLocaleString(undefined,{maximumFractionDigits:3})}<span class="ops-unit">${u}</span>`).join(' · ');
   const body = document.getElementById('opsE4Body');
   body.innerHTML = list.length
-    ? list.map(x=>`<tr data-job="${opsEsc(x.jobNo)}" class="${x.st==='Cancelled'?'cx':''}${OPS.pending[x.jobNo]?' dirty':''}${OPS.dup[x.mkey]?' dup':''}"><td>${opsEsc(x.cust)}</td><td class="mono">${x.mawb?opsEsc(x.mawb):'<span style="color:#8a8a8a">—</span>'}${opsDupBadge(x)}</td><td class="n">${fmtVol(x)}</td><td style="white-space:nowrap;">${opsFmtDate(x.etdStr)}</td>
+    ? list.map(x=>`<tr data-job="${opsEsc(x.jobNo)}" class="${x.st==='Cancelled'?'cx':''}${OPS.pending[x.jobNo]?' dirty':''}${OPS.dup[x.mkey]?' dup':''}"><td>${opsEsc(x.cust)}</td><td class="mono">${x.mawb?opsEsc(x.mawb):'<span style="color:#8a8a8a">—</span>'}${opsDupBadge(x)}</td><td style="white-space:nowrap;">${x.mode?`<span class="ops-mode${x.dir==='Import'?' imp':''}">${opsEsc(x.mode)}-${opsEsc(x.dir)}</span>`:'—'}</td><td class="n">${fmtVol(x)}</td><td style="white-space:nowrap;">${opsFmtDate(x.etdStr)}</td>
         <td style="white-space:nowrap;"><select data-job="${opsEsc(x.jobNo)}" style="--c:${colOf(x.st)}">${OPS_STATUSES_ALL.map(([k])=>`<option value="${k}"${k===x.st?' selected':''}>${k==='Not set'?'':k}</option>`).join('')}</select>${opsIsLate(x)?' <span class="ops-badge">⚠ &gt; 7 days</span>':''}</td>
         <td><input class="rmk" data-job="${opsEsc(x.jobNo)}" type="text" placeholder="พิมพ์หมายเหตุ…" value="${opsEsc(x.remark)}"></td></tr>`).join('') +
-      `<tr class="ops-tot"><td>Total — ${act.length} MAWB</td><td></td><td class="n">${totVol||'—'}</td><td></td><td colspan="2" style="font-weight:400; color:#8a8a8a; font-size:12px;">ไม่รวม Cancelled</td></tr>`
-    : '<tr><td colspan="6" class="empty">No shipments for this filter</td></tr>';
+      `<tr class="ops-tot"><td>Total — ${act.length} MAWB</td><td></td><td></td><td class="n">${totVol||'—'}</td><td></td><td colspan="2" style="font-weight:400; color:#8a8a8a; font-size:12px;">ไม่รวม Cancelled</td></tr>`
+    : '<tr><td colspan="7" class="empty">No shipments for this filter</td></tr>';
   const cx = list.length - act.length;
   document.getElementById('opsE4Count').textContent = act.length + ' MAWB' + (cx ? ` (+ Cancelled ${cx})` : '');
   opsUpdateSaveBar();
   opsRenderDupWarn(list);
+}
+function opsRenderE4Sts(){
+  const E4 = OPS.E4, menu = document.getElementById('opsE4StsMenu'); if(!menu) return;
+  const keys = OPS_STATUSES_ALL.map(s=>s[0]);
+  if(!menu.dataset.built){
+    menu.dataset.built = '1';
+    menu.innerHTML = '<div class="acts"><button type="button" data-act="all">เลือกทั้งหมด</button><button type="button" data-act="none">ล้าง</button></div>' +
+      OPS_STATUSES_ALL.map(([k,c])=>`<label><input type="checkbox" value="${opsEsc(k)}"><span class="dot" style="--c:${c}"></span>${k==='Not set'?'(ว่าง) Not set':opsEsc(k)}</label>`).join('');
+    menu.addEventListener('change', e=>{
+      const cb = e.target.closest('input'); if(!cb) return;
+      const set = E4.sts ? new Set(E4.sts) : new Set(keys);
+      cb.checked ? set.add(cb.value) : set.delete(cb.value);
+      E4.sts = set.size===keys.length ? null : set;
+      opsRender();
+    });
+    menu.addEventListener('click', e=>{
+      const b = e.target.closest('button[data-act]'); if(!b) return;
+      E4.sts = b.dataset.act==='all' ? null : new Set();
+      opsRender();
+    });
+    document.addEventListener('click', e=>{ const w=document.getElementById('opsE4Sts'); if(w && !w.contains(e.target)) w.classList.remove('open'); });
+  }
+  menu.querySelectorAll('input').forEach(cb=>{ cb.checked = !E4.sts || E4.sts.has(cb.value); });
+  const n = E4.sts ? E4.sts.size : keys.length;
+  document.getElementById('opsE4StsLbl').textContent =
+    n===keys.length ? 'All status' : n===0 ? 'ไม่ได้เลือก' : n===1 ? ([...E4.sts][0]==='Not set'?'(ว่าง)':[...E4.sts][0]) : n+' status';
 }
 function opsDupBadge(x){
   const g = OPS.dup[x.mkey]; if(!g) return '';
