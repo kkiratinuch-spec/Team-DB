@@ -358,7 +358,7 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
 .ops-msel .menu .dot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
 .ops-e4wrap table th{position:sticky;top:0;z-index:1}
 .ops-e4wrap select{min-width:160px;font-weight:600;border:1px solid #C9BEDA;border-left:6px solid var(--c);border-radius:4px;padding:4px 6px;font-size:12px;background:#fff}
-.ops-e4wrap input.rmk{width:100%;min-width:180px;font-size:12px;padding:5px 7px;border:1px solid #D5D7DB;border-radius:4px}
+.ops-e4wrap textarea.rmk{display:block;width:100%;min-width:320px;min-height:30px;font:inherit;font-size:12px;line-height:1.4;padding:5px 7px;border:1px solid #D5D7DB;border-radius:4px;resize:none;overflow:hidden;white-space:pre-wrap;word-break:break-word;field-sizing:content}
 .ops-e4wrap tr.cx td{color:#9aa0a6}
 .ops-e4wrap tr.cx td.mono{text-decoration:line-through}
 .ops-e4wrap tr.saving td{background:#FFF6CC}
@@ -1213,7 +1213,7 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
       </div>
       <div class="ops-dupwarn" id="opsDupWarn" style="display:none;"></div>
       <div class="ops-cfg" id="opsCfgWarn" style="display:none;">⚠️ ยังไม่ได้ตั้งค่า OPS Status Sheet — แก้ตัวแปร <code>OPS_API_URL</code> ในโค้ดให้เป็น URL ของ Web App จาก <b>OPSStatusBackend.gs</b> (ตอนนี้กด Save ไม่ได้)</div>
-      <div class="ops-e4wrap"><table class="dash-table"><thead><tr><th>Customer</th><th>MAWB</th><th>Mode</th><th class="n">Chargeable Weight / Volume</th><th>ETD</th><th>OPS Status</th><th style="min-width:200px;">Remark</th></tr></thead><tbody id="opsE4Body"></tbody></table></div>
+      <div class="ops-e4wrap"><table class="dash-table"><thead><tr><th>Customer</th><th>MAWB</th><th>Mode</th><th class="n">Chargeable Weight / Volume</th><th>ETD</th><th>OPS Status</th><th style="min-width:340px;">Remark</th></tr></thead><tbody id="opsE4Body"></tbody></table></div>
       <div style="font-size:11.5px; color:#8a8a8a; margin-top:6px;">เปลี่ยน OPS Status / Remark แล้วกด <b>💾 Save</b> เพื่อบันทึกลง Google Sheet "OPS Status" (แยกจาก Raw data ของ Job Sheet) · แถวสีเหลือง = ยังไม่ได้ Save · ช่อง Status ว่าง = ยังไม่ได้ตั้ง (Not set)</div>
     </div>
 
@@ -4342,14 +4342,16 @@ function opsRenderE4(){
   body.innerHTML = list.length
     ? list.map(x=>`<tr data-job="${opsEsc(x.jobNo)}" class="${x.st==='Cancelled'?'cx':''}${OPS.pending[x.jobNo]?' dirty':''}${OPS.dup[x.mkey]?' dup':''}"><td>${opsEsc(x.cust)}</td><td class="mono">${x.mawb?opsEsc(x.mawb):'<span style="color:#8a8a8a">—</span>'}${opsDupBadge(x)}</td><td style="white-space:nowrap;">${opsModeTag(x)}</td><td class="n">${fmtVol(x)}</td><td style="white-space:nowrap;">${opsFmtDate(x.etdStr)}</td>
         <td style="white-space:nowrap;"><select data-job="${opsEsc(x.jobNo)}" style="--c:${colOf(x.st)}">${OPS_STATUSES_ALL.map(([k])=>`<option value="${k}"${k===x.st?' selected':''}>${k==='Not set'?'':k}</option>`).join('')}</select>${opsIsLate(x)?' <span class="ops-badge">⚠ &gt; 7 days</span>':''}</td>
-        <td><input class="rmk" data-job="${opsEsc(x.jobNo)}" type="text" placeholder="พิมพ์หมายเหตุ…" value="${opsEsc(x.remark)}"></td></tr>`).join('') +
+        <td><textarea class="rmk" rows="1" data-job="${opsEsc(x.jobNo)}" placeholder="พิมพ์หมายเหตุ…">${opsEsc(x.remark)}</textarea></td></tr>`).join('') +
       `<tr class="ops-tot"><td>Total — ${act.length} MAWB</td><td></td><td></td><td class="n">${totVol||'—'}</td><td></td><td colspan="2" style="font-weight:400; color:#8a8a8a; font-size:12px;">ไม่รวม Cancelled</td></tr>`
     : '<tr><td colspan="7" class="empty">No shipments for this filter</td></tr>';
   const cx = list.length - act.length;
   document.getElementById('opsE4Count').textContent = act.length + ' MAWB' + (cx ? ` (+ Cancelled ${cx})` : '');
+  body.querySelectorAll('textarea.rmk').forEach(opsGrowRmk);
   opsUpdateSaveBar();
   opsRenderDupWarn(list);
 }
+function opsGrowRmk(t){ if(!t.offsetParent) return; t.style.height='auto'; t.style.height=(t.scrollHeight+2)+'px'; }
 function opsRenderE4Sts(){
   const E4 = OPS.E4, menu = document.getElementById('opsE4StsMenu'); if(!menu) return;
   const keys = OPS_STATUSES_ALL.map(s=>s[0]);
@@ -4493,12 +4495,13 @@ function opsInitEvents(){
     opsRender();
   });
   body.addEventListener('input', e=>{
-    const inp = e.target.closest('input.rmk'); if(!inp) return;
+    const inp = e.target.closest('textarea.rmk'); if(!inp) return;
+    opsGrowRmk(inp);
     const x = OPS.byId[inp.dataset.job]; if(!x) return;
     x.remark = inp.value;
     opsMarkDirty(x);
   });
-  body.addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target.matches('input.rmk')) e.target.blur(); });
+  body.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey && e.target.matches('textarea.rmk')){ e.preventDefault(); e.target.blur(); } });
 
   // E.5 — Issue / Action Plan (free text) + Pending/Solved
   const b5 = document.getElementById('opsE5Body');
