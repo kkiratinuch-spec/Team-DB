@@ -350,8 +350,8 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
 .ops-msel>button{font-size:12px;padding:4px 8px;border:1px solid #C9BEDA;border-radius:4px;background:#fff;min-width:150px;display:flex;justify-content:space-between;gap:10px;cursor:pointer;text-transform:none;letter-spacing:0;font-weight:400;color:inherit}
 .ops-msel .menu{display:none;position:absolute;top:100%;left:0;margin-top:4px;z-index:30;background:#fff;border:1px solid #C9BEDA;border-radius:6px;padding:6px;min-width:210px;box-shadow:0 6px 18px rgba(0,0,0,.12);text-transform:none;letter-spacing:0;font-weight:400;color:#222}
 .ops-msel.open .menu{display:block}
-.ops-msel .menu .acts{display:flex;gap:6px;padding:2px 4px 6px;border-bottom:1px solid #eee;margin-bottom:4px}
-.ops-msel .menu .acts button{font-size:11px;padding:2px 8px;border:1px solid #C9BEDA;border-radius:4px;background:#fff;cursor:pointer}
+.ops-msel .menu .acts{display:flex;flex-wrap:wrap;gap:6px;padding:2px 4px 6px;border-bottom:1px solid #eee;margin-bottom:4px}
+.ops-msel .menu .acts button{white-space:nowrap;font-size:11px;padding:2px 8px;border:1px solid #C9BEDA;border-radius:4px;background:#fff;cursor:pointer}
 .ops-msel .menu label{display:flex!important;flex-direction:row!important;align-items:center;gap:8px;padding:4px 6px;border-radius:4px;cursor:pointer;font-size:12px!important;font-weight:400!important;color:#222!important;text-transform:none!important}
 .ops-msel .menu label:hover{background:#F7F5FA}
 .ops-msel .menu input[type=checkbox]{padding:0;margin:0;width:14px;height:14px}
@@ -1200,7 +1200,7 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
     <div class="bar-section">
       <h3>E.4 — Shipment List (from Booking) — <span id="opsE4Lbl"></span></h3>
       <div class="ops-filters" style="margin-bottom:10px;">
-        <label>Month (ETD)<select id="opsE4Month" onchange="OPS.E4.month=this.value; opsRender();"></select></label>
+        <div class="ops-flab">Month (ETD)<div class="ops-msel" id="opsE4Ms"><button type="button" onclick="this.parentNode.classList.toggle('open')"><span id="opsE4MsLbl">All months</span><span>▾</span></button><div class="menu" id="opsE4MsMenu"></div></div></div>
         <label>Customer<select id="opsE4Cust" onchange="OPS.E4.cust=this.value; opsRender();"></select></label>
         <label>Search MAWB<input type="search" id="opsE4Search" placeholder="เช่น 217-0580" style="width:190px;" oninput="OPS.E4.q=this.value.replace(/[\s-]/g,'').toUpperCase(); opsRender();"></label>
         <div class="ops-flab">Status<div class="ops-msel" id="opsE4Sts"><button type="button" onclick="this.parentNode.classList.toggle('open')"><span id="opsE4StsLbl">All status</span><span>▾</span></button><div class="menu" id="opsE4StsMenu"></div></div></div>
@@ -1220,7 +1220,7 @@ select.sj-sel{font-size:12px;padding:4px 4px;border:1px solid #D5D7DB;border-rad
     <div class="bar-section">
       <h3 style="background:#FBE4E1; color:#A32D2D;">E.5 — Issue Tracking — <span id="opsE5Lbl"></span></h3>
       <div class="ops-filters" style="margin-bottom:10px;">
-        <label>Month (ETD)<select id="opsE5Month" onchange="OPS.E5.month=this.value; opsRenderE5();"></select></label>
+        <div class="ops-flab">Month (ETD)<div class="ops-msel" id="opsE5Ms"><button type="button" onclick="this.parentNode.classList.toggle('open')"><span id="opsE5MsLbl">All months</span><span>▾</span></button><div class="menu" id="opsE5MsMenu"></div></div></div>
         <label>Customer<select id="opsE5Cust" onchange="OPS.E5.cust=this.value; opsRenderE5();"></select></label>
         <label>Status<select id="opsE5Status" onchange="OPS.E5.status=this.value; opsRenderE5();"><option value="">All</option><option>Pending</option><option>Solved</option></select></label>
         <span id="opsE5Count" style="font-size:12px; color:#555; align-self:center;"></span>
@@ -4171,8 +4171,8 @@ const OPS = {
   ships: [], byId: {}, months: [],
   pending: {},                                   // jobNo → true for unsaved edits
   F: {mode:'', dir:'', cust:'', month:''},       // top filters (month = 'YYYY-MM')
-  E4: {month:'', cust:'', q:'', dupOnly:false, sts:null},   // sts: null = all statuses, else Set of statuses to show
-  E5: {month:'', cust:'', status:''}                  // E.4's own filters
+  E4: {ms:undefined, cust:'', q:'', dupOnly:false, sts:null},   // sts: null = all statuses, else Set of statuses to show
+  E5: {ms:undefined, cust:'', status:''}                  // E.4's own filters
 };
 
 function opsEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -4229,14 +4229,12 @@ function opsLoad(records, savedRows){
   if(!OPS.F.month || OPS.months.indexOf(OPS.F.month)===-1){
     OPS.F.month = OPS.months.indexOf(cur)!==-1 ? cur : (OPS.months[0]||cur);
   }
-  if(!OPS.E4.month) OPS.E4.month = OPS.F.month;
-  if(!OPS.E5.month) OPS.E5.month = OPS.F.month;
+  if(OPS.E4.ms===undefined) OPS.E4.ms = new Set([OPS.F.month]);   // ms: null = all months, else Set of 'YYYY-MM'
+  if(OPS.E5.ms===undefined) OPS.E5.ms = new Set([OPS.F.month]);
 
   // dropdowns
   const mOpts = OPS.months.map(k=>`<option value="${k}">${opsMonthLabel(k)}</option>`).join('');
   document.getElementById('opsMonth').innerHTML = mOpts || `<option value="${cur}">${opsMonthLabel(cur)}</option>`;
-  document.getElementById('opsE4Month').innerHTML = '<option value="all">All months</option>' + mOpts;
-  document.getElementById('opsE5Month').innerHTML = '<option value="all">All months</option>' + mOpts;
   const custs = Array.from(new Set(OPS.ships.map(x=>x.cust))).sort();
   const cOpts = custs.map(c=>`<option value="${opsEsc(c)}">${opsEsc(c)}</option>`).join('');
   document.getElementById('opsCust').innerHTML = '<option value="">All customers</option>' + cOpts;
@@ -4268,7 +4266,48 @@ function opsSegBar(c, titled){
 function opsTopFilter(x){
   return (!OPS.F.mode || x.mode===OPS.F.mode) && (!OPS.F.dir || x.dir===OPS.F.dir) && (!OPS.F.cust || x.cust===OPS.F.cust);
 }
-function opsSetMonth(k){ OPS.F.month = k; OPS.E4.month = k; OPS.E5.month = k; opsRender(); }
+function opsSetMonth(k){ OPS.F.month = k; OPS.E4.ms = new Set([k]); OPS.E5.ms = new Set([k]); opsRender(); }
+function opsMsLabel(ms){
+  if(!ms) return 'All months';
+  if(!ms.size) return 'ไม่ได้เลือกเดือน';
+  const ks = [...ms].sort();
+  return ks.length<=3 ? ks.map(opsMonthLabel).join(', ') : ks.length+' เดือน';
+}
+// Month multi-select (tick boxes) — sec = 'E4' | 'E5'
+function opsRenderMonthSel(sec, rerender){
+  const st = OPS[sec], wrap = document.getElementById('ops'+sec+'Ms'), menu = document.getElementById('ops'+sec+'MsMenu'); if(!menu) return;
+  const keys = OPS.months;
+  if(!menu.dataset.bound){
+    menu.dataset.bound = '1';
+    menu.addEventListener('change', e=>{
+      const cb = e.target.closest('input'); if(!cb) return;
+      const set = st.ms ? new Set(st.ms) : new Set(OPS.months);
+      cb.checked ? set.add(cb.value) : set.delete(cb.value);
+      st.ms = set.size===OPS.months.length ? null : set;
+      rerender();
+    });
+    menu.addEventListener('click', e=>{
+      const b = e.target.closest('button[data-act]'); if(!b) return;
+      const a = b.dataset.act;
+      if(a==='all') st.ms = null;
+      else if(a==='none') st.ms = new Set();
+      else if(a==='year') st.ms = new Set(OPS.months.filter(k=>k.slice(0,4)===b.dataset.y));
+      rerender();
+    });
+    document.addEventListener('click', e=>{ if(!e.composedPath().includes(wrap)) wrap.classList.remove('open'); });
+  }
+  const sig = keys.join(',');
+  if(menu.dataset.sig !== sig){
+  menu.dataset.sig = sig;
+  const years = Array.from(new Set(keys.map(k=>k.slice(0,4))));
+  menu.innerHTML = '<div class="acts"><button type="button" data-act="all">เลือกทั้งหมด</button><button type="button" data-act="none">ล้าง</button>' +
+    (years.length>1 ? years.map(y=>`<button type="button" data-act="year" data-y="${y}">${y}</button>`).join('') : '') + '</div>' +
+    '<div style="max-height:260px;overflow:auto;">' +
+    keys.map(k=>`<label><input type="checkbox" value="${k}">${opsMonthLabel(k)}</label>`).join('') + '</div>';
+  }
+  menu.querySelectorAll('input').forEach(cb=>{ cb.checked = !st.ms || st.ms.has(cb.value); });
+  document.getElementById('ops'+sec+'MsLbl').textContent = opsMsLabel(st.ms);
+}
 
 function opsRender(){
   const F = OPS.F, mLbl = opsMonthLabel(F.month), year = F.month.slice(0,4);
@@ -4322,13 +4361,13 @@ function opsRender(){
 
 function opsRenderE4(){
   const E4 = OPS.E4;
-  document.getElementById('opsE4Month').value = E4.month;
+  opsRenderMonthSel('E4', opsRender);
   document.getElementById('opsE4Cust').value = E4.cust;
   opsRenderE4Sts();
-  document.getElementById('opsE4Lbl').textContent = opsMonthLabel(E4.month) + (E4.cust ? ' · ' + E4.cust : '');
+  document.getElementById('opsE4Lbl').textContent = opsMsLabel(E4.ms) + (E4.cust ? ' · ' + E4.cust : '');
   const list = OPS.ships.filter(x=>
       (!OPS.F.mode || x.mode===OPS.F.mode) && (!OPS.F.dir || x.dir===OPS.F.dir) &&
-      (E4.month==='all' || x.mk===E4.month) && (!E4.cust || x.cust===E4.cust) &&
+      (!E4.ms || E4.ms.has(x.mk)) && (!E4.cust || x.cust===E4.cust) &&
       (!E4.q || x.mawb.replace(/[\s-]/g,'').toUpperCase().indexOf(E4.q)!==-1) &&
       (!E4.dupOnly || !!OPS.dup[x.mkey]) &&
       (!E4.sts || E4.sts.has(x.st) || OPS.pending[x.jobNo]))   // unsaved rows stay visible until Save
@@ -4449,13 +4488,13 @@ window.addEventListener('beforeunload', e=>{
 function opsInE5(x){ return x.st==='Issue Pending' || !!x.issue || !!x.actionPlan || !!x.issueStatus; }
 function opsRenderE5(){
   const E5 = OPS.E5;
-  document.getElementById('opsE5Month').value = E5.month;
+  opsRenderMonthSel('E5', opsRenderE5);
   document.getElementById('opsE5Cust').value = E5.cust;
   document.getElementById('opsE5Status').value = E5.status;
-  document.getElementById('opsE5Lbl').textContent = opsMonthLabel(E5.month) + (E5.cust ? ' · ' + E5.cust : '') + (E5.status ? ' · ' + E5.status : '');
+  document.getElementById('opsE5Lbl').textContent = opsMsLabel(E5.ms) + (E5.cust ? ' · ' + E5.cust : '') + (E5.status ? ' · ' + E5.status : '');
   const all = OPS.ships.filter(opsInE5);
   const list = all.filter(x=>
-      (E5.month==='all' || x.mk===E5.month) && (!E5.cust || x.cust===E5.cust) &&
+      (!E5.ms || E5.ms.has(x.mk)) && (!E5.cust || x.cust===E5.cust) &&
       (!E5.status || (x.issueStatus||'Pending')===E5.status))
     .sort((a,b)=>((a.issueStatus||'Pending')==='Solved') - ((b.issueStatus||'Pending')==='Solved') || (a.etd-b.etd) || a.cust.localeCompare(b.cust));
   const fmtVol = x=> x.unit ? `${x.load?`<span class="ops-ltype">${x.load}</span>`:''}${x.vol.toLocaleString(undefined,{maximumFractionDigits:3})}<span class="ops-unit">${x.unit}</span>` : '—';
