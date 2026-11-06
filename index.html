@@ -361,6 +361,7 @@ td.mono{white-space:nowrap}   /* MAWB no. on one line */
 .ops-e4wrap select{min-width:160px;font-weight:600;border:1px solid #C9BEDA;border-left:6px solid var(--c);border-radius:4px;padding:4px 6px;font-size:12px;background:#fff}
 .ops-e4wrap textarea.rmk{display:block;width:100%;min-width:320px;min-height:30px;font:inherit;font-size:12px;line-height:1.4;padding:5px 7px;border:1px solid #D5D7DB;border-radius:4px;resize:none;overflow:hidden;white-space:pre-wrap;word-break:break-word;field-sizing:content}
 .ops-e4wrap tr.cx td{color:#9aa0a6}
+textarea.d1rmk{display:block;width:100%;min-width:200px;min-height:26px;font:inherit;font-size:11px;line-height:1.4;padding:4px 6px;border:1px solid #CFD3D8;border-radius:4px;resize:none;overflow:hidden;white-space:pre-wrap;word-break:break-word;field-sizing:content;box-sizing:border-box}
 .ops-e4wrap tr.cx td.mono{text-decoration:line-through}
 .ops-e4wrap tr.saving td{background:#FFF6CC}
 .ops-e4wrap tr.dirty td{background:#FFF8E1}
@@ -5882,7 +5883,7 @@ function renderReconcilePendingTable(idx){
   document.getElementById('arReconcilePendingBody').innerHTML = rows.length ? rows.map(r=>{
     const remarkKey = r.customer + '|' + r.reconcileDate;
     const esc = remarkKey.replace(/'/g,"\\'");
-    const remarkVal = String(remarkMap[remarkKey]||'').replace(/"/g,'&quot;');
+    const remarkVal = String(remarkMap[remarkKey]||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     const statusText = r.isOverdue ? `Overdue ${-r.daysUntilDue}d` : `On track (${r.daysUntilDue}d left)`;
     const statusColor = r.isOverdue ? '#A32D2D' : '#1E6B3C';
     const rowBg = r.isOverdue ? '#FBE4E1' : '#E2EFDA';
@@ -5892,10 +5893,11 @@ function renderReconcilePendingTable(idx){
       <td style="border-left:2px solid #D5D5D5;">${r.reconcileDate}</td><td>${r.dueDateStr}</td>
       <td style="border-left:2px solid #D5D5D5; color:${statusColor}; font-weight:700;">${statusText}</td>
       <td style="border-left:2px solid #D5D5D5;">${fmtMoney(r.revenue)}</td>
-      <td style="border-left:2px solid #D5D5D5;"><input type="text" value="${remarkVal}" placeholder="พิมพ์ Remark..." style="width:150px; font-size:11px; background:${remarkVal?'#E3F2FB':'#fff'};"
-        oninput="this.style.background=this.value?'#E3F2FB':'#fff';" onchange="saveReconcileRemark('${esc}', this.value)"></td>
+      <td style="border-left:2px solid #D5D5D5; min-width:220px;"><textarea class="d1rmk" rows="1" placeholder="พิมพ์ Remark..." style="background:${remarkVal?'#E3F2FB':'#fff'};"
+        oninput="this.style.background=this.value?'#E3F2FB':'#fff'; d1GrowRmk(this);" onfocus="d1GrowRmk(this)" onkeydown="d1RmkKey(event)" onchange="saveReconcileRemark('${esc}', this.value)">${remarkVal}</textarea></td>
     </tr>`;
   }).join('') : '<tr><td colspan="7" style="text-align:center; color:#999;">No records in Reconcile status</td></tr>';
+  d1GrowAll('arReconcilePendingBody');
 }
 
 async function saveReconcileRemark(jobNo, text){
@@ -6029,7 +6031,7 @@ function renderCustomerSummaryTable(idx, notInvoiced, reconcileRecords, invoiced
   blocks.forEach(block=>{
     block.subRows.forEach((row, si)=>{
       const esc = row.remarkKey.replace(/'/g,"\\'");
-      const remarkVal = String(remarkMap[row.remarkKey]||'').replace(/"/g,'&quot;');
+      const remarkVal = String(remarkMap[row.remarkKey]||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
       html += '<tr>';
       if(si===0){
         html += `<td rowspan="${block.subRows.length}" style="${CELL_FONT} font-weight:700; vertical-align:top; border-right:1px solid #eee;">${block.customer}</td>`;
@@ -6049,14 +6051,19 @@ function renderCustomerSummaryTable(idx, notInvoiced, reconcileRecords, invoiced
       html += revCell(row.onTrackRev);
       html += countCell(row.overdueCount, '#FBE4E1', '#A32D2D');
       html += revCell(row.overdueRev);
-      html += `<td style="${DL}"><input type="text" value="${remarkVal}" placeholder="พิมพ์ Remark..." style="width:140px; ${CELL_FONT} background:${remarkVal?'#E3F2FB':'#fff'};"
-        oninput="this.style.background=this.value?'#E3F2FB':'#fff';" onchange="saveCustomerRemark('${esc}', ${remarkYear}, ${remarkMonth}, this.value)"></td>`;
+      html += `<td style="${DL} min-width:220px;"><textarea class="d1rmk" rows="1" placeholder="พิมพ์ Remark..." style="background:${remarkVal?'#E3F2FB':'#fff'};"
+        oninput="this.style.background=this.value?'#E3F2FB':'#fff'; d1GrowRmk(this);" onfocus="d1GrowRmk(this)" onkeydown="d1RmkKey(event)" onchange="saveCustomerRemark('${esc}', ${remarkYear}, ${remarkMonth}, this.value)">${remarkVal}</textarea></td>`;
       html += '</tr>';
     });
   });
 
   document.getElementById('arCustSummaryBody').innerHTML = blocks.length ? html : '<tr><td colspan="13" style="text-align:center; color:#999;">No data for this filter</td></tr>';
+  d1GrowAll('arCustSummaryBody');
 }
+// D.1 Remark: auto-growing textarea so the full text is always visible
+function d1GrowRmk(t){ if(!t || !t.offsetParent) return; t.style.height='auto'; t.style.height=(t.scrollHeight+2)+'px'; }
+function d1GrowAll(bodyId){ requestAnimationFrame(()=>{ const b=document.getElementById(bodyId); if(b) b.querySelectorAll('textarea.d1rmk').forEach(d1GrowRmk); }); }
+function d1RmkKey(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); e.target.blur(); } }
 
 async function saveCustomerRemark(customer, year, month, text){
   const jobNo = 'ARREMARK-' + customer + '-' + year + '-' + month;
